@@ -59,8 +59,10 @@ FCFDockOverflowButton_UpdatePulseState = function(self)
 			anims[tex]:Stop()
 		end
 		self:UnlockHighlight()
-		tex:SetAlpha(1)
-		tex:Show()
+		if tex then
+			tex:SetAlpha(1)
+			tex:Show()
+		end
 		self.alerting = false
 	end
 
@@ -188,4 +190,3 @@ FCF_StopAlertFlash = function(chatFrame)
 	FCFTab_UpdateAlpha(chatFrame)
 	FCFDockOverflowButton_UpdatePulseState(GENERAL_CHAT_DOCK.overflowButton)
 end
-

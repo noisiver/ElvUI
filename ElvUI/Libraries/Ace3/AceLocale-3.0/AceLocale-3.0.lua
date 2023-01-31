@@ -2,19 +2,15 @@
 -- @class file
 -- @name AceLocale-3.0
 -- @release $Id$
-local MAJOR,MINOR = "AceLocale-3.0-ElvUI", 6
+local MAJOR,MINOR = "AceLocale-3.0-ElvUI", 8
 
 local AceLocale, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceLocale then return end -- no upgrade needed
 
 -- Lua APIs
-local assert, tostring, error = assert, tostring, error
+local assert, tostring, error, type, pairs = assert, tostring, error, type, pairs
 local getmetatable, setmetatable, rawset, rawget = getmetatable, setmetatable, rawset, rawget
-
--- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
--- List them here for Mikk's FindGlobals script
--- GLOBALS: GAME_LOCALE, geterrorhandler
 
 local gameLocale = GetLocale()
 if gameLocale == "enGB" then
@@ -25,13 +21,17 @@ AceLocale.apps = AceLocale.apps or {}          -- array of ["AppName"]=localetab
 AceLocale.appnames = AceLocale.appnames or {}  -- array of [localetableref]="AppName"
 
 -- This metatable is used on all tables returned from GetLocale
+-- ElvUI modded by Darth
 local readmeta = {
 	__index = function(self, key) -- requesting totally unknown entries: fire off a nonbreaking error and return key
+		AceLocale.MissingLinesElvUI[key] = true
 		rawset(self, key, key)      -- only need to see the warning once, really
 		geterrorhandler()(MAJOR..": "..tostring(AceLocale.appnames[self])..": Missing entry for '"..tostring(key).."'")
 		return key
 	end
 }
+AceLocale.MissingLinesElvUI = {}
+-- end block
 
 -- This metatable is used on all tables returned from GetLocale if the silent flag is true, it does not issue a warning on unknown keys
 local readmetasilent = {
@@ -72,6 +72,24 @@ local writedefaultproxy = setmetatable({}, {
 	__index = assertfalse
 })
 
+-- ElvUI block
+local function BackfillTable(currentTable, defaultTable)
+	if type(currentTable) ~= 'table' and type(defaultTable) ~= 'table' then
+		return
+	end
+
+	for option, value in pairs(defaultTable) do
+		if type(value) == 'table' then
+			value = BackfillTable(currentTable[option], value)
+		end
+
+		if currentTable[option] ~= defaultTable[option] and currentTable[option] == option then
+			currentTable[option] = value == true and option or value
+		end
+	end
+end
+-- end block
+
 --- Register a new locale (or extend an existing one) for the specified application.
 -- :NewLocale will return a table you can fill your locale into, or nil if the locale isn't needed for the players
 -- game locale.
@@ -89,8 +107,10 @@ local writedefaultproxy = setmetatable({}, {
 -- local L = LibStub("AceLocale-3.0"):NewLocale("TestLocale", "deDE")
 -- if not L then return end
 -- L["string1"] = "Zeichenkette1"
--- @return Locale Table to add localizations to, or nil if the current locale is not required.
 function AceLocale:NewLocale(application, locale, isDefault, silent)
+	-- GAME_LOCALE allows translators to test translations of addons without having that wow client installed
+	-- local activeGameLocale = GAME_LOCALE or gameLocale
+
 	local app = AceLocale.apps[application]
 
 	if silent and app and getmetatable(app) ~= readmetasilent then
@@ -116,7 +136,8 @@ function AceLocale:NewLocale(application, locale, isDefault, silent)
 	registering = app[locale] -- remember globally for writeproxy and writedefaultproxy
 	-- end block
 
-	if isDefault then
+	if isDefault and (not app.defaultLocale or app.defaultLocale == 'defaultLocale') then -- ElvUI
+		app.defaultLocale = locale
 		return writedefaultproxy
 	end
 
@@ -128,7 +149,7 @@ end
 -- @param application Unique name of addon / module
 -- @param silent If true, the locale is optional, silently return nil if it's not found (defaults to false, optional)
 -- @return The locale table for the current language.
---- Modified by ElvUI to add `locale` as second arg
+--- Modified by ElvUI to add `locale` as second arg and the CopyTable section
 function AceLocale:GetLocale(application, locale, silent)
 	if type(locale) == "boolean" then
 		silent = locale
@@ -137,6 +158,10 @@ function AceLocale:GetLocale(application, locale, silent)
 
 	if not silent and not AceLocale.apps[application] then
 		error("Usage: GetLocale(application[,locale[, silent]]): 'application' - No locales registered for '"..tostring(application).."'", 2)
+	end
+
+	if locale ~= AceLocale.apps[application].defaultLocale then
+		BackfillTable(AceLocale.apps[application][locale], AceLocale.apps[application][AceLocale.apps[application].defaultLocale])
 	end
 
 	return AceLocale.apps[application][locale] or AceLocale.apps[application][gameLocale] -- Just in case the table doesn't exist it reverts to default

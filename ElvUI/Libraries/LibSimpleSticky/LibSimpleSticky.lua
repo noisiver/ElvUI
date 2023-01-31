@@ -16,18 +16,18 @@
 	</OnDragStop>
 
 ------------------------------------------------------------------------------------
-This is a modified version by Elv for ElvUI
+This is a modified version by Elv and Simpy for ElvUI
 ------------------------------------------------------------------------------------]]
 
-local MAJOR, MINOR = "LibSimpleSticky-1.0", 2
-local StickyFrames = LibStub:NewLibrary(MAJOR, MINOR)
-
+local MAJOR, MINOR = "LibSimpleSticky-1.0", 3
+local StickyFrames, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not StickyFrames then return end
 
-local twipe = table.wipe
-
+-- GLOBALS: WorldFrame, UIParent, ElvUIParent
+local DEFAULT_CHAT_FRAME = DEFAULT_CHAT_FRAME
 local GetCursorPosition = GetCursorPosition
 local IsShiftKeyDown = IsShiftKeyDown
+local tostring = tostring
 
 --[[---------------------------------------------------------------------------------
   Class declaration, along with a temporary table to hold any existing OnUpdate
@@ -35,23 +35,9 @@ local IsShiftKeyDown = IsShiftKeyDown
 ------------------------------------------------------------------------------------]]
 
 StickyFrames.scripts = StickyFrames.scripts or {}
+StickyFrames.sticky = StickyFrames.sticky or {}
 StickyFrames.rangeX = 15
 StickyFrames.rangeY = 15
-StickyFrames.sticky = StickyFrames.sticky or {}
-
-local groupBlacklist = {}
-
-local function isGroupPoint(frame, frame2)
-	if groupBlacklist[frame2] then
-		return true
-	else
-		local _, point = frame2:GetPoint()
-		if groupBlacklist[point] or frame.parent == point then
-			groupBlacklist[frame2.parent] = true
-			return true
-		end
-	end
-end
 
 --[[---------------------------------------------------------------------------------
   StickyFrames:StartMoving() - Sets a custom OnUpdate for the frame so it follows
@@ -97,7 +83,6 @@ end
 function StickyFrames:StopMoving(frame)
 	frame:SetScript("OnUpdate", self.scripts[frame])
 	self.scripts[frame] = nil
-	twipe(groupBlacklist)
 
 	if StickyFrames.sticky[frame] then
 		local sticky = StickyFrames.sticky[frame]
@@ -128,12 +113,9 @@ function StickyFrames:AnchorFrame(frame)
 	frame:SetPoint("CENTER", parent, "CENTER", xo, yo)
 end
 
-
 --[[---------------------------------------------------------------------------------
   Internal Functions -- Do not call these.
 ------------------------------------------------------------------------------------]]
-
-
 
 --[[---------------------------------------------------------------------------------
   Returns an anonymous OnUpdate function for the frame in question.  Need
@@ -153,18 +135,20 @@ function StickyFrames:GetUpdateFunc(frame, frameList, xoffset, yoffset, left, to
 		frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x+xoffset, y+yoffset)
 
 		StickyFrames.sticky[frame] = nil
-		for i = 1, #frameList do
-			local v = frameList[i]
-			if frame ~= v and frame ~= v:GetParent() and not isGroupPoint(frame, v) and not IsShiftKeyDown() and v:IsVisible() then
-				if self:SnapFrame(frame, v, left, top, right, bottom) then
-					StickyFrames.sticky[frame] = v
-					break
+
+		if frameList then
+			for i = 1, #frameList do
+				local v = frameList[i]
+				if frame ~= v and frame ~= v:GetParent() and not IsShiftKeyDown() and v:IsVisible() then
+					if self:SnapFrame(frame, v, left, top, right, bottom) then
+						StickyFrames.sticky[frame] = v
+						break
+					end
 				end
 			end
 		end
 	end
 end
-
 
 --[[---------------------------------------------------------------------------------
   Internal debug function.
@@ -184,8 +168,7 @@ function StickyFrames:SnapFrame(frameA, frameB, left, top, right, bottom)
 	local sA, sB = frameA:GetEffectiveScale(), frameB:GetEffectiveScale()
 	local xA, yA = frameA:GetCenter()
 	local xB, yB = frameB:GetCenter()
-	local hA = frameA:GetHeight() / 2
-	local wA = frameA:GetWidth() / 2
+	local hA, wA = frameA:GetHeight() * 0.5, frameA:GetWidth() * 0.5
 
 	local newX, newY = xA, yA
 
@@ -199,7 +182,6 @@ function StickyFrames:SnapFrame(frameA, frameB, left, top, right, bottom)
 	xB, yB = (xB*sB) / sA, (yB*sB) / sA
 
 	-- Grab the edges of each frame, for easier comparison
-
 	local lA, tA, rA, bA = frameA:GetLeft(), frameA:GetTop(), frameA:GetRight(), frameA:GetBottom()
 	local lB, tB, rB, bB = frameB:GetLeft(), frameB:GetTop(), frameB:GetRight(), frameB:GetBottom()
 	local snap = nil
