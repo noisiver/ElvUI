@@ -1,8 +1,12 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 
---Lua functions
-local min, max, abs, floor = min, max, abs, floor
---WoW API / Variables
+local min, match, max, format = min, string.match, max, format
+
+local _G = _G
+local UIParent = UIParent
+local GetScreenWidth = GetScreenWidth
+local GetScreenHeight = GetScreenHeight
+local InCombatLockdown = InCombatLockdown
 local UIParent = UIParent
 
 function E:IsEyefinity(width, height)
@@ -23,72 +27,78 @@ function E:IsEyefinity(width, height)
 	end
 end
 
-function E:UIScale(init)
-	local scale = E.global.general.UIScale
-	if init then --E.OnInitialize
-		--Set variables for pixel scaling
-		local pixel, ratio = 1, 768 / E.screenheight
-		E.mult = (pixel / scale) - ((pixel - ratio) / scale)
-		E.Spacing = (E.PixelMode and 0) or E.mult
-		E.Border = ((not E.twoPixelsPlease) and E.PixelMode and E.mult) or E.mult * 2
-	else --E.Initialize
-		UIParent:SetScale(scale)
+function E:IsUltrawide(width, height)
+	if E.global.general.ultrawide and width >= 2560 then
+		--HQ Resolution
+		if width >= 3440 and (height == 1440 or height == 1600) then return 2560 end --DQHD, DQHD+, WQHD & WQHD+
 
-		--Check if we are using `E.eyefinity`
-		local width, height = E.screenwidth, E.screenheight
+		--Low resolution
+		if width >= 2560 and (height == 1080 or height == 1200) then return 1920 end --WFHD, DFHD & WUXGA
+	end
+end
+
+function E:UIMult()
+	E.mult = E.perfect / E.global.general.UIScale
+end
+
+function E:UIScale()
+	if InCombatLockdown() then
+		E:RegisterEventForObject('PLAYER_REGEN_ENABLED', E.UIScale, E.UIScale)
+	else -- E.Initialize
+		UIParent:SetScale(E.global.general.UIScale)
+
+		E.uiscale = UIParent:GetScale()
+		E.screenWidth, E.screenHeight = GetScreenWidth(), GetScreenHeight()
+
+		local width, height = E.physicalWidth, E.physicalHeight
 		E.eyefinity = E:IsEyefinity(width, height)
+		E.ultrawide = E:IsUltrawide(width, height)
 
-		--Resize E.UIParent if Eyefinity is on.
-		local testingEyefinity = false
-		if testingEyefinity then
-			--Eyefinity Test: Resize the E.UIParent to be smaller than it should be, all objects inside should relocate.
-			--Dragging moveable frames outside the box and reloading the UI ensures that they are saving position correctly.
-			local uiWidth, uiHeight = UIParent:GetSize()
-			width, height = uiWidth - 250, uiHeight - 250
-		elseif E.eyefinity then
-			--Find a new width value of E.UIParent for screen #1.
-			local uiHeight = UIParent:GetHeight()
-			width, height = E.eyefinity / (height / uiHeight), uiHeight
+		local testing, newWidth = false, E.eyefinity or E.ultrawide
+		if testing then -- Resize E.UIParent if Eyefinity or UltraWide is on.
+			-- Eyefinity / UltraWide Test: Resize the E.UIParent to be smaller than it should be, all objects inside should relocate.
+			-- Dragging moveable frames outside the box and reloading the UI ensures that they are saving position correctly.
+			width, height = E.screenWidth-250, E.screenHeight-250
+		elseif newWidth then -- Center E.UIParent
+			width, height = newWidth / (height / E.screenHeight), E.screenHeight
 		else
-			width, height = UIParent:GetSize()
+			width, height = E.screenWidth, E.screenHeight
 		end
 
 		E.UIParent:SetSize(width, height)
 		E.UIParent.origHeight = E.UIParent:GetHeight()
 
-		--Calculate potential coordinate differences
-		E.diffGetLeft = E:Round(abs(UIParent:GetLeft() - E.UIParent:GetLeft()))
-		E.diffGetRight = E:Round(abs(UIParent:GetRight() - E.UIParent:GetRight()))
-		E.diffGetBottom = E:Round(abs(UIParent:GetBottom() - E.UIParent:GetBottom()))
-		E.diffGetTop = E:Round(abs(UIParent:GetTop() - E.UIParent:GetTop()))
+		if E:IsEventRegisteredForObject('PLAYER_REGEN_ENABLED', E.UIScale) then
+			E:UnregisterEventForObject('PLAYER_REGEN_ENABLED', E.UIScale, E.UIScale)
+		end
 	end
 end
 
 function E:PixelBestSize()
-	local scale = E:Round(768 / E.screenheight, 5)
-
-	return max(0.4, min(1.15, scale))
+	return max(0.4, min(1.15, E.perfect))
 end
 
-function E:PixelScaleChanged(event, skip)
-	E:UIScale(true) --Repopulate variables
-	E:UIScale() --Setup the scale
+function E:PixelScaleChanged(event)
+	if event == "UI_SCALE_CHANGED" then
+		local resolution = GetCVar("gxResolution")
 
-	E:UpdateConfigSize(true) --Reposition config
-
-	if skip or E.global.general.ignoreScalePopup then return end
-
-	if event == "UPDATE_FLOATING_CHAT_WINDOWS" then return end
-
-	if event == "UISCALE_CHANGE" then
-		E:Delay(0.5, E.StaticPopup_Show, E, event)
-	else
-		E:StaticPopup_Show("UISCALE_CHANGE")
+		E.physicalHeight, E.physicalWidth = tonumber(match(resolution, "%d+x(%d+)")), tonumber(match(resolution, "(%d+)x+%d"))
+		E.resolution = format('%dx%d', E.physicalWidth, E.physicalHeight)
+		E.perfect = 768 / E.physicalHeight
 	end
+
+	E:UIMult()
+	E:UIScale()
+
+	E:Config_UpdateSize(true) --Reposition config
 end
 
 function E:Scale(x)
-	local mult = E.mult
-
-	return mult * floor(x / mult + 0.5)
+	local m = E.mult
+	if m == 1 or x == 0 then
+		return x
+	else
+		local y = m > 1 and m or -m
+		return x - x % (x < 0 and y or -y)
+	end
 end

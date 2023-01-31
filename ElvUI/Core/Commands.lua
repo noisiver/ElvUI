@@ -1,10 +1,11 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local DT = E:GetModule("DataTexts")
 local AB = E:GetModule("ActionBars")
 
 --Lua functions
-local tonumber, type = tonumber, type
-local format, lower, match, split = string.format, string.lower, string.match, string.split
+local type, pairs, select, tonumber = type, pairs, select, tonumber
+local format, lower, split = string.format, string.lower, string.split
+local wipe, next, print = wipe, next, print
 --WoW API / Variables
 local InCombatLockdown = InCombatLockdown
 local UIFrameFadeOut, UIFrameFadeIn = UIFrameFadeOut, UIFrameFadeIn
@@ -31,50 +32,48 @@ function E:Grid(msg)
 	end
 end
 
+local AddOns = {
+	ElvUI = true,
+	ElvUI_OptionsUI = true,
+	-- ElvUI_Libraries = true,
+	ElvUI_CPU = true -- debug tool located at https://github.com/Resike/ElvUI_CPU
+}
+
 function E:LuaError(msg)
-	msg = lower(msg)
-	if msg == "on" or msg == "1" then
-		local disabledList = {}
-
-		for i = 1, GetNumAddOns() do
-			local name, _, _, enabled = GetAddOnInfo(i)
-			if enabled and name ~= "ElvUI" and name ~= "ElvUI_OptionsUI" then
-				disabledList[#disabledList + 1] = name
-				DisableAddOn(name)
+	local switch = lower(msg)
+	if switch == "on" or switch == "1" then
+		for i=1, GetNumAddOns() do
+			local name = GetAddOnInfo(i)
+			if not AddOns[name] and E:IsAddOnEnabled(name) then
+				DisableAddOn(name, E.myname)
+				ElvDB.DisabledAddOns[name] = i
 			end
-		end
-
-		if #disabledList > 0 then
-			ElvCharacterDB.LuaErrorDisabledAddOns = disabledList
 		end
 
 		SetCVar("scriptErrors", 1)
 		ReloadUI()
-	elseif msg == "off" or msg == "0" then
-		if msg == "off" then
+	elseif switch == "off" or switch == "0" then
+		if switch == "off" then
+			SetCVar("scriptProfile", 0)
 			SetCVar("scriptErrors", 0)
+			E:Print("Lua errors off.")
+
+			if E:IsAddOnEnabled("ElvUI_CPU") then
+				DisableAddOn("ElvUI_CPU")
+			end
 		end
 
-		if ElvCharacterDB.LuaErrorDisabledAddOns then
-			for _, addonName in ipairs(ElvCharacterDB.LuaErrorDisabledAddOns) do
-				EnableAddOn(addonName)
+		if next(ElvDB.DisabledAddOns) then
+			for name in pairs(ElvDB.DisabledAddOns) do
+				EnableAddOn(name, E.myname)
 			end
 
-			ElvCharacterDB.LuaErrorDisabledAddOns = nil
+			wipe(ElvDB.DisabledAddOns)
 			ReloadUI()
-		else
-			E:Print("Lua errors off.")
 		end
 	else
-		E:Print("/luaerror on - /luaerror off")
+		E:Print("/edebug on - /edebug off")
 	end
-end
-
-function E:BGStats()
-	DT.ForceHideBGStats = nil
-	DT:LoadDataTexts()
-
-	E:Print(L["Battleground datatexts will now show again if you are inside a battleground."])
 end
 
 local function OnCallback(command)
@@ -82,9 +81,9 @@ local function OnCallback(command)
 end
 
 function E:DelayScriptCall(msg)
-	local secs, command = match(msg, "^(%S+)%s+(.*)$")
+	local secs, command = msg:match("^(%S+)%s+(.*)$")
 	secs = tonumber(secs)
-	if (not secs) or (#command == 0) then
+	if not secs or (#command == 0) then
 		self:Print("usage: /in <seconds> <command>")
 		self:Print("example: /in 1.5 /say hi")
 	else
@@ -92,56 +91,57 @@ function E:DelayScriptCall(msg)
 	end
 end
 
-function FarmMode()
-	if InCombatLockdown() then E:Print(ERR_NOT_IN_COMBAT) return end
-	if not E.private.general.minimap.enable then return end
+function E:DisplayCommands()
+	print(L["EHELP_COMMANDS"])
+end
 
-	if Minimap:IsShown() then
-		UIFrameFadeOut(Minimap, 0.3)
-		UIFrameFadeIn(FarmModeMap, 0.3)
-		Minimap.fadeInfo.finishedFunc = function()
-			Minimap:Hide()
-			FarmModeMap:SetAlpha(1)
+local BLIZZARD_ADDONS = {
+	"Blizzard_AchievementUI",
+	"Blizzard_ArenaUI",
+	"Blizzard_AuctionUI",
+	"Blizzard_BarbershopUI",
+	"Blizzard_BattlefieldMinimap",
+	"Blizzard_BindingUI",
+	"Blizzard_Calendar",
+	"Blizzard_CombatLog",
+	"Blizzard_CombatText",
+	"Blizzard_DebugTools",
+	"Blizzard_GlyphUI",
+	"Blizzard_GMChatUI",
+	"Blizzard_GMSurveyUI",
+	"Blizzard_GuildBankUI",
+	"Blizzard_InspectUI",
+	"Blizzard_ItemSocketingUI",
+	"Blizzard_MacroUI",
+	"Blizzard_RaidUI",
+	"Blizzard_TalentUI",
+	"Blizzard_TimeManager",
+	"Blizzard_TokenUI",
+	"Blizzard_TradeSkillUI",
+	"Blizzard_TrainerUI"
+}
 
-			local zoomLevel = Minimap:GetZoom()
-			if zoomLevel < 5 then
-				Minimap:SetZoom(zoomLevel + 1)
-				Minimap:SetZoom(zoomLevel)
-			else
-				Minimap:SetZoom(zoomLevel - 1)
-				Minimap:SetZoom(zoomLevel)
-			end
+function E:EnableBlizzardAddOns()
+	for _, addon in pairs(BLIZZARD_ADDONS) do
+		local reason = select(5, GetAddOnInfo(addon))
+		if reason == "DISABLED" then
+			EnableAddOn(addon)
+			E:Print("The following addon was re-enabled:", addon)
 		end
-		FarmModeMap.enabled = true
-	else
-		UIFrameFadeOut(FarmModeMap, 0.3)
-		UIFrameFadeIn(Minimap, 0.3)
-		FarmModeMap.fadeInfo.finishedFunc = function()
-			FarmModeMap:Hide()
-			Minimap:SetAlpha(1)
-
-			local zoomLevel = Minimap:GetZoom()
-			if zoomLevel < 5 then
-				Minimap:SetZoom(zoomLevel + 1)
-				Minimap:SetZoom(zoomLevel)
-			else
-				Minimap:SetZoom(zoomLevel - 1)
-				Minimap:SetZoom(zoomLevel)
-			end
-		end
-		FarmModeMap.enabled = false
 	end
 end
 
-function E:FarmMode(msg)
-	if not E.private.general.minimap.enable then return end
+function E:DBConvertProfile()
+	E.db.dbConverted = nil
+	E:DBConversions()
+	ReloadUI()
+end
 
-	if msg and type(tonumber(msg)) == "number" and tonumber(msg) <= 500 and tonumber(msg) >= 20 and not InCombatLockdown() then
-		E.db.farmSize = tonumber(msg)
-		FarmModeMap:Size(tonumber(msg))
-	end
+function E:BGStats()
+	DT.ForceHideBGStats = nil
+	DT:LoadDataTexts()
 
-	FarmMode()
+	E:Print(L["Battleground datatexts will now show again if you are inside a battleground."])
 end
 
 -- make this a locale later?
@@ -217,48 +217,36 @@ function E:GetCPUImpact()
 	end
 end
 
-local BLIZZARD_ADDONS = {
-	"Blizzard_AchievementUI",
-	"Blizzard_ArenaUI",
-	"Blizzard_AuctionUI",
-	"Blizzard_BarbershopUI",
-	"Blizzard_BattlefieldMinimap",
-	"Blizzard_BindingUI",
-	"Blizzard_Calendar",
-	"Blizzard_CombatLog",
-	"Blizzard_CombatText",
-	"Blizzard_DebugTools",
-	"Blizzard_GlyphUI",
-	"Blizzard_GMChatUI",
-	"Blizzard_GMSurveyUI",
-	"Blizzard_GuildBankUI",
-	"Blizzard_InspectUI",
-	"Blizzard_ItemSocketingUI",
-	"Blizzard_MacroUI",
-	"Blizzard_RaidUI",
-	"Blizzard_TalentUI",
-	"Blizzard_TimeManager",
-	"Blizzard_TokenUI",
-	"Blizzard_TradeSkillUI",
-	"Blizzard_TrainerUI"
-}
-
-function E:EnableBlizzardAddOns()
-	for _, addon in pairs(BLIZZARD_ADDONS) do
-		local reason = select(5, GetAddOnInfo(addon))
-		if reason == "DISABLED" then
-			EnableAddOn(addon)
-			E:Print("The following addon was re-enabled:", addon)
-		end
-	end
-end
-
 function E:LoadCommands()
+	if E.private.actionbar.enable then
+		self:RegisterChatCommand("kb", AB.ActivateBindMode)
+	end
+
 	self:RegisterChatCommand("in", "DelayScriptCall")
 	self:RegisterChatCommand("ec", "ToggleOptionsUI")
 	self:RegisterChatCommand("elvui", "ToggleOptionsUI")
-	self:RegisterChatCommand("cpuimpact", "GetCPUImpact")
 
+	self:RegisterChatCommand("bgstats", DT.ToggleBattleStats)
+
+	self:RegisterChatCommand("moveui", "ToggleMoveMode")
+	self:RegisterChatCommand("resetui", "ResetUI")
+
+	self:RegisterChatCommand("emove", "ToggleMoveMode")
+	self:RegisterChatCommand("ereset", "ResetUI")
+	self:RegisterChatCommand("edebug", "LuaError")
+
+	self:RegisterChatCommand("ehelp", "DisplayCommands")
+	self:RegisterChatCommand("ecommands", "DisplayCommands")
+	self:RegisterChatCommand("eblizzard", "EnableBlizzardAddOns")
+	self:RegisterChatCommand("estatus", "ShowStatusReport")
+	self:RegisterChatCommand("efixdb", "DBConvertProfile")
+	self:RegisterChatCommand("egrid", "Grid")
+
+	-- older commands
+	self:RegisterChatCommand("bgstats", "BGStats")
+	self:RegisterChatCommand("cleanguild", "MassGuildKick")
+
+	self:RegisterChatCommand("cpuimpact", "GetCPUImpact")
 	self:RegisterChatCommand("cpuusage", "GetTopCPUFunc")
 	-- args: module, showall, delay, minCalls
 	-- Example1: /cpuusage all
@@ -266,23 +254,4 @@ function E:LoadCommands()
 	-- Example3: /cpuusage UnitFrames nil 50 25
 	-- Note: showall, delay, and minCalls will default if not set
 	-- arg1 can be "all" this will scan all registered modules!
-
-	self:RegisterChatCommand("bgstats", "BGStats")
-	self:RegisterChatCommand("hellokitty", "HelloKittyToggle")
-	self:RegisterChatCommand("hellokittyfix", "HelloKittyFix")
-	self:RegisterChatCommand("harlemshake", "HarlemShakeToggle")
-	self:RegisterChatCommand("luaerror", "LuaError")
-	self:RegisterChatCommand("egrid", "Grid")
-	self:RegisterChatCommand("moveui", "ToggleMoveMode")
-	self:RegisterChatCommand("resetui", "ResetUI")
-	self:RegisterChatCommand("enable", "EnableAddon")
-	self:RegisterChatCommand("disable", "DisableAddon")
-	self:RegisterChatCommand("farmmode", "FarmMode")
-	self:RegisterChatCommand("cleanguild", "MassGuildKick")
-	self:RegisterChatCommand("estatus", "ShowStatusReport")
-	-- self:RegisterChatCommand("aprilfools", "") --Don't need this until next april fools
-
-	if E.private.actionbar.enable then
-		self:RegisterChatCommand("kb", AB.ActivateBindMode)
-	end
 end

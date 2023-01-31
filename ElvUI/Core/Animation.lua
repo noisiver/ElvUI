@@ -1,11 +1,10 @@
 ------------------------------------------------------------------------
 -- Animation Functions
 ------------------------------------------------------------------------
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 
---Lua functions
+local _G = _G
 local random, next, unpack, strsub = random, next, unpack, strsub
---WoW API / Variables
 
 E.AnimShake = {{-9,7,-7,12}, {-5,9,-9,5}, {-5,7,-7,5}, {-9,9,-9,9}, {-5,7,-7,5}, {-9,7,-9,5}}
 E.AnimShakeH = {-5,5,-2,5,-2,5}
@@ -50,6 +49,7 @@ function E:SetUpAnimGroup(obj, Type, ...)
 
 		for i = 1, 6 do
 			shake.path[i] = shake.path:CreateControlPoint()
+			shake.path[i]:SetOrder(i)
 
 			if Type == "Shake" then
 				shake.path[i]:SetOffset(E:RandomAnimShake(i))
@@ -57,12 +57,29 @@ function E:SetUpAnimGroup(obj, Type, ...)
 				shake.path[i]:SetOffset(E.AnimShakeH[i], 0)
 			end
 		end
-		shake.path[1]:SetOrder(1)
-		shake.path[2]:SetOrder(2)
-		shake.path[3]:SetOrder(3)
-		shake.path[4]:SetOrder(4)
-		shake.path[5]:SetOrder(5)
-		shake.path[6]:SetOrder(6)
+	elseif Type == "Elastic" then
+		local width, height, duration, loop = ...
+		obj.elastic = CreateAnimationGroup(obj)
+
+		for i = 1, 4 do
+			local anim = obj.elastic:CreateAnimation(i < 3 and "width" or "height")
+			anim:SetChange((i==1 and width*0.45) or (i==2 and width) or (i==3 and height*0.45) or height)
+			anim:SetEasing("inout-elastic")
+			anim:SetDuration(duration)
+			obj.elastic[i] = anim
+		end
+
+		obj.elastic[1]:SetScript("OnFinished", function(anim) anim:Stop() obj.elastic[2]:Play() end)
+		obj.elastic[3]:SetScript("OnFinished", function(anim) anim:Stop() obj.elastic[4]:Play() end)
+		obj.elastic[2]:SetScript("OnFinished", function(anim) anim:Stop() if loop then obj.elastic[1]:Play() end end)
+		obj.elastic[4]:SetScript("OnFinished", function(anim) anim:Stop() if loop then obj.elastic[3]:Play() end end)
+	elseif Type == "Number" then
+		local endingNumber, duration = ...
+		obj.NumberAnimGroup = CreateAnimationGroup(obj)
+		obj.NumberAnim = obj.NumberAnimGroup:CreateAnimation("number")
+		obj.NumberAnim:SetChange(endingNumber)
+		obj.NumberAnim:SetEasing("in-circular")
+		obj.NumberAnim:SetDuration(duration)
 	else
 		local x, y, duration, customName = ...
 		if not customName then customName = "anim" end
@@ -73,13 +90,13 @@ function E:SetUpAnimGroup(obj, Type, ...)
 		anim.in1 = anim:CreateAnimation("Translation")
 		anim.in1:SetDuration(0)
 		anim.in1:SetOrder(1)
-		anim.in1:SetOffset(E:Scale(x), E:Scale(y))
+		anim.in1:SetOffset(x, y)
 
 		anim.in2 = anim:CreateAnimation("Translation")
 		anim.in2:SetDuration(duration)
 		anim.in2:SetOrder(2)
 		anim.in2:SetSmoothing("OUT")
-		anim.in2:SetOffset(E:Scale(-x), E:Scale(-y))
+		anim.in2:SetOffset(-x, -y)
 
 		anim.out1 = obj:CreateAnimationGroup("Move_Out")
 		anim.out1:SetScript("OnFinished", function() obj:Hide() end)
@@ -88,7 +105,25 @@ function E:SetUpAnimGroup(obj, Type, ...)
 		anim.out2:SetDuration(duration)
 		anim.out2:SetOrder(1)
 		anim.out2:SetSmoothing("IN")
-		anim.out2:SetOffset(E:Scale(x), E:Scale(y))
+		anim.out2:SetOffset(x, y)
+	end
+end
+
+function E:Elasticize(obj, width, height)
+	if not obj.elastic then
+		if not width then width = obj:GetWidth() end
+		if not height then height = obj:GetHeight() end
+		E:SetUpAnimGroup(obj, "Elastic", width, height, 2, false)
+	end
+
+	obj.elastic[1]:Play()
+	obj.elastic[3]:Play()
+end
+
+function E:StopElasticize(obj)
+	if obj.elastic then
+		obj.elastic[1]:Stop(true)
+		obj.elastic[3]:Stop(true)
 	end
 end
 
@@ -140,20 +175,24 @@ end
 
 function E:SlideIn(obj, customName)
 	if not customName then customName = "anim" end
-	if not obj[customName] then return end
 
-	obj[customName].out1:Stop()
-	obj[customName]:Play()
+	local anim = obj[customName]
+	if not anim then return end
+
+	anim.out1:Stop()
+	anim:Play()
 	obj:Show()
 end
 
 function E:SlideOut(obj, customName)
 	if not customName then customName = "anim" end
-	if not obj[customName] then return end
 
-	obj[customName]:Finish()
-	obj[customName]:Stop()
-	obj[customName].out1:Play()
+	local anim = obj[customName]
+	if not anim then return end
+
+	anim:Finish()
+	anim:Stop()
+	anim.out1:Play()
 end
 
 local FADEFRAMES, FADEMANAGER = {}, CreateFrame("FRAME")

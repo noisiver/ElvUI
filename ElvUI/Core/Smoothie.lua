@@ -1,14 +1,14 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 
--- Credit: ls- (lightspark)
 local abs, next = abs, next
 local tonumber, assert = tonumber, assert
+
 local activeObjects = {}
 local handledObjects = {}
 local TARGET_FPS = 60
 local AMOUNT = 0.33
 
-local function lerp(startValue, endValue, amount)
+local function Lerp(startValue, endValue, amount)
 	return (1 - amount) * startValue + amount * endValue
 end
 
@@ -33,10 +33,10 @@ local function isCloseEnough(new, target, range)
 	return true
 end
 
-local frame = CreateFrame("Frame")
+local frame = CreateFrame('Frame')
 local function onUpdate(_, elapsed)
 	for object, target in next, activeObjects do
-		local new = lerp(object._value, target, clamp(AMOUNT * elapsed * TARGET_FPS))
+		local new = Lerp(object._value, target, clamp(AMOUNT * elapsed * TARGET_FPS))
 		if isCloseEnough(new, target, object._max - object._min) then
 			new = target
 			activeObjects[object] = nil
@@ -50,7 +50,7 @@ end
 local function bar_SetSmoothedValue(self, value)
 	value = tonumber(value)
 
-	assert(value, "bar_SetSmoothedValue requires (value) to be a number.")
+	assert(value, 'bar_SetSmoothedValue requires (value) to be a number.')
 
 	self._value = self:GetValue()
 	activeObjects[self] = clamp(value, self._min, self._max)
@@ -59,7 +59,7 @@ end
 local function bar_SetSmoothedMinMaxValues(self, min, max)
 	min, max = tonumber(min), tonumber(max)
 
-	assert(min and max, "bar_SetSmoothedMinMaxValues requires (min and max) to be a number.")
+	assert(min and max, 'bar_SetSmoothedMinMaxValues requires (min and max) to be a number.')
 
 	self:SetMinMaxValues_(min, max)
 
@@ -98,8 +98,8 @@ local function SmoothBar(bar)
 		bar.SetMinMaxValues = bar_SetSmoothedMinMaxValues
 	end
 
-	if not frame:GetScript("OnUpdate") then
-		frame:SetScript("OnUpdate", onUpdate)
+	if not frame:GetScript('OnUpdate') then
+		frame:SetScript('OnUpdate', onUpdate)
 	end
 
 	handledObjects[bar] = true
@@ -125,7 +125,7 @@ local function DesmoothBar(bar)
 	end
 
 	if not next(handledObjects) then
-		frame:SetScript("OnUpdate", nil)
+		frame:SetScript('OnUpdate', nil)
 	end
 end
 

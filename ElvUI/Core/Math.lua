@@ -1,34 +1,33 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 
---Lua functions
-local pairs, ipairs = pairs, ipairs
-local next, select, type, unpack = next, select, type, unpack
-local tonumber, tostring = tonumber, tostring
-local abs, ceil, floor, fmod, modf = math.abs, math.ceil, math.floor, math.fmod, math.modf
-local byte, format, gmatch, gsub, strupper, strsub = string.byte, string.format, string.gmatch, string.gsub, strupper, strsub
-local utf8sub = string.utf8sub
-local tinsert, tremove, wipe = table.insert, table.remove, table.wipe
+local tinsert, tremove, next, wipe, ipairs = tinsert, tremove, next, wipe, ipairs
+local select, tonumber, type, unpack, strmatch = select, tonumber, type, unpack, strmatch
+local modf, atan2, floor, abs, sqrt, mod = math.modf, atan2, floor, abs, sqrt, mod
+local format, strsub, strupper, strlen, gsub, gmatch = format, strsub, strupper, strlen, gsub, gmatch
+local tostring, pairs, utf8sub, utf8len = tostring, pairs, string.utf8sub, string.utf8len
 
---WoW API / Variables
 local CreateFrame = CreateFrame
+local GetPlayerFacing = GetPlayerFacing
+local GetPlayerMapPosition = GetPlayerMapPosition
 local GetScreenWidth, GetScreenHeight = GetScreenWidth, GetScreenHeight
 
 E.ShortPrefixValues = {}
 E.ShortPrefixStyles = {
-	["CHINESE"] = {{1e8, "Y"}, {1e4, "W"}},
-	["ENGLISH"] = {{1e12, "T"}, {1e9, "B"}, {1e6, "M"}, {1e3, "K"}},
-	["GERMAN"] = {{1e12, "Bio"}, {1e9, "Mrd"}, {1e6, "Mio"}, {1e3, "Tsd"}},
-	["KOREAN"] = {{1e8, "억"}, {1e4, "만"}, {1e3, "천"}},
-	["METRIC"] = {{1e12, "T"}, {1e9, "G"}, {1e6, "M"}, {1e3, "k"}}
+	TCHINESE = {{1e8, "億"}, {1e4, "萬"}},
+	CHINESE = {{1e8, "亿"}, {1e4, "万"}},
+	ENGLISH = {{1e12, "T"}, {1e9, "B"}, {1e6, "M"}, {1e3, "K"}},
+	GERMAN = {{1e12, "Bio"}, {1e9, "Mrd"}, {1e6, "Mio"}, {1e3, "Tsd"}},
+	KOREAN = {{1e8, "억"}, {1e4, "만"}, {1e3, "천"}},
+	METRIC = {{1e12, "T"}, {1e9, "G"}, {1e6, "M"}, {1e3, "k"}}
 }
 
 E.GetFormattedTextStyles = {
-	["CURRENT"] = "%s",
-	["CURRENT_MAX"] = "%s - %s",
-	["CURRENT_PERCENT"] = "%s - %.1f%%",
-	["CURRENT_MAX_PERCENT"] = "%s - %s | %.1f%%",
-	["PERCENT"] = "%.1f%%",
-	["DEFICIT"] = "-%s"
+	CURRENT = "%s",
+	CURRENT_MAX = "%s - %s",
+	CURRENT_PERCENT = "%s - %.1f%%",
+	CURRENT_MAX_PERCENT = "%s - %s | %.1f%%",
+	PERCENT = "%.1f%%",
+	DEFICIT = "-%s"
 }
 
 function E:BuildPrefixValues()
@@ -38,25 +37,31 @@ function E:BuildPrefixValues()
 	E.ShortValueDec = format("%%.%df", E.db.general.decimalLength or 1)
 
 	for _, style in ipairs(E.ShortPrefixValues) do
-		style[2] = E.ShortValueDec..style[2]
+		style[3] = E.ShortValueDec..style[2]
 	end
 
-	local gftDec = tostring(E.db.general.decimalLength or 1)
+	local dec = tostring(E.db.general.decimalLength or 1)
 	for style, str in pairs(E.GetFormattedTextStyles) do
-		E.GetFormattedTextStyles[style] = gsub(str, "%d", gftDec)
+		E.GetFormattedTextStyles[style] = gsub(str, "%d", dec)
 	end
 end
 
 --Return short value of a number
-function E:ShortValue(v)
-	local abs_v = v < 0 and -v or v
+function E:ShortValue(value, dec)
+	local abs_value = value < 0 and -value or value
+	local decimal = dec and format("%%.%df", tonumber(dec) or 0)
+
 	for i = 1, #E.ShortPrefixValues do
-		if abs_v >= E.ShortPrefixValues[i][1] then
-			return format(E.ShortPrefixValues[i][2], v / E.ShortPrefixValues[i][1])
+		if abs_value >= E.ShortPrefixValues[i][1] then
+			if decimal then
+				return format(decimal..E.ShortPrefixValues[i][2], value / E.ShortPrefixValues[i][1])
+			else
+				return format(E.ShortPrefixValues[i][3], value / E.ShortPrefixValues[i][1])
+			end
 		end
 	end
 
-	return format("%.0f", v)
+	return format("%.0f", value)
 end
 
 function E:IsEvenNumber(num)
@@ -78,12 +83,54 @@ function E:ColorGradient(perc, ...)
 	return r1 + (r2 - r1)*relperc, g1 + (g2 - g1)*relperc, b1 + (b2 - b1)*relperc
 end
 
+-- Text Gradient by Simpy
+function E:TextGradient(text, ...)
+	local msg, total = "", utf8len(text)
+	local idx, num = 0, select('#', ...) / 3
+
+	for i = 1, total do
+		local x = utf8sub(text, i, i)
+		if strmatch(x, "%s") then
+			msg = msg .. x
+			idx = idx + 1
+		else
+			local segment, relperc = modf((idx/total)*num)
+			local r1, g1, b1, r2, g2, b2 = select((segment*3)+1, ...)
+
+			if not r2 then
+				msg = msg .. E:RGBToHex(r1, g1, b1, nil, x.."|r")
+			else
+				msg = msg .. E:RGBToHex(r1+(r2-r1)*relperc, g1+(g2-g1)*relperc, b1+(b2-b1)*relperc, nil, x.."|r")
+				idx = idx + 1
+			end
+		end
+	end
+
+	return msg
+end
+
+-- quick convert function: (nil or table to populate, "ff0000", "00ff00", "0000ff", ...) to get (1,0,0, 0,1,0, 0,0,1, ...)
+function E:HexsToRGBs(rgb, ...)
+	if not rgb then rgb = {} end
+	for i = 1, select("#", ...) do
+		local x, r, g, b = #rgb, E:HexToRGB(select(i, ...))
+		rgb[x + 1], rgb[x + 2], rgb[x + 3] = r / 255, g / 255, b / 255
+	end
+
+	return unpack(rgb)
+end
+
 --Return rounded number
 function E:Round(num, idp)
+	if type(num) ~= "number" then
+		return num, idp
+	end
+
 	if idp and idp > 0 then
 		local mult = 10 ^ idp
 		return floor(num * mult + 0.5) / mult
 	end
+
 	return floor(num + 0.5)
 end
 
@@ -93,25 +140,28 @@ function E:Truncate(v, decimals)
 end
 
 --RGB to Hex
-function E:RGBToHex(r, g, b)
+function E:RGBToHex(r, g, b, header, ending)
 	r = r <= 1 and r >= 0 and r or 1
 	g = g <= 1 and g >= 0 and g or 1
 	b = b <= 1 and b >= 0 and b or 1
-	return format("|cff%02x%02x%02x", r*255, g*255, b*255)
+	return format("%s%02x%02x%02x%s", header or "|cff", r*255, g*255, b*255, ending or "")
 end
 
 --Hex to RGB
 function E:HexToRGB(hex)
-	local rhex, ghex, bhex = strsub(hex, 1, 2), strsub(hex, 3, 4), strsub(hex, 5, 6)
-	return tonumber(rhex, 16), tonumber(ghex, 16), tonumber(bhex, 16)
+	local a, r, g, b = strmatch(hex, "^|?c?(%x%x)(%x%x)(%x%x)(%x?%x?)|?r?$")
+	if not a then return 0, 0, 0, 0 end
+	if b == "" then r, g, b, a = a, r, g, "ff" end
+
+	return tonumber(r, 16), tonumber(g, 16), tonumber(b, 16), tonumber(a, 16)
 end
 
 --From http://wow.gamepedia.com/UI_coordinates
 function E:FramesOverlap(frameA, frameB)
-	if not frameA or not frameB then return	end
+	if not frameA or not frameB then return end
 
 	local sA, sB = frameA:GetEffectiveScale(), frameB:GetEffectiveScale()
-	if not sA or not sB then return	end
+	if not sA or not sB then return end
 
 	local frameALeft, frameARight, frameABottom, frameATop = frameA:GetLeft(), frameA:GetRight(), frameA:GetBottom(), frameA:GetTop()
 	local frameBLeft, frameBRight, frameBBottom, frameBTop = frameB:GetLeft(), frameB:GetRight(), frameB:GetBottom(), frameB:GetTop()
@@ -123,29 +173,31 @@ end
 
 function E:GetScreenQuadrant(frame)
 	local x, y = frame:GetCenter()
-	local screenWidth = GetScreenWidth()
-	local screenHeight = GetScreenHeight()
-
 	if not (x and y) then
 		return "UNKNOWN", frame:GetName()
 	end
 
 	local point
-	if (x > (screenWidth / 3) and x < (screenWidth / 3)*2) and y > (screenHeight / 3)*2 then
+	local width = GetScreenWidth() / 3
+	local height = GetScreenHeight() / 3
+	local dblWidth = width * 2
+	local dblHeight = height * 2
+
+	if x > width and x < dblWidth and y > dblHeight then
 		point = "TOP"
-	elseif x < (screenWidth / 3) and y > (screenHeight / 3)*2 then
+	elseif x < width and y > dblHeight then
 		point = "TOPLEFT"
-	elseif x > (screenWidth / 3)*2 and y > (screenHeight / 3)*2 then
+	elseif x > dblWidth and y > dblHeight then
 		point = "TOPRIGHT"
-	elseif (x > (screenWidth / 3) and x < (screenWidth / 3)*2) and y < (screenHeight / 3) then
+	elseif x > width and x < dblWidth and y < height then
 		point = "BOTTOM"
-	elseif x < (screenWidth / 3) and y < (screenHeight / 3) then
+	elseif x < width and y < height then
 		point = "BOTTOMLEFT"
-	elseif x > (screenWidth / 3)*2 and y < (screenHeight / 3) then
+	elseif x > dblWidth and y < height then
 		point = "BOTTOMRIGHT"
-	elseif x < (screenWidth / 3) and (y > (screenHeight / 3) and y < (screenHeight / 3)*2) then
+	elseif x < width and y > height and y < dblHeight then
 		point = "LEFT"
-	elseif x > (screenWidth / 3)*2 and y < (screenHeight / 3)*2 and y > (screenHeight / 3) then
+	elseif x > dblWidth and y < dblHeight and y > height then
 		point = "RIGHT"
 	else
 		point = "CENTER"
@@ -154,9 +206,9 @@ function E:GetScreenQuadrant(frame)
 	return point
 end
 
-function E:GetXYOffset(position, override)
+function E:GetXYOffset(position, forcedX, forcedY)
 	local default = E.Spacing
-	local x, y = override or default, override or default
+	local x, y = forcedX or default, forcedY or forcedX or default
 
 	if position == "TOP" then
 		return 0, y
@@ -216,7 +268,7 @@ function E:ShortenString(str, numChars, dots)
 		local len, pos = 0, 1
 		while pos <= bytes do
 			len = len + 1
-			local c = byte(str, pos)
+			local c = str:byte(pos)
 			if c > 0 and c <= 127 then
 				pos = pos + 1
 			elseif c >= 192 and c <= 223 then
@@ -250,35 +302,20 @@ function E:AbbreviateString(str, allUpper)
 	return newString
 end
 
-function E:WaitFunc(elapsed)
-	local total = #E.WaitTable
+function E:WaitFunc(elapse)
 	local i = 1
-
-	while i <= total do
+	while i <= #E.WaitTable do
 		local data = E.WaitTable[i]
-
-		if data[1] > elapsed then
-			data[1] = data[1] - elapsed
-			i = i + 1
+		if data[1] > elapse then
+			data[1], i = data[1] - elapse, i + 1
 		else
 			tremove(E.WaitTable, i)
+			data[2](unpack(data[3]))
 
-			if data[3] then
-				if data[3] > 1 then
-					data[2](unpack(data[4], 1, data[3]))
-				else
-					data[2](data[4])
-				end
-			else
-				data[2]()
+			if #E.WaitTable == 0 then
+				E.WaitFrame:Hide()
 			end
-
-			total = total - 1
 		end
-	end
-
-	if #E.WaitTable == 0 then
-		self:Hide()
 	end
 end
 
@@ -288,50 +325,41 @@ E.WaitFrame:SetScript("OnUpdate", E.WaitFunc)
 
 --Add time before calling a function
 function E:Delay(delay, func, ...)
-	if type(delay) ~= "number" then
-		error(format("Bad argument #1 to 'Delay' (number expected, got %s)", delay ~= nil and type(delay) or "no value"), 2)
-	elseif type(func) ~= "function" then
-		error(format("Bad argument #2 to 'Delay' (function expected, got %s)", func ~= nil and type(func) or "no value"), 2)
+	if type(delay) ~= "number" or type(func) ~= "function" then
+		return false
 	end
 
-	local argCount = select("#", ...)
+	if delay < 0.01 then delay = 0.01 end
 
-	tinsert(E.WaitTable, {
-		delay,
-		func,
-		argCount > 0 and argCount,
-		argCount == 1 and (...) or argCount > 1 and {...}
-	})
-
+	tinsert(E.WaitTable,{delay,func,{...}})
 	E.WaitFrame:Show()
 
 	return true
 end
 
 function E:StringTitle(str)
-	return gsub(str, "^%l", strupper, 1)
+	return gsub(str, "(.)", strupper, 1)
 end
 
+E.TimeColors = {} -- 0:days 1:hours 2:minutes 3:seconds 4:expire 5:mmss 6:hhmm 7:modRate 8:targetAura 9:expiringAura 10-14:targetAura
+E.TimeIndicatorColors = {} -- same color indexes
 E.TimeThreshold = 3
 
-E.TimeColors = { --aura time colors
-	[0] = "|cffeeeeee", --days
-	[1] = "|cffeeeeee", --hours
-	[2] = "|cffeeeeee", --minutes
-	[3] = "|cffeeeeee", --seconds
-	[4] = "|cfffe0000", --expire (fade timer)
-	[5] = "|cff909090", --mmss
-	[6] = "|cff707070", --hhmm
-}
+for i = 0, 14 do
+	E.TimeColors[i] = {r = 1, g = 1, b = 1}
+	E.TimeIndicatorColors[i] = '|cFFffffff'
+end
 
 E.TimeFormats = { -- short / indicator color
-	[0] = {"%dd", "%d%sd|r"},
-	[1] = {"%dh", "%d%sh|r"},
-	[2] = {"%dm", "%d%sm|r"},
-	[3] = {"%ds", "%d%ss|r"},
-	[4] = {"%.1fs", "%.1f%ss|r"},
-	[5] = {"%d:%02d", "%d%s:|r%02d"}, --mmss
-	[6] = {"%d:%02d", "%d%s:|r%02d"}, --hhmm
+	-- special options (3, 4): rounding
+	[0] = {'%dd', '%d%sd|r', '%.0fd', '%.0f%sd|r'},
+	[1] = {'%dh', '%d%sh|r', '%.0fh', '%.0f%sh|r'},
+	[2] = {'%dm', '%d%sm|r', '%.0fm', '%.0f%sm|r'},
+	-- special options (3, 4): show seconds
+	[3] = {'%d', '%d', '%ds', '%d%ss|r'},
+	[4] = {'%.1f', '%.1f', '%.1fs', '%.1f%ss|r'},
+
+	[5] = {'%d:%02d', '%d%s:|r%02d'}, -- mmss
 }
 
 for _, x in pairs(E.TimeFormats) do
@@ -339,71 +367,77 @@ for _, x in pairs(E.TimeFormats) do
 	x[4] = gsub(x[2], "%%ss", "%%s") -- 2 without seconds
 end
 
-E.TimeIndicatorColors = {
-	[0] = "|cff00b3ff",
-	[1] = "|cff00b3ff",
-	[2] = "|cff00b3ff",
-	[3] = "|cff00b3ff",
-	[4] = "|cff00b3ff",
-	[5] = "|cff00b3ff",
-	[6] = "|cff00b3ff",
-}
+E.TimeFormats[6] = E:CopyTable({}, E.TimeFormats[5]) -- hhmm
+E.TimeFormats[7] = E:CopyTable({}, E.TimeFormats[3]) -- modRate
 
-local DAY, HOUR, MINUTE = 86400, 3600, 60 --used for calculating aura time text
-local DAYISH, HOURISH, MINUTEISH = HOUR * 23.5, MINUTE * 59.5, 59.5 --used for caclculating aura time at transition points
-local HALFDAYISH, HALFHOURISH, HALFMINUTEISH = DAY/2 + 0.5, HOUR/2 + 0.5, MINUTE/2 + 0.5 --used for calculating next update times
-
--- will return the the value to display, the formatter id to use and calculates the next update for the Aura
-function E:GetTimeInfo(s, threshhold, hhmm, mmss)
-	if s < MINUTE then
-		if s >= threshhold then
-			return floor(s), 3, 0.51
-		else
-			return s, 4, 0.051
-		end
-	elseif s < HOUR then
-		if mmss and s < mmss then
-			return s/MINUTE, 5, 0.51, s%MINUTE
-		else
-			local minutes = floor((s/MINUTE)+.5)
-			if hhmm and s < (hhmm * MINUTE) and 60 < minutes then
-				return s/HOUR, 6, minutes > 1 and (s - (minutes*MINUTE - HALFMINUTEISH)) or (s - MINUTEISH), minutes%MINUTE
+do
+	local YEAR, DAY, HOUR, MINUTE = 31557600, 86400, 3600, 60
+	function E:GetTimeInfo(sec, threshold, hhmm, mmss, modRate)
+		if sec < MINUTE then
+			if modRate then
+				return sec, 7, 0.5 / modRate
+			elseif sec > threshold then
+				return sec, 3, 0.5
 			else
-				return ceil(s / MINUTE), 2, minutes > 1 and (s - (minutes*MINUTE - HALFMINUTEISH)) or (s - MINUTEISH)
+				return sec, 4, 0.1
 			end
-		end
-	elseif s < DAY then
-		if mmss and s < mmss then
-			return s/MINUTE, 5, 0.51, s%MINUTE
+		elseif mmss and sec < mmss then
+			return sec / MINUTE, 5, 1, mod(sec, MINUTE)
+		elseif hhmm and sec < (hhmm * MINUTE) then
+			return sec / HOUR, 6, 30, mod(sec, HOUR) / MINUTE
+		elseif sec < HOUR then
+			local mins = mod(sec, HOUR) / MINUTE
+			return mins, 2, mins > 2 and 30 or 1
+		elseif sec < DAY then
+			local hrs = mod(sec, DAY) / HOUR
+			return hrs, 1, hrs > 1 and 60 or 30
 		else
-			local minutes = floor((s/MINUTE)+.5)
-			if hhmm and s < (hhmm * MINUTE) and 60 < minutes then
-				return s/HOUR, 6, minutes > 1 and (s - (minutes*MINUTE - HALFMINUTEISH)) or (s - MINUTEISH), minutes%MINUTE
-			else
-				local hours = floor((s/HOUR)+.5)
-				return ceil(s / HOUR), 1, hours > 1 and (s - (hours*HOUR - HALFHOURISH)) or (s - HOURISH)
-			end
+			local days = mod(sec, YEAR) / DAY
+			return days, 0, days > 1 and 120 or 60
 		end
-	else
-		local days = floor((s/DAY)+.5)
-		return ceil(s / DAY), 0, days > 1 and (s - (days*DAY - HALFDAYISH)) or (s - DAYISH)
 	end
+end
+
+function E:GetDistance(unit1, unit2)
+	local x1, y1, _, map1 = GetPlayerMapPosition(unit1)
+	if not x1 then return end
+
+	local x2, y2, _, map2 = GetPlayerMapPosition(unit2)
+	if not x2 then return end
+
+	if map1 ~= map2 then return end
+
+	local dX = x2 - x1
+	local dY = y2 - y1
+	local distance = sqrt(dX * dX + dY * dY)
+	return distance, atan2(dY, dX) - GetPlayerFacing()
+end
+
+-- Taken from FormattingUtil.lua and modified by Simpy
+function E:FormatLargeNumber(amount, seperator)
+	local num, len = '', strlen(amount)
+	local trd = len % 3
+
+	if not seperator then seperator = ',' end
+	for i=4, len, 3 do num = seperator..strsub(amount, -(i - 1), -(i - 3))..num end
+
+	return strsub(amount, 1, (trd == 0) and 3 or trd)..num
 end
 
 --Money text formatting, code taken from Scrooge by thelibrarian (http://www.wowace.com/addons/scrooge/)
 local COLOR_COPPER, COLOR_SILVER, COLOR_GOLD = "|cffeda55f", "|cffc7c7cf", "|cffffd700"
-local ICON_COPPER = "|TInterface\\MoneyFrame\\UI-CopperIcon:12:12|t"
-local ICON_SILVER = "|TInterface\\MoneyFrame\\UI-SilverIcon:12:12|t"
-local ICON_GOLD = "|TInterface\\MoneyFrame\\UI-GoldIcon:12:12|t"
+local ICON_COPPER = E:TextureString(E.Media.Textures.Coins, ':14:14:0:0:64:32:0:21:1:20')
+local ICON_GOLD = E:TextureString(E.Media.Textures.Coins, ':14:14:0:0:64:32:22:42:1:20')
+local ICON_SILVER = E:TextureString(E.Media.Textures.Coins, ':14:14:0:0:64:32:43:64:1:20')
 function E:FormatMoney(amount, style, textonly)
 	local coppername = textonly and L["copperabbrev"] or ICON_COPPER
 	local silvername = textonly and L["silverabbrev"] or ICON_SILVER
 	local goldname = textonly and L["goldabbrev"] or ICON_GOLD
 
 	local value = abs(amount)
-	local gold = floor(value / 10000)
-	local silver = floor(fmod(value / 100, 100))
-	local copper = floor(fmod(value, 100))
+	local gold = floor(value * 0.0001)
+	local silver = floor(mod(value * 0.01, 100))
+	local copper = floor(mod(value, 100))
 
 	if not style or style == "SMART" then
 		local str = ""

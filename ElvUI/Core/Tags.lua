@@ -1,20 +1,19 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
+local NP = E:GetModule('NamePlates')
 local ElvUF = E.oUF
+local Tags = ElvUF.Tags
 
+local LCS = E.Libs.LCS
+-- local RangeCheck = E.Libs.RangeCheck
 local Translit = E.Libs.Translit
-local translitMark = "!"
+local translitMark = '!'
 
---Lua functions
-local select = select
-local tonumber = tonumber
-local find = string.find
-local floor = math.floor
-local format = string.format
-local gmatch = gmatch
-local gsub = gsub
-local match = string.match
-local utf8lower = string.utf8lower
-local utf8sub = string.utf8sub
+local _G = _G
+local next, type, gmatch, gsub, format = next, type, gmatch, gsub, format
+local ipairs, pairs, wipe, floor, ceil = ipairs, pairs, wipe, floor, ceil
+local strfind, strmatch, strlower, strsplit = strfind, strmatch, strlower, strsplit
+local utf8lower, utf8sub, utf8len = string.utf8lower, string.utf8sub, string.utf8len
+
 --WoW API / Variables
 local GetGuildInfo = GetGuildInfo
 local GetInstanceInfo = GetInstanceInfo
@@ -52,9 +51,35 @@ local DEFAULT_AFK_MESSAGE = DEFAULT_AFK_MESSAGE
 local SPELL_POWER_MANA = SPELL_POWER_MANA
 local PVP = PVP
 
-------------------------------------------------------------------------
---	Tags
-------------------------------------------------------------------------
+-- GLOBALS: ElvUF, Hex, _TAGS, _COLORS
+
+local RefreshNewTags -- will turn true at EOF
+function E:AddTag(tagName, eventsOrSeconds, func, block)
+	if block then return end -- easy killer for tags
+
+	if type(eventsOrSeconds) == 'number' then
+		Tags.OnUpdateThrottle[tagName] = eventsOrSeconds
+	else
+		Tags.Events[tagName] = (E.Retail and gsub(eventsOrSeconds, 'UNIT_HEALTH_FREQUENT', 'UNIT_HEALTH')) or gsub(eventsOrSeconds, 'UNIT_HEALTH([^%s_]?)', 'UNIT_HEALTH_FREQUENT%1')
+	end
+
+	Tags.Methods[tagName] = func
+
+	if RefreshNewTags then
+		Tags:RefreshEvents(tagName)
+		Tags:RefreshMethods(tagName)
+	end
+end
+
+function E:CallTag(tag, ...)
+	local func = ElvUF.Tags.Methods[tag]
+	if func then
+		return func(...)
+	end
+end
+
+--Expose local functions for plugins onto this table
+E.TagFunctions = {}
 
 local function abbrev(name)
 	local letters, lastWord = "", match(name, ".+%s(.+)$")
@@ -728,11 +753,22 @@ E.TagInfo = {
 	["arena:number"] = {category = "Miscellaneous", description = "Displays the arena number 1-5"},
 }
 
-function E:AddTagInfo(tagName, category, description, order)
-	if order then order = tonumber(order) + 10 end
+function E:AddTagInfo(tagName, category, description, order, hidden)
+	if type(order) == 'number' then order = order + 10 else order = nil end
 
-	E.TagInfo[tagName] = E.TagInfo[tagName] or {}
-	E.TagInfo[tagName].category = category or "Miscellaneous"
-	E.TagInfo[tagName].description = description or ""
-	E.TagInfo[tagName].order = order or nil
+	local info = E.TagInfo[tagName]
+	if not info then
+		info = {}
+
+		E.TagInfo[tagName] = info
+	end
+
+	info.category = category or 'Miscellaneous'
+	info.description = description or ''
+	info.order = order or nil
+	info.hidden = hidden or nil
+
+	return info
 end
+
+RefreshNewTags = true

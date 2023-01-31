@@ -1,12 +1,12 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
+local LCS = E.Libs.LCS
 
---Lua functions
 local _G = _G
 local wipe, date = wipe, date
 local format, select, type, ipairs, pairs = format, select, type, ipairs, pairs
 local strmatch, strfind, tonumber, tostring = strmatch, strfind, tonumber, tostring
 local tinsert, tremove = table.insert, table.remove
---WoW API / Variables
+
 local GetActiveTalentGroup = GetActiveTalentGroup
 local GetCVarBool = GetCVarBool
 local GetFunctionCPUUsage = GetFunctionCPUUsage
@@ -16,14 +16,39 @@ local UnitGroupRolesAssigned = UnitGroupRolesAssigned
 local UnitHasVehicleUI = UnitHasVehicleUI
 local IsInInstance = IsInInstance
 local IsSpellKnown = IsSpellKnown
+local GetSpecialization = LCS.GetSpecialization
+local GetSpecializationRole = LCS.GetSpecializationRole
 
 local MAX_TALENT_TABS = MAX_TALENT_TABS
 local NONE = NONE
 
+local PLAYER_FACTION_GROUP = PLAYER_FACTION_GROUP
+local FACTION_HORDE = FACTION_HORDE
+local FACTION_ALLIANCE = FACTION_ALLIANCE
+
+function E:ClassColor(class, usePriestColor)
+	if not class then return end
+
+	local color = (CUSTOM_CLASS_COLORS and CUSTOM_CLASS_COLORS[class]) or RAID_CLASS_COLORS[class]
+	if type(color) ~= "table" then return end
+
+	if not color.colorStr then
+		color.colorStr = E:RGBToHex(color.r, color.g, color.b, "ff")
+	elseif strlen(color.colorStr) == 6 then
+		color.colorStr = "ff"..color.colorStr
+	end
+
+	if (usePriestColor and class == "PRIEST") and tonumber(color.colorStr, 16) > tonumber(E.PriestColors.colorStr, 16) then
+		return E.PriestColors
+	else
+		return color
+	end
+end
+
 do -- other non-english locales require this
 	E.UnlocalizedClasses = {}
-	for k, v in pairs(_G.LOCALIZED_CLASS_NAMES_MALE) do E.UnlocalizedClasses[v] = k end
-	for k, v in pairs(_G.LOCALIZED_CLASS_NAMES_FEMALE) do E.UnlocalizedClasses[v] = k end
+	for k, v in pairs(LOCALIZED_CLASS_NAMES_MALE) do E.UnlocalizedClasses[v] = k end
+	for k, v in pairs(LOCALIZED_CLASS_NAMES_FEMALE) do E.UnlocalizedClasses[v] = k end
 
 	function E:UnlocalizedClassName(className)
 		return (className and className ~= "") and E.UnlocalizedClasses[className]
@@ -53,35 +78,22 @@ function E:ScanTooltipTextures(clean, grabTextures)
 	return textures
 end
 
-function E:CheckTalentTree(tree)
-	local talentTree = self.TalentTree
-	if not talentTree then return false end
-
-	if type(tree) == "number" then
-		return tree == talentTree
-	elseif type(tree) == "table" then
-		for _, index in ipairs(tree) do
-			if index == talentTree then
-				return true
-			end
+function E:GetThreatStatusColor(status, nothreat)
+	local color = ElvUF.colors.threat[status]
+	if color then
+		return color.r, color.g, color.b, color.a or 1
+	elseif nothreat then
+		if status == -1 then -- how or why?
+			return 1, 1, 1, 1
+		else
+			return .7, .7, .7, 1
 		end
 	end
 end
 
 function E:GetPlayerRole()
-	local isTank, isHealer, isDamage = UnitGroupRolesAssigned("player")
-
-	if isTank or isHealer or isDamage then
-		return isTank and "TANK" or isHealer and "HEALER" or isDamage and "DAMAGER"
-	else
-		if self.HealingClasses[self.myclass] ~= nil and self:CheckTalentTree(self.HealingClasses[E.myclass]) then
-			return "HEALER"
-		elseif E.Role == "Tank" then
-			return "TANK"
-		else
-			return "DAMAGER"
-		end
-	end
+	local role = UnitGroupRolesAssigned("player") or "NONE"
+	return (role == "NONE" and E.myspec and GetSpecializationRole(E.myspec)) or role
 end
 
 function E:GetTalentSpecInfo(isInspect)
@@ -108,41 +120,9 @@ function E:GetTalentSpecInfo(isInspect)
 	return specIdx, specName, specIcon
 end
 
-function E:CheckRole(event)
-	local talentTree = self:GetTalentSpecInfo()
-	local role
-
-	if type(self.ClassRole[self.myclass]) == "string" then
-		role = self.ClassRole[self.myclass]
-	elseif talentTree then
-		if self.myclass == "DRUID" and talentTree == 2 then
-			role = select(5, GetTalentInfo(talentTree, 22)) > 0 and "Tank" or "Melee"
-		elseif self.myclass == "DEATHKNIGHT" and talentTree == 2 then
-			role = select(5, GetTalentInfo(talentTree, 25)) > 0 and "Tank" or "Melee"
-		else
-			role = self.ClassRole[self.myclass][talentTree]
-		end
-	end
-
-	if not role then role = "Melee" end
-
-	if self.Role ~= role then
-		self.Role = role
-		self.TalentTree = talentTree
-		self.callbacks:Fire("RoleChanged")
-	end
-
-	if E.myclass == "SHAMAN" then
-		if talentTree == 3 and IsSpellKnown(51886) then
-			self.DispelClasses[self.myclass].Curse = true
-		else
-			self.DispelClasses[self.myclass].Curse = false
-		end
-	end
-
-	if event == "SPELL_UPDATE_USABLE" then
-		self:UnregisterEvent(event)
-	end
+function E:CheckRole()
+	E.myspec = GetSpecialization()
+	E.myrole = E:GetPlayerRole()
 end
 
 function E:IsDispellableByMe(debuffType)
@@ -152,25 +132,34 @@ function E:IsDispellableByMe(debuffType)
 end
 
 do
-	local LBF = E.Libs.LBF
-	local LBFGroupToTableElement = {
-		["ActionBars"] = "actionbar",
-		["Auras"] = "auras"
+	local Masque = E.Libs.Masque
+	local MasqueGroupState = {}
+	local MasqueGroupToTableElement = {
+		["ActionBars"] = {"actionbar", "actionbars"},
+		["Pet Bar"] = {"actionbar", "petBar"},
+		["Stance Bar"] = {"actionbar", "stanceBar"},
+		["Buffs"] = {"auras", "buffs"},
+		["Debuffs"] = {"auras", "debuffs"},
 	}
 
-	function E:LBFCallback(SkinID, _, _, Group)
+	function E:MasqueCallback(Group, _, _, _, _, Disabled)
 		if not E.private then return end
-
-		local element = LBFGroupToTableElement[Group]
+		local element = MasqueGroupToTableElement[Group]
 		if element then
-			if E.private[element].lbf.enable then
-				E.private[element].lbf.skin = SkinID
+			if Disabled then
+				if E.private[element[1]].masque[element[2]] and MasqueGroupState[Group] == "enabled" then
+					E.private[element[1]].masque[element[2]] = false
+					E:StaticPopup_Show("CONFIG_RL")
+				end
+				MasqueGroupState[Group] = "disabled"
+			else
+				MasqueGroupState[Group] = "enabled"
 			end
 		end
 	end
 
-	if LBF then
-		LBF:RegisterSkinCallback("ElvUI", E.LBFCallback, E)
+	if Masque then
+		Masque:Register("ElvUI", E.MasqueCallback)
 	end
 end
 
@@ -393,18 +382,186 @@ function E:RequestBGInfo()
 end
 
 function E:PLAYER_ENTERING_WORLD()
-	if not self.MediaUpdated then
-		self:UpdateMedia()
-		self.MediaUpdated = true
+	E:CheckRole()
+
+	if not ElvDB.DisabledAddOns then
+		ElvDB.DisabledAddOns = {}
 	end
 
-	local _, instanceType = IsInInstance()
+	E:CheckIncompatible()
+
+	if not E.MediaUpdated then
+		E:UpdateMedia()
+		E.MediaUpdated = true
+	end
+
+	-- Blizzard will set this value to int(50/CVar cameraDistanceMax)+1 at logout if it is manually set higher than that
+	if E.db.general.lockCameraDistanceMax then
+		SetCVar("cameraDistanceMax", E.db.general.cameraDistanceMax)
+	end
+
+	local _, instanceType = GetInstanceInfo()
 	if instanceType == "pvp" then
-		self.BGTimer = self:ScheduleRepeatingTimer("RequestBGInfo", 5)
-		self:RequestBGInfo()
-	elseif self.BGTimer then
-		self:CancelTimer(self.BGTimer)
-		self.BGTimer = nil
+		E.BGTimer = E:ScheduleRepeatingTimer("RequestBGInfo", 5)
+		E:RequestBGInfo()
+	elseif E.BGTimer then
+		E:CancelTimer(E.BGTimer)
+		E.BGTimer = nil
+	end
+end
+
+function E:PLAYER_REGEN_ENABLED()
+	if E.ShowOptions then
+		E:ToggleOptionsUI()
+
+		E.ShowOptions = nil
+	end
+end
+
+function E:PLAYER_REGEN_DISABLED()
+	local err
+
+	if IsAddOnLoaded("ElvUI_OptionsUI") then
+		local ACD = E.Libs.AceConfigDialog
+		if ACD and ACD.OpenFrames and ACD.OpenFrames.ElvUI then
+			ACD:Close("ElvUI")
+			err = true
+		end
+	end
+
+	if E.CreatedMovers then
+		for name in pairs(E.CreatedMovers) do
+			local mover = _G[name]
+			if mover and mover:IsShown() then
+				mover:Hide()
+				err = true
+			end
+		end
+	end
+
+	if err then
+		E:Print(ERR_NOT_IN_COMBAT)
+	end
+end
+
+function E:XPIsUserDisabled()
+	return IsXPUserDisabled()
+end
+
+function E:XPIsLevelMax()
+	return E.mylevel >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()] or E:XPIsUserDisabled()
+end
+
+function E:GetGroupUnit(unit)
+	if UnitIsUnit(unit, "player") then return end
+	if strfind(unit, "party") or strfind(unit, "raid") then
+		return unit
+	end
+
+	-- returns the unit as raid# or party# when grouped
+	if UnitInParty(unit) or UnitInRaid(unit) then
+		local isInRaid = (GetNumRaidMembers() > 1)
+		for i = 1, GetNumPartyMembers() do
+			local groupUnit = (isInRaid and "raid" or "party")..i
+			if UnitIsUnit(unit, groupUnit) then
+				return groupUnit
+			end
+		end
+	end
+end
+
+function E:GetUnitBattlefieldFaction(unit)
+	local englishFaction, localizedFaction = UnitFactionGroup(unit)
+
+	-- this might be a rated BG or wargame and if so the player"s faction might be altered
+	if unit == "player" then
+		englishFaction = PLAYER_FACTION_GROUP[GetBattlefieldArenaFaction()]
+		localizedFaction = (englishFaction == "Alliance" and FACTION_ALLIANCE) or FACTION_HORDE
+	end
+
+	return englishFaction, localizedFaction
+end
+
+function E:PositionGameMenuButton()
+	GameMenuFrame:Height(GameMenuFrame:GetHeight() + GameMenuButtonLogout:GetHeight() + 1)
+
+	GameMenuButtonRatings:HookScript("OnShow", function(self)
+		GameMenuFrame:Height(GameMenuFrame:GetHeight() + self:GetHeight())
+	end)
+	GameMenuButtonRatings:HookScript("OnHide", function(self)
+		GameMenuFrame:Height(GameMenuFrame:GetHeight() - self:GetHeight())
+	end)
+
+	local button = GameMenuFrame[E.name]
+	button:SetFormattedText("%s%s|r", E.media.hexvaluecolor, E.name)
+
+	local _, relTo, _, _, offY = GameMenuButtonLogout:GetPoint()
+	if relTo ~= button then
+		button:ClearAllPoints()
+		button:Point("TOPLEFT", relTo, "BOTTOMLEFT", 0, -1)
+		GameMenuButtonLogout:ClearAllPoints()
+		GameMenuButtonLogout:Point("TOPLEFT", button, "BOTTOMLEFT", 0, offY)
+	end
+end
+
+local titanGrip
+local qualityColors = {}
+
+do
+	for i = 0, 7 do
+		qualityColors[i] = {GetItemQualityColor(i)}
+	end
+
+	if E.myclass == "WARRIOR" then
+		local GetTalentInfo = GetTalentInfo
+
+		local titanGripCheck = CreateFrame("Frame")
+		titanGripCheck:RegisterEvent("PLAYER_ENTERING_WORLD")
+		titanGripCheck:RegisterEvent("SPELL_UPDATE_USABLE")
+		titanGripCheck:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+		titanGripCheck:RegisterEvent("CHARACTER_POINTS_CHANGED")
+		titanGripCheck:SetScript("OnEvent", function(self, event, ...)
+			titanGrip = select(5, GetTalentInfo(2, 27)) == 1
+
+			if event == "PLAYER_ENTERING_WORLD" or event == "SPELL_UPDATE_USABLE" then
+				self:UnregisterEvent(event)
+			end
+		end)
+	end
+end
+
+function E:GetAverageItemLevel()
+	local items = 16
+	local ilvl = 0
+	local colorCount, sumR, sumG, sumB = 0, 0, 0, 0
+
+	for slotID = 1, 18 do
+		if slotID ~= INVSLOT_BODY then
+			local itemLink = GetInventoryItemLink("player", slotID)
+
+			if itemLink then
+				local _, _, quality, itemLevel, _, _, _, _, itemEquipLoc = GetItemInfo(itemLink)
+
+				if itemLevel then
+					ilvl = ilvl + itemLevel
+
+					colorCount = colorCount + 1
+					sumR = sumR + qualityColors[quality][1]
+					sumG = sumG + qualityColors[quality][2]
+					sumB = sumB + qualityColors[quality][3]
+
+					if slotID == INVSLOT_MAINHAND and (itemEquipLoc ~= "INVTYPE_2HWEAPON" or titanGrip) then
+						items = 17
+					end
+				end
+			end
+		end
+	end
+
+	if colorCount == 0 then
+		return ilvl / items, 1, 1, 1
+	else
+		return ilvl / items, (sumR / colorCount), (sumG / colorCount), (sumB / colorCount)
 	end
 end
 
@@ -413,21 +570,19 @@ function E:PLAYER_LEVEL_UP(_, level)
 end
 
 function E:LoadAPI()
-	self:RegisterEvent("PLAYER_LEVEL_UP")
-	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-	self:RegisterEvent("SPELL_UPDATE_USABLE", "CheckRole")
-	self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED", "CheckRole")
-	self:RegisterEvent("PLAYER_TALENT_UPDATE", "CheckRole")
---	self:RegisterEvent("CHARACTER_POINTS_CHANGED", "CheckRole")
---	self:RegisterEvent("UNIT_INVENTORY_CHANGED", "CheckRole")
---	self:RegisterEvent("UPDATE_BONUS_ACTIONBAR", "CheckRole")
-	self:RegisterEvent("UNIT_ENTERED_VEHICLE", "EnterVehicleHideFrames")
-	self:RegisterEvent("UNIT_EXITED_VEHICLE", "ExitVehicleShowFrames")
-	self:RegisterEvent("UI_SCALE_CHANGED", "PixelScaleChanged")
-
-	if date("%d%m") ~= "0104" then
-		E.global.aprilFools = nil
-	end
+	E:RegisterEvent("PLAYER_LEVEL_UP")
+	E:RegisterEvent("PLAYER_ENTERING_WORLD")
+	E:RegisterEvent("PLAYER_REGEN_ENABLED")
+	E:RegisterEvent("PLAYER_REGEN_DISABLED")
+	E:RegisterEvent("SPELL_UPDATE_USABLE", "CheckRole")
+	E:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED", "CheckRole")
+	E:RegisterEvent("PLAYER_TALENT_UPDATE", "CheckRole")
+	E:RegisterEvent("CHARACTER_POINTS_CHANGED", "CheckRole")
+	E:RegisterEvent("UNIT_INVENTORY_CHANGED", "CheckRole")
+	E:RegisterEvent("UPDATE_BONUS_ACTIONBAR", "CheckRole")
+	E:RegisterEvent("UNIT_ENTERED_VEHICLE", "EnterVehicleHideFrames")
+	E:RegisterEvent("UNIT_EXITED_VEHICLE", "ExitVehicleShowFrames")
+	E:RegisterEvent("UI_SCALE_CHANGED", "PixelScaleChanged")
 
 	do -- setup cropIcon texCoords
 		local opt = E.db.general.cropIcon
@@ -440,4 +595,16 @@ function E:LoadAPI()
 			end
 		end
 	end
+
+	local GameMenuButton = CreateFrame("Button", nil, GameMenuFrame, "GameMenuButtonTemplate")
+	GameMenuButton:SetScript("OnClick", function()
+		E:ToggleOptionsUI() --We already prevent it from opening in combat
+		if not InCombatLockdown() then
+			HideUIPanel(GameMenuFrame)
+		end
+	end)
+	GameMenuFrame[E.name] = GameMenuButton
+
+	GameMenuButton:Size(GameMenuButtonLogout:GetWidth(), GameMenuButtonLogout:GetHeight())
+	E:PositionGameMenuButton()
 end
