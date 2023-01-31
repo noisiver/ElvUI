@@ -16,12 +16,12 @@ function B:SetObjectiveFrameAutoHide()
 	end
 end
 
-function B:SetWatchFrameHeight()
+function B:SetObjectiveFrameHeight()
 	local top = WatchFrame:GetTop() or 0
 	local screenHeight = GetScreenHeight()
 	local gapFromTop = screenHeight - top
 	local maxHeight = screenHeight - gapFromTop
-	local watchFrameHeight = min(maxHeight, E.db.general.watchFrameHeight)
+	local watchFrameHeight = min(maxHeight, E.db.general.objectiveFrameHeight)
 
 	WatchFrame:Height(watchFrameHeight)
 end
@@ -36,7 +36,7 @@ function B:MoveWatchFrame()
 
 	WatchFrame:ClearAllPoints()
 	WatchFrame:SetPoint("TOP", WatchFrameHolder, "TOP")
-	B:SetWatchFrameHeight()
+	B:SetObjectiveFrameHeight()
 	WatchFrame:SetClampedToScreen(false)
 
 	hooksecurefunc(WatchFrame, "SetPoint", function(_, _, parent)

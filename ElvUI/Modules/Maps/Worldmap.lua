@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local M = E:GetModule("WorldMap")
 
 --Lua functions
@@ -234,8 +234,8 @@ function M:Initialize()
 		end)
 
 		DropDownList1:HookScript("OnShow", function(self)
-			if self:GetScale() ~= UIParent:GetScale() then
-				self:SetScale(UIParent:GetScale())
+			if self:GetScale() ~= E.uiscale then
+				self:SetScale(E.uiscale)
 			end
 		end)
 

@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local DT = E:GetModule("DataTexts")
 
 --Lua functions
@@ -16,7 +16,7 @@ local function OnEvent(self)
 	self.text:SetFormattedText(displayNumberString, GetTotalAchievementPoints())
 end
 
-local function OnClick()
+local function Click()
 	ToggleAchievementFrame()
 end
 
@@ -29,4 +29,4 @@ local function ValueColorUpdate(hex)
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("Achievement", {"ACHIEVEMENT_EARNED"}, OnEvent, nil, OnClick, nil, nil, ACHIEVEMENTS)
+DT:RegisterDatatext("Achievement", nil, {"ACHIEVEMENT_EARNED"}, OnEvent, nil, Click, nil, nil, ACHIEVEMENTS)

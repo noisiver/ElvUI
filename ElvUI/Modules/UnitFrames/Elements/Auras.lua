@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local UF = E:GetModule("UnitFrames")
 local LSM = E.Libs.LSM
 
@@ -132,6 +132,14 @@ function UF:UpdateAuraCooldownPosition(button)
 	end
 
 	button.needsUpdateCooldownPosition = nil
+end
+
+function UF:Configure_AllAuras(frame)
+	if frame.Buffs then frame.Buffs:ClearAllPoints() end
+	if frame.Debuffs then frame.Debuffs:ClearAllPoints() end
+
+	UF:Configure_Auras(frame, 'Buffs')
+	UF:Configure_Auras(frame, 'Debuffs')
 end
 
 function UF:Configure_Auras(frame, auraType)

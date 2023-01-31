@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local UF = E:GetModule("UnitFrames")
 local _, ns = ...
 local ElvUF = ns.oUF
@@ -38,7 +38,7 @@ function UF:Construct_FocusFrame(frame)
 	frame.Cutaway = self:Construct_Cutaway(frame)
 
 	frame.customTexts = {}
-	frame:Point("BOTTOMRIGHT", ElvUF_Target, "TOPRIGHT", 0, 220)
+	frame:Point("BOTTOM", E.UIParent, "BOTTOM", 342, 59)
 	E:CreateMover(frame, frame:GetName().."Mover", L["Focus Frame"], nil, nil, nil, "ALL,SOLO", nil, "unitframe,focus,generalGroup")
 
 	frame.unitframeType = "focus"

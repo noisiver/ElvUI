@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local DT = E:GetModule("DataTexts")
 
 --Lua functions
@@ -131,7 +131,7 @@ local function BuildDataTable(total)
 	end
 end
 
-local function OnClick(_, btn)
+local function Click(_, btn)
 	if btn == "RightButton" then
 		DT.tooltip:Hide()
 
@@ -270,8 +270,13 @@ local function OnEvent(self, event, message)
 	end
 
 	local _, onlineFriends = GetNumFriends()
+	local _, numBNetOnline = BNGetNumFriends()
 
-	self.text:SetFormattedText(displayString, onlineFriends)
+	if E.global.datatexts.settings.Friends.NoLabel then
+		self.text:SetFormattedText(displayString, onlineFriends)
+	else
+		self.text:SetFormattedText(displayString, E.global.datatexts.settings.Friends.Label ~= '' and E.global.datatexts.settings.Friends.Label or FRIENDS..': ', onlineFriends + numBNetOnline)
+	end
 
 	-- force update when showing tooltip
 	dataUpdated = nil
@@ -282,12 +287,12 @@ local function OnEvent(self, event, message)
 end
 
 local function ValueColorUpdate(hex)
-	displayString = join("", FRIENDS, ": ", hex, "%d|r")
+	displayString = join('', E.global.datatexts.settings.Friends.NoLabel and '' or '%s', hex, '%d|r')
 
-	if lastPanel ~= nil then
-		OnEvent(lastPanel, "ELVUI_COLOR_UPDATE")
+	if lastPanel then
+		OnEvent(lastPanel, 'ELVUI_COLOR_UPDATE')
 	end
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("Friends", {"PLAYER_ENTERING_WORLD", "CHAT_MSG_SYSTEM", "FRIENDLIST_UPDATE"}, OnEvent, nil, OnClick, OnEnter, nil, FRIENDS)
+DT:RegisterDatatext('Friends', SOCIAL_LABEL, {'BN_FRIEND_ACCOUNT_ONLINE', 'BN_FRIEND_ACCOUNT_OFFLINE', 'BN_FRIEND_INFO_CHANGED', 'FRIENDLIST_UPDATE', 'CHAT_MSG_SYSTEM', 'MODIFIER_STATE_CHANGED'}, OnEvent, nil, Click, OnEnter, nil, FRIENDS, nil, ValueColorUpdate)

@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local UF = E:GetModule("UnitFrames")
 local _, ns = ...
 local ElvUF = ns.oUF
@@ -24,9 +24,9 @@ function UF:Construct_TargetTargetTargetFrame(frame)
 	frame.TargetGlow = self:Construct_TargetGlow(frame)
 	frame.Fader = self:Construct_Fader()
 	frame.Cutaway = self:Construct_Cutaway(frame)
-	frame.customTexts = {}
 
-	frame:Point("BOTTOM", E.UIParent, "BOTTOM", 0, 160) --Set to default position
+	frame.customTexts = {}
+	frame:Point("BOTTOM", E.UIParent, "BOTTOM", 0, 160)
 	E:CreateMover(frame, frame:GetName().."Mover", L["TargetTargetTarget Frame"], nil, nil, nil, "ALL,SOLO", nil, "unitframe,targettargettarget,generalGroup")
 
 	frame.unitframeType = "targettargettarget"

@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local DT = E:GetModule("DataTexts")
 
 --Lua functions
@@ -12,7 +12,7 @@ local x, y = 0, 0
 
 local timeSinceUpdate = 0
 
-local function OnUpdate(self, elapsed)
+local function Update(self, elapsed)
 	timeSinceUpdate = timeSinceUpdate + elapsed
 
 	if timeSinceUpdate > 0.03333 then
@@ -24,7 +24,7 @@ local function OnUpdate(self, elapsed)
 	end
 end
 
-local function OnClick()
+local function Click()
 	ToggleFrame(WorldMapFrame)
 end
 
@@ -33,4 +33,4 @@ local function ValueColorUpdate(hex)
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("Coords", nil, nil, OnUpdate, OnClick, nil, nil, L["Coords"])
+DT:RegisterDatatext('Coords', nil, {'LOADING_SCREEN_DISABLED', 'ZONE_CHANGED', 'ZONE_CHANGED_INDOORS', 'ZONE_CHANGED_NEW_AREA'}, nil, Update, Click, nil, nil, L["Coords"], ValueColorUpdate)

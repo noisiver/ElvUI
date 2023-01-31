@@ -1,145 +1,112 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-local mod = E:GetModule("DataBars")
-local LSM = LibStub("LibSharedMedia-3.0")
+local E, L, V, P, G = unpack(select(2, ...))
+local DB = E:GetModule('DataBars')
 
---Lua functions
-local max, min = math.max, math.min
-local format = string.format
---WoW API
-local GetPetExperience = GetPetExperience
+local _G = _G
+local format = format
 local HasPetUI = HasPetUI
 local UnitLevel = UnitLevel
+local GetExpansionLevel = GetExpansionLevel
+local GetPetExperience = GetPetExperience
+local GameTooltip = GameTooltip
 
-function mod:PetExperienceBar_Update(event)
-	if E.myclass ~= "HUNTER" or not mod.db.petExperience.enable then return end
+local MAX_PLAYER_LEVEL_TABLE = MAX_PLAYER_LEVEL_TABLE
 
-	local bar = self.petExpBar
-	local _, hunterPet = HasPetUI()
-	local hideBar = not hunterPet or (UnitLevel("pet") == self.maxExpansionLevel and self.db.petExperience.hideAtMaxLevel)
-
-	if hideBar or (event == "PLAYER_REGEN_DISABLED" and self.db.petExperience.hideInCombat) then
-		E:DisableMover(self.petExpBar.mover:GetName())
-		bar:Hide()
-	elseif not hideBar and (not self.db.petExperience.hideInCombat or not self.inCombatLockdown) then
-		E:EnableMover(self.petExpBar.mover:GetName())
-		bar:Show()
-
-		local textFormat = self.db.petExperience.textFormat
-		local curExp, maxExp = GetPetExperience()
-		maxExp = max(1, maxExp)
-
-		bar.statusBar:SetMinMaxValues(min(0, curExp), maxExp)
-	--	bar.statusBar:SetValue(curExp - 1 >= 0 and curExp - 1 or 0)
-		bar.statusBar:SetValue(curExp)
-
-		if textFormat == "PERCENT" then
-			bar.text:SetFormattedText("%d%%", curExp / maxExp * 100)
-		elseif textFormat == "CURMAX" then
-			bar.text:SetFormattedText("%s - %s", E:ShortValue(curExp), E:ShortValue(maxExp))
-		elseif textFormat == "CURPERC" then
-			bar.text:SetFormattedText("%s - %d%%", E:ShortValue(curExp), curExp / maxExp * 100)
-		elseif textFormat == "CUR" then
-			bar.text:SetFormattedText("%s", E:ShortValue(curExp))
-		elseif textFormat == "REM" then
-			bar.text:SetFormattedText("%s", E:ShortValue(maxExp - curExp))
-		elseif textFormat == "CURREM" then
-			bar.text:SetFormattedText("%s - %s", E:ShortValue(curExp), E:ShortValue(maxExp - curExp))
-		elseif textFormat == "CURPERCREM" then
-			bar.text:SetFormattedText("%s - %d%% (%s)", E:ShortValue(curExp), curExp / maxExp * 100, E:ShortValue(maxExp - curExp))
-		end
-	end
+function DB:PetExperienceBar_ShouldBeVisible()
+	return not (UnitLevel('pet') >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()])
 end
 
-function mod:PetExperienceBar_OnEnter()
-	if mod.db.petExperience.mouseover then
+function DB:PetExperienceBar_Update()
+	local bar = DB.StatusBars.PetExperience
+	DB:SetVisibility(bar)
+
+	if not bar:IsShown() then return end
+
+	local color = DB.db.colors.petExperience
+	bar:SetStatusBarColor(color.r, color.g, color.b, color.a)
+
+	local cur, max = GetPetExperience()
+	if max <= 0 then max = 1 end
+	bar:SetMinMaxValues(0, max)
+	bar:SetValue(cur)
+
+	local text, textFormat = '', bar.db.textFormat
+
+	if textFormat == 'PERCENT' then
+		text = format('%d%%', cur / max * 100)
+	elseif textFormat == 'CURMAX' then
+		text = format('%s - %s', E:ShortValue(cur), E:ShortValue(max))
+	elseif textFormat == 'CURPERC' then
+		text = format('%s - %d%%', E:ShortValue(cur), cur / max * 100)
+	elseif textFormat == 'CUR' then
+		text = format('%s', E:ShortValue(cur))
+	elseif textFormat == 'REM' then
+		text = format('%s', E:ShortValue(max - cur))
+	elseif textFormat == 'CURREM' then
+		text = format('%s - %s', E:ShortValue(cur), E:ShortValue(max - cur))
+	elseif textFormat == 'CURPERCREM' then
+		text = format('%s - %d%% (%s)', E:ShortValue(cur), cur / max * 100, E:ShortValue(max - cur))
+	end
+
+	bar.text:SetText(text)
+end
+
+function DB:PetExperienceBar_OnEnter()
+	if self.db.mouseover then
 		E:UIFrameFadeIn(self, 0.4, self:GetAlpha(), 1)
 	end
 
-	local curExp, maxExp = GetPetExperience()
-	maxExp = max(1, maxExp)
-
 	GameTooltip:ClearLines()
-	GameTooltip:SetOwner(self, "ANCHOR_CURSOR", 0, -4)
+	GameTooltip:SetOwner(self, 'ANCHOR_CURSOR', 0, -4)
+
+	local cur, max = GetPetExperience()
+	if max <= 0 then max = 1 end
 
 	GameTooltip:AddLine(L["Pet Experience"])
-	GameTooltip:AddLine(" ")
+	GameTooltip:AddLine(' ')
 
-	GameTooltip:AddDoubleLine(L["XP:"], format("%d / %d (%d%%)", curExp, maxExp, curExp / maxExp * 100), 1, 1, 1)
-	GameTooltip:AddDoubleLine(L["Remaining:"], format("%d (%d%% - %d %s)", maxExp - curExp, (maxExp - curExp) / maxExp * 100, 20 * (maxExp - curExp) / maxExp, L["Bars"]), 1, 1, 1)
+	GameTooltip:AddDoubleLine(L["XP:"], format(' %d / %d (%d%%)', cur, max, cur/max * 100), 1, 1, 1)
+	GameTooltip:AddDoubleLine(L["Remaining:"], format(' %d (%d%% - %d '..L["Bars"]..')', max - cur, (max - cur) / max * 100, 20 * (max - cur) / max), 1, 1, 1)
 
 	GameTooltip:Show()
 end
 
-function mod:PetExperienceBar_OnClick()
+function DB:PetExperienceBar_OnClick() end
 
-end
+function DB:PetExperienceBar_Toggle()
+	local bar = DB.StatusBars.PetExperience
+	bar.db = DB.db.petExperience
 
-function mod:PetExperienceBar_UpdateDimensions()
-	if E.myclass ~= "HUNTER" then return end
+	if bar.db.enable then
+		E:EnableMover(bar.holder.mover.name)
 
-	self.petExpBar:Size(self.db.petExperience.width, self.db.petExperience.height)
-	self.petExpBar:SetAlpha(self.db.petExperience.mouseover and 0 or 1)
-
-	self.petExpBar.text:FontTemplate(LSM:Fetch("font", self.db.petExperience.font), self.db.petExperience.textSize, self.db.petExperience.fontOutline)
-
-	self.petExpBar.statusBar:SetOrientation(self.db.petExperience.orientation)
-	self.petExpBar.statusBar:SetRotatesTexture(self.db.petExperience.orientation ~= "HORIZONTAL")
-
-	if self.petExpBar.bubbles then
-		self:UpdateBarBubbles(self.petExpBar, self.db.petExperience)
-	elseif self.db.petExperience.showBubbles then
-		local bubbles = self:CreateBarBubbles(self.petExpBar)
-		bubbles:SetFrameLevel(5)
-		self:UpdateBarBubbles(self.petExpBar, self.db.petExperience)
-	end
-end
-
-function mod:PetExperienceBar_Toggle()
-	if E.myclass ~= "HUNTER" then return end
-
-	if self.db.petExperience.enable then
-		self.petExpBar.eventFrame:RegisterEvent("UNIT_PET")
-		self.petExpBar.eventFrame:RegisterEvent("UNIT_PET_EXPERIENCE")
-		self.petExpBar.eventFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
-		self.petExpBar.eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-
-		self:PetExperienceBar_Update()
-		E:EnableMover(self.petExpBar.mover:GetName())
+		DB:PetExperienceBar_Update()
 	else
-		self.petExpBar.eventFrame:UnregisterEvent("UNIT_PET")
-		self.petExpBar.eventFrame:UnregisterEvent("UNIT_PET_EXPERIENCE")
-		self.petExpBar.eventFrame:UnregisterEvent("PLAYER_REGEN_DISABLED")
-		self.petExpBar.eventFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
+		bar:Hide()
 
-		self.petExpBar:Hide()
-		E:DisableMover(self.petExpBar.mover:GetName())
+		E:DisableMover(bar.holder.mover.name)
 	end
 end
 
-function mod:PetExperienceBar_Load()
-	if E.myclass ~= "HUNTER" then return end
+function DB:PetExperienceBar()
+	local PetExperience = DB:CreateBar('ElvUI_PetExperienceBar', 'PetExperience', DB.PetExperienceBar_Update, DB.PetExperienceBar_OnEnter, DB.PetExperienceBar_OnClick, {'LEFT', _G.LeftChatPanel, 'RIGHT', -E.Border + E.Spacing * 3, 0})
+	DB:CreateBarBubbles(PetExperience)
 
-	self.petExpBar = self:CreateBar("ElvUI_PetExperienceBar", self.PetExperienceBar_OnEnter, self.PetExperienceBar_OnClick, "LEFT", LeftChatPanel, "RIGHT", -E.Border + E.Spacing*3, 0)
-	self.petExpBar.statusBar:SetStatusBarColor(1, 1, 0.41, 0.8)
+	PetExperience.ShouldHide = function()
+		return not HasPetUI() or (HasPetUI() and DB.db.petExperience.hideAtMaxLevel and not DB:PetExperienceBar_ShouldBeVisible())
+	end
 
-	self.petExpBar.eventFrame = CreateFrame("Frame")
-	self.petExpBar.eventFrame:Hide()
-	self.petExpBar.eventFrame:SetScript("OnEvent", function(_, event, arg1)
-		if event == "UNIT_PET" then
-			if arg1 == "player" then
-				self:PetExperienceBar_Toggle()
-			end
-		elseif event == "PLAYER_REGEN_DISABLED" then
-			self.inCombatLockdown = true
-		elseif event == "PLAYER_REGEN_ENABLED" then
-			self.inCombatLockdown = false
-		else
-			self:PetExperienceBar_Update(event)
-		end
-	end)
+	DB:RegisterEvent('PET_BAR_UPDATE', 'PetExperienceBar_Toggle')
+	DB:RegisterEvent("SPELLS_CHANGED", "PetExperienceBar_Update")
+	DB:RegisterEvent("PLAYER_CONTROL_GAINED", "PetExperienceBar_Update")
+	DB:RegisterEvent("PLAYER_CONTROL_LOST", "PetExperienceBar_Update")
+	DB:RegisterEvent("PET_BAR_UPDATE", "PetExperienceBar_Update")
+	DB:RegisterEvent("UNIT_PET", "PetExperienceBar_Update")
+	DB:RegisterEvent("UNIT_FLAGS", "PetExperienceBar_Update")
+	DB:RegisterEvent("UNIT_AURA", "PetExperienceBar_Update")
+	DB:RegisterEvent("PLAYER_FARSIGHT_FOCUS_CHANGED", "PetExperienceBar_Update")
+	DB:RegisterEvent('UNIT_PET_EXPERIENCE', 'PetExperienceBar_Update')
+	DB:RegisterEvent("PET_BAR_UPDATE_COOLDOWN", PetActionBar_UpdateCooldowns)
 
-	self:PetExperienceBar_UpdateDimensions()
-
-	E:CreateMover(self.petExpBar, "PetExperienceBarMover", L["Pet Experience Bar"], nil, nil, nil, nil, nil, "databars,petExperience")
-	self:PetExperienceBar_Toggle()
+	E:CreateMover(PetExperience.holder, 'PetExperienceBarMover', L["Pet Experience Bar"], nil, nil, nil, nil, nil, 'databars,petExperience')
+	DB:PetExperienceBar_Toggle()
 end

@@ -1,51 +1,35 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-local DT = E:GetModule("DataTexts")
+local E, L, V, P, G = unpack(select(2, ...))
+local DT = E:GetModule('DataTexts')
 
---Lua functions
-local pairs = pairs
-local find, join = string.find, string.join
---WoW API / Variables
-local GetNumAddOns = GetNumAddOns
-local GetAddOnInfo = GetAddOnInfo
-local GetAddOnMetadata = GetAddOnMetadata
+local _G = _G
+local pairs, strjoin = pairs, strjoin
 local IsShiftKeyDown = IsShiftKeyDown
+local InCombatLockdown = InCombatLockdown
 local ReloadUI = ReloadUI
 
-local displayString = ""
-local configText = "ElvUI"
-local plugins
+local displayString = ''
+local configText = 'ElvUI'
 local lastPanel
 
-local function OnEvent(self, event)
+local function OnEvent(self)
 	lastPanel = self
-
-	if not plugins and event == "PLAYER_ENTERING_WORLD" then
-		for i = 1, GetNumAddOns() do
-			local name, title, _, enabled = GetAddOnInfo(i)
-			if enabled and find(name, "ElvUI") and name ~= "ElvUI" then
-				plugins = plugins or {}
-				plugins[title] = GetAddOnMetadata(i, "version")
-			end
-		end
-
-		self:UnregisterEvent(event)
-	end
-
-	self.text:SetFormattedText(displayString, configText)
+	self.text:SetFormattedText(displayString, E.global.datatexts.settings.ElvUI.Label ~= '' and E.global.datatexts.settings.ElvUI.Label or configText)
 end
 
-local function OnEnter(self)
-	DT:SetupTooltip(self)
-
+local function OnEnter()
+	DT.tooltip:ClearLines()
 	DT.tooltip:AddDoubleLine(L["Left Click:"], L["Toggle Configuration"], 1, 1, 1)
 	DT.tooltip:AddDoubleLine(L["Hold Shift + Right Click:"], L["Reload UI"], 1, 1, 1)
 
-	if plugins then
-		DT.tooltip:AddLine(" ")
-		DT.tooltip:AddDoubleLine("Plugins:", "Version:")
+	if E.Libs.EP.registeredPrefix then
+		DT.tooltip:AddLine(' ')
+		DT.tooltip:AddDoubleLine('Plugins:', 'Version:')
 
-		for plugin, version in pairs(plugins) do
-			DT.tooltip:AddDoubleLine(plugin, version, 1, 1, 1, 1, 1, 1)
+		for _, plugin in pairs(E.Libs.EP.plugins) do
+			if not plugin.isLib then
+				local r, g, b = E:HexToRGB(plugin.old and 'ff3333' or '33ff33')
+				DT.tooltip:AddDoubleLine(plugin.title, plugin.version, 1, 1, 1, r/255, g/255, b/255)
+			end
 		end
 	end
 
@@ -53,20 +37,22 @@ local function OnEnter(self)
 end
 
 local function OnClick(_, button)
-	if button == "LeftButton" or (button == "RightButton" and not IsShiftKeyDown()) then
+	if InCombatLockdown() then UIErrorsFrame:AddMessage(E.InfoColor..ERR_NOT_IN_COMBAT) return end
+
+	if button == 'LeftButton' then
 		E:ToggleOptionsUI()
-	elseif button == "RightButton" and IsShiftKeyDown() then
+	elseif button == 'RightButton' and IsShiftKeyDown() then
 		ReloadUI()
 	end
 end
 
 local function ValueColorUpdate(hex)
-	displayString = join("", hex, "%s|r")
+	displayString = strjoin('', hex, '%s|r')
 
-	if lastPanel ~= nil then
-		OnEvent(lastPanel, "ELVUI_COLOR_UPDATE")
+	if lastPanel then
+		OnEvent(lastPanel, 'ELVUI_COLOR_UPDATE')
 	end
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("ElvUI Config", {"PLAYER_ENTERING_WORLD"}, OnEvent, nil, OnClick, OnEnter)
+DT:RegisterDatatext('ElvUI', nil, nil, OnEvent, nil, OnClick, OnEnter, nil, L["ElvUI Config"], nil, ValueColorUpdate)

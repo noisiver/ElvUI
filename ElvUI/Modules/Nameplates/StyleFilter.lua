@@ -1,5 +1,5 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-local mod = E:GetModule("NamePlates")
+local E, L, V, P, G = unpack(select(2, ...))
+local NP = E:GetModule("NamePlates")
 local LSM = E.Libs.LSM
 
 --Lua functions
@@ -18,7 +18,7 @@ local UnitHealthMax = UnitHealthMax
 local UnitPower = UnitPower
 local UnitPowerMax = UnitPowerMax
 
-mod.TriggerConditions = {
+NP.TriggerConditions = {
 	raidTargets = {
 		STAR = "star",
 		CIRCLE = "circle",
@@ -195,8 +195,8 @@ G.nameplates.uniqueUnitTypes = uniqueUnitTypes
 for unitType, units in pairs(uniqueUnitTypes) do
 	for spellID, unit in pairs(units) do
 		local name, _, texture = GetSpellInfo(spellID)
-		mod.TriggerConditions.uniqueUnits[unit] = {name, unitType, texture}
-		mod.UniqueUnits[name] = unit
+		NP.TriggerConditions.uniqueUnits[unit] = {name, unitType, texture}
+		NP.UniqueUnits[name] = unit
 	end
 end
 
@@ -204,8 +204,8 @@ for totemSchool, totems in pairs(totemTypes) do
 	for spellID, totemID in pairs(totems) do
 		local totemName, rank, texture = GetSpellInfo(spellID)
 
-		if not mod.TriggerConditions.totems[totemID] then
-			mod.TriggerConditions.totems[totemID] = {totemName, totemSchool, texture}
+		if not NP.TriggerConditions.totems[totemID] then
+			NP.TriggerConditions.totems[totemID] = {totemName, totemSchool, texture}
 		end
 
 		rank = totemRanks[tonumber(match(rank, ("%d+")))]
@@ -216,13 +216,13 @@ for totemSchool, totems in pairs(totemTypes) do
 			totemName = totemName
 		end
 
-		mod.Totems[totemName] = totemID
+		NP.Totems[totemName] = totemID
 	end
 end
 
 G.nameplates.totemTypes = totemTypes
 
-function mod:StyleFilterAuraCheck(names, icons, mustHaveAll, missing, minTimeLeft, maxTimeLeft)
+function NP:StyleFilterAuraCheck(names, icons, mustHaveAll, missing, minTimeLeft, maxTimeLeft)
 	local total, count = 0, 0
 	for name, value in pairs(names) do
 		if value == true then --only if they are turned on
@@ -246,7 +246,7 @@ function mod:StyleFilterAuraCheck(names, icons, mustHaveAll, missing, minTimeLef
 	end
 end
 
-function mod:StyleFilterCooldownCheck(names, mustHaveAll)
+function NP:StyleFilterCooldownCheck(names, mustHaveAll)
 	local total, count = 0, 0
 	local _, gcd = GetSpellCooldown(61304)
 
@@ -270,7 +270,7 @@ function mod:StyleFilterCooldownCheck(names, mustHaveAll)
 	end
 end
 
-function mod:StyleFilterSetChanges(frame, actions, HealthColorChanged, BorderChanged, FlashingHealth, TextureChanged, ScaleChanged, FrameLevelChanged, AlphaChanged, NameColorChanged, NameOnlyChanged, VisibilityChanged, IconChanged, IconOnlyChanged)
+function NP:StyleFilterSetChanges(frame, actions, HealthColorChanged, BorderChanged, FlashingHealth, TextureChanged, ScaleChanged, FrameLevelChanged, AlphaChanged, NameColorChanged, NameOnlyChanged, VisibilityChanged, IconChanged, IconOnlyChanged)
 	if VisibilityChanged then
 		frame.StyleChanged = true
 		frame.VisibilityChanged = true
@@ -299,7 +299,7 @@ function mod:StyleFilterSetChanges(frame, actions, HealthColorChanged, BorderCha
 		frame.StyleChanged = true
 		frame.FlashingHealth = true
 		if not TextureChanged then
-			frame.FlashTexture:SetTexture(LSM:Fetch("statusbar", mod.db.statusbar))
+			frame.FlashTexture:SetTexture(LSM:Fetch("statusbar", NP.db.statusbar))
 		end
 		frame.FlashTexture:SetVertexColor(actions.flash.color.r, actions.flash.color.g, actions.flash.color.b)
 		frame.FlashTexture:SetAlpha(actions.flash.color.a)
@@ -321,15 +321,15 @@ function mod:StyleFilterSetChanges(frame, actions, HealthColorChanged, BorderCha
 		frame.ScaleChanged = true
 		local scale = (frame.ThreatScale or 1)
 		frame.ActionScale = actions.scale
-		if frame.isTarget and mod.db.useTargetScale then
-			scale = scale * mod.db.targetScale
+		if frame.isTarget and NP.db.useTargetScale then
+			scale = scale * NP.db.targetScale
 		end
-		mod:SetFrameScale(frame, scale * actions.scale)
+		NP:SetFrameScale(frame, scale * actions.scale)
 	end
 	if AlphaChanged then
 		frame.StyleChanged = true
 		frame.AlphaChanged = true
-		mod:PlateFade(frame, mod.db.fadeIn and 1 or 0, frame:GetAlpha(), actions.alpha / 100)
+		NP:PlateFade(frame, NP.db.fadeIn and 1 or 0, frame:GetAlpha(), actions.alpha / 100)
 	end
 	if NameColorChanged then
 		frame.StyleChanged = true
@@ -337,7 +337,7 @@ function mod:StyleFilterSetChanges(frame, actions, HealthColorChanged, BorderCha
 		local nameText = frame.oldName:GetText()
 		if nameText and nameText ~= "" then
 			frame.Name:SetTextColor(actions.color.nameColor.r, actions.color.nameColor.g, actions.color.nameColor.b, actions.color.nameColor.a)
-			if mod.db.nameColoredGlow then
+			if NP.db.nameColoredGlow then
 				frame.Name.NameOnlyGlow:SetVertexColor(actions.color.nameColor.r - 0.1, actions.color.nameColor.g - 0.1, actions.color.nameColor.b - 0.1, 1)
 			end
 		end
@@ -349,51 +349,51 @@ function mod:StyleFilterSetChanges(frame, actions, HealthColorChanged, BorderCha
 		if frame.CastBar:IsShown() then frame.CastBar:Hide() end
 		if frame.Health:IsShown() then frame.Health:Hide() end
 		--hide the target indicator
-		mod:Configure_Glow(frame)
-		mod:Update_Glow(frame)
+		NP:Configure_Glow(frame)
+		NP:Update_Glow(frame)
 		--position the name and update its color
 		frame.Name:ClearAllPoints()
 		frame.Name:SetJustifyH("CENTER")
 		frame.Name:SetPoint("TOP", frame)
 		frame.Name:SetParent(frame)
-		if mod.db.units[frame.UnitType].level.enable then
+		if NP.db.units[frame.UnitType].level.enable then
 			frame.Level:ClearAllPoints()
 			frame.Level:SetPoint("LEFT", frame.Name, "RIGHT")
 			frame.Level:SetJustifyH("LEFT")
 			frame.Level:SetParent(frame)
-			frame.Level:SetFormattedText(" [%s]", mod:UnitLevel(frame))
+			frame.Level:SetFormattedText(" [%s]", NP:UnitLevel(frame))
 		end
 		if not NameColorChanged or not IconOnlyChanged then
-			mod:Update_Name(frame, true)
+			NP:Update_Name(frame, true)
 		end
 	end
-	if IconChanged and (mod.Totems[frame.UnitName] or mod.UniqueUnits[frame.UnitName]) then
+	if IconChanged and (NP.Totems[frame.UnitName] or NP.UniqueUnits[frame.UnitName]) then
 		frame.StyleChanged = true
 		frame.IconChanged = true
-		mod:Configure_IconFrame(frame)
-		mod:Update_IconFrame(frame)
+		NP:Configure_IconFrame(frame)
+		NP:Update_IconFrame(frame)
 	end
-	if IconOnlyChanged and (mod.Totems[frame.UnitName] or mod.UniqueUnits[frame.UnitName]) then
+	if IconOnlyChanged and (NP.Totems[frame.UnitName] or NP.UniqueUnits[frame.UnitName]) then
 		frame.StyleChanged = true
 		frame.IconOnlyChanged = true
-		mod:Configure_IconFrame(frame, true)
-		mod:Update_IconFrame(frame)
+		NP:Configure_IconFrame(frame, true)
+		NP:Update_IconFrame(frame)
 		if frame.CastBar:IsShown() then frame.CastBar:Hide() end
 		if frame.Health:IsShown() then frame.Health:Hide() end
 		frame.Level:SetText()
 		frame.Name:SetText()
-		mod:Configure_Glow(frame)
-		mod:Update_Glow(frame)
-		mod:Update_RaidIcon(frame)
-		mod:Configure_NameOnlyGlow(frame)
+		NP:Configure_Glow(frame)
+		NP:Update_Glow(frame)
+		NP:Update_RaidIcon(frame)
+		NP:Configure_NameOnlyGlow(frame)
 	end
 end
 
-function mod:StyleFilterClearChanges(frame, HealthColorChanged, BorderChanged, FlashingHealth, TextureChanged, ScaleChanged, FrameLevelChanged, AlphaChanged, NameColorChanged, NameOnlyChanged, VisibilityChanged, IconChanged, IconOnlyChanged)
+function NP:StyleFilterClearChanges(frame, HealthColorChanged, BorderChanged, FlashingHealth, TextureChanged, ScaleChanged, FrameLevelChanged, AlphaChanged, NameColorChanged, NameOnlyChanged, VisibilityChanged, IconChanged, IconOnlyChanged)
 	frame.StyleChanged = nil
 	if VisibilityChanged then
 		frame.VisibilityChanged = nil
-		mod:PlateFade(frame, mod.db.fadeIn and 1 or 0, 0, 1) -- fade those back in so it looks clean
+		NP:PlateFade(frame, NP.db.fadeIn and 1 or 0, 0, 1) -- fade those back in so it looks clean
 		frame:Show()
 	end
 	if FrameLevelChanged then
@@ -419,7 +419,7 @@ function mod:StyleFilterClearChanges(frame, HealthColorChanged, BorderChanged, F
 	end
 	if TextureChanged then
 		frame.TextureChanged = nil
-		local tex = LSM:Fetch("statusbar", mod.db.statusbar)
+		local tex = LSM:Fetch("statusbar", NP.db.statusbar)
 		frame.Health.Highlight:SetTexture(tex)
 		frame.Health:SetStatusBarTexture(tex)
 	end
@@ -427,14 +427,14 @@ function mod:StyleFilterClearChanges(frame, HealthColorChanged, BorderChanged, F
 		frame.ScaleChanged = nil
 		frame.ActionScale = nil
 		local scale = frame.ThreatScale or 1
-		if frame.isTarget and mod.db.useTargetScale then
-			scale = scale * mod.db.targetScale
+		if frame.isTarget and NP.db.useTargetScale then
+			scale = scale * NP.db.targetScale
 		end
-		mod:SetFrameScale(frame, scale)
+		NP:SetFrameScale(frame, scale)
 	end
 	if AlphaChanged then
 		frame.AlphaChanged = nil
-		mod:PlateFade(frame, mod.db.fadeIn and 1 or 0, (frame.FadeObject and frame.FadeObject.endAlpha) or 0.5, 1)
+		NP:PlateFade(frame, NP.db.fadeIn and 1 or 0, (frame.FadeObject and frame.FadeObject.endAlpha) or 0.5, 1)
 	end
 	if NameColorChanged then
 		frame.NameColorChanged = nil
@@ -443,21 +443,21 @@ function mod:StyleFilterClearChanges(frame, HealthColorChanged, BorderChanged, F
 	if NameOnlyChanged then
 		frame.NameOnlyChanged = nil
 		frame.TopLevelFrame = nil --We can safely clear this here because it is set upon `UpdateElement_Auras` if needed
-		if mod.db.units[frame.UnitType].health.enable or (frame.isTarget and mod.db.alwaysShowTargetHealth) then
+		if NP.db.units[frame.UnitType].health.enable or (frame.isTarget and NP.db.alwaysShowTargetHealth) then
 			frame.Health:Show()
-			mod:Configure_Glow(frame)
-			mod:Update_Glow(frame)
+			NP:Configure_Glow(frame)
+			NP:Update_Glow(frame)
 		end
 		frame.Name:ClearAllPoints()
 		frame.Level:ClearAllPoints()
-		if mod.db.units[frame.UnitType].name.enable then
-			mod:Update_Name(frame)
+		if NP.db.units[frame.UnitType].name.enable then
+			NP:Update_Name(frame)
 			frame.Name:SetTextColor(frame.Name.r, frame.Name.g, frame.Name.b)
 		else
 			frame.Name:SetText()
 		end
-		if mod.db.units[frame.UnitType].level.enable then
-			mod:Update_Level(frame)
+		if NP.db.units[frame.UnitType].level.enable then
+			NP:Update_Level(frame)
 		end
 	end
 	if IconChanged then
@@ -466,32 +466,32 @@ function mod:StyleFilterClearChanges(frame, HealthColorChanged, BorderChanged, F
 	end
 	if IconOnlyChanged then
 		frame.IconOnlyChanged = nil
-		mod:Update_IconFrame(frame)
-		if mod.db.units[frame.UnitType].iconFrame and mod.db.units[frame.UnitType].iconFrame.enable then
-			mod:Configure_IconFrame(frame)
+		NP:Update_IconFrame(frame)
+		if NP.db.units[frame.UnitType].iconFrame and NP.db.units[frame.UnitType].iconFrame.enable then
+			NP:Configure_IconFrame(frame)
 		end
-		if mod.db.units[frame.UnitType].health.enable or (frame.isTarget and mod.db.alwaysShowTargetHealth) then
+		if NP.db.units[frame.UnitType].health.enable or (frame.isTarget and NP.db.alwaysShowTargetHealth) then
 			frame.Health:Show()
-			mod:Configure_Glow(frame)
-			mod:Update_Glow(frame)
+			NP:Configure_Glow(frame)
+			NP:Update_Glow(frame)
 		end
 		frame.Name:ClearAllPoints()
 		frame.Level:ClearAllPoints()
-		if mod.db.units[frame.UnitType].name.enable then
-			mod:Update_Name(frame)
+		if NP.db.units[frame.UnitType].name.enable then
+			NP:Update_Name(frame)
 			frame.Name:SetTextColor(frame.Name.r, frame.Name.g, frame.Name.b)
 		else
 			frame.Name:SetText()
 		end
-		if mod.db.units[frame.UnitType].level.enable then
-			mod:Update_Level(frame)
+		if NP.db.units[frame.UnitType].level.enable then
+			NP:Update_Level(frame)
 		end
-		mod:Update_RaidIcon(frame)
-		mod:Configure_NameOnlyGlow(frame)
+		NP:Update_RaidIcon(frame)
+		NP:Configure_NameOnlyGlow(frame)
 	end
 end
 
-function mod:StyleFilterConditionCheck(frame, filter, trigger)
+function NP:StyleFilterConditionCheck(frame, filter, trigger)
 	local passed -- skip StyleFilterPass when triggers are empty
 
 	-- Name
@@ -542,7 +542,7 @@ function mod:StyleFilterConditionCheck(frame, filter, trigger)
 
 	-- Group Role
 	if trigger.role.tank or trigger.role.healer or trigger.role.damager then
-		if trigger.role[mod.TriggerConditions.roles[E:GetPlayerRole()]] then passed = true else return end
+		if trigger.role[NP.TriggerConditions.roles[E:GetPlayerRole()]] then passed = true else return end
 	end
 
 	-- Instance Type
@@ -555,7 +555,7 @@ function mod:StyleFilterConditionCheck(frame, filter, trigger)
 			if instanceType == "raid" or instanceType == "party" then
 				local D = trigger.instanceDifficulty[(instanceType == "party" and "dungeon") or instanceType]
 				for _, value in pairs(D) do
-					if value and not D[mod.TriggerConditions.difficulties[difficultyID]] then return end
+					if value and not D[NP.TriggerConditions.difficulties[difficultyID]] then return end
 				end
 			end
 		else return end
@@ -566,7 +566,7 @@ function mod:StyleFilterConditionCheck(frame, filter, trigger)
 	-- Level
 	if trigger.level then
 		local myLevel = E.mylevel
-		local level = mod:UnitLevel(frame)
+		local level = NP:UnitLevel(frame)
 		level = level == "??" and -1 or tonumber(level)
 		local curLevel = (trigger.curlevel and trigger.curlevel ~= 0 and (trigger.curlevel == level))
 		local minLevel = (trigger.minlevel and trigger.minlevel ~= 0 and (trigger.minlevel <= level))
@@ -582,7 +582,7 @@ function mod:StyleFilterConditionCheck(frame, filter, trigger)
 
 	-- Unit Type
 	if trigger.nameplateType and trigger.nameplateType.enable then
-		if trigger.nameplateType[mod.TriggerConditions.frameTypes[frame.UnitType]] then passed = true else return end
+		if trigger.nameplateType[NP.TriggerConditions.frameTypes[frame.UnitType]] then passed = true else return end
 	end
 
 	-- Reaction Type
@@ -593,7 +593,7 @@ function mod:StyleFilterConditionCheck(frame, filter, trigger)
 
 	-- Raid Target
 	if trigger.raidTarget.star or trigger.raidTarget.circle or trigger.raidTarget.diamond or trigger.raidTarget.triangle or trigger.raidTarget.moon or trigger.raidTarget.square or trigger.raidTarget.cross or trigger.raidTarget.skull then
-		if trigger.raidTarget[mod.TriggerConditions.raidTargets[frame.RaidIconType]] then passed = true else return end
+		if trigger.raidTarget[NP.TriggerConditions.raidTargets[frame.RaidIconType]] then passed = true else return end
 	end
 
 	-- Casting
@@ -629,7 +629,7 @@ function mod:StyleFilterConditionCheck(frame, filter, trigger)
 
 	-- Cooldown
 	if trigger.cooldowns and trigger.cooldowns.names and next(trigger.cooldowns.names) then
-		local cooldown = mod:StyleFilterCooldownCheck(trigger.cooldowns.names, trigger.cooldowns.mustHaveAll)
+		local cooldown = NP:StyleFilterCooldownCheck(trigger.cooldowns.names, trigger.cooldowns.mustHaveAll)
 		if cooldown ~= nil then -- ignore if none are set to ONCD or OFFCD
 			if cooldown then passed = true else return end
 		end
@@ -637,7 +637,7 @@ function mod:StyleFilterConditionCheck(frame, filter, trigger)
 
 	-- Buffs
 	if frame.Buffs and trigger.buffs and trigger.buffs.names and next(trigger.buffs.names) then
-		local buff = mod:StyleFilterAuraCheck(trigger.buffs.names, frame.Buffs, trigger.buffs.mustHaveAll, trigger.buffs.missing, trigger.buffs.minTimeLeft, trigger.buffs.maxTimeLeft)
+		local buff = NP:StyleFilterAuraCheck(trigger.buffs.names, frame.Buffs, trigger.buffs.mustHaveAll, trigger.buffs.missing, trigger.buffs.minTimeLeft, trigger.buffs.maxTimeLeft)
 		if buff ~= nil then -- ignore if none are selected
 			if buff then passed = true else return end
 		end
@@ -645,7 +645,7 @@ function mod:StyleFilterConditionCheck(frame, filter, trigger)
 
 	-- Debuffs
 	if frame.Debuffs and trigger.debuffs and trigger.debuffs.names and next(trigger.debuffs.names) then
-		local debuff = mod:StyleFilterAuraCheck(trigger.debuffs.names, frame.Debuffs, trigger.debuffs.mustHaveAll, trigger.debuffs.missing, trigger.debuffs.minTimeLeft, trigger.debuffs.maxTimeLeft)
+		local debuff = NP:StyleFilterAuraCheck(trigger.debuffs.names, frame.Debuffs, trigger.debuffs.mustHaveAll, trigger.debuffs.missing, trigger.debuffs.minTimeLeft, trigger.debuffs.maxTimeLeft)
 		if debuff ~= nil then -- ignore if none are selected
 			if debuff then passed = true else return end
 		end
@@ -653,19 +653,19 @@ function mod:StyleFilterConditionCheck(frame, filter, trigger)
 
 	-- Totems
 	if frame.UnitName and trigger.totems.enable then
-		local totem = mod.Totems[frame.UnitName]
+		local totem = NP.Totems[frame.UnitName]
 		if totem then if trigger.totems[totem] then passed = true else return end end
 	end
 
 	-- Unique Units
 	if frame.UnitName and trigger.uniqueUnits.enable then
-		local unit = mod.UniqueUnits[frame.UnitName]
+		local unit = NP.UniqueUnits[frame.UnitName]
 		if unit then if trigger.uniqueUnits[unit] then passed = true else return end end
 	end
 
 	-- Plugin Callback
-	if mod.StyleFilterCustomChecks then
-		for _, customCheck in pairs(mod.StyleFilterCustomChecks) do
+	if NP.StyleFilterCustomChecks then
+		for _, customCheck in pairs(NP.StyleFilterCustomChecks) do
 			local custom = customCheck(frame, filter, trigger)
 			if custom ~= nil then -- ignore if nil return
 				if custom then passed = true else return end
@@ -675,15 +675,15 @@ function mod:StyleFilterConditionCheck(frame, filter, trigger)
 
 	-- Pass it along
 	if passed then
-		mod:StyleFilterPass(frame, filter.actions)
+		NP:StyleFilterPass(frame, filter.actions)
 	end
 end
 
-function mod:StyleFilterPass(frame, actions)
-	local healthBarEnabled = (frame.UnitType and mod.db.units[frame.UnitType].health.enable) or (frame.isTarget and mod.db.alwaysShowTargetHealth)
+function NP:StyleFilterPass(frame, actions)
+	local healthBarEnabled = (frame.UnitType and NP.db.units[frame.UnitType].health.enable) or (frame.isTarget and NP.db.alwaysShowTargetHealth)
 	local healthBarShown = healthBarEnabled and frame.Health:IsShown()
 
-	mod:StyleFilterSetChanges(frame, actions,
+	NP:StyleFilterSetChanges(frame, actions,
 		(healthBarShown and actions.color and actions.color.health), --HealthColorChanged
 		(healthBarShown and actions.color and actions.color.border and frame.Health.backdrop), --BorderChanged
 		(healthBarShown and actions.flash and actions.flash.enable and frame.FlashTexture), --FlashingHealth
@@ -699,122 +699,122 @@ function mod:StyleFilterPass(frame, actions)
 	)
 end
 
-function mod:StyleFilterClear(frame)
+function NP:StyleFilterClear(frame)
 	if frame and frame.StyleChanged then
-		mod:StyleFilterClearChanges(frame, frame.HealthColorChanged, frame.BorderChanged, frame.FlashingHealth, frame.TextureChanged, frame.ScaleChanged, frame.FrameLevelChanged, frame.AlphaChanged, frame.NameColorChanged, frame.NameOnlyChanged, frame.VisibilityChanged, frame.IconChanged, frame.IconOnlyChanged)
+		NP:StyleFilterClearChanges(frame, frame.HealthColorChanged, frame.BorderChanged, frame.FlashingHealth, frame.TextureChanged, frame.ScaleChanged, frame.FrameLevelChanged, frame.AlphaChanged, frame.NameColorChanged, frame.NameOnlyChanged, frame.VisibilityChanged, frame.IconChanged, frame.IconOnlyChanged)
 	end
 end
 
-function mod:StyleFilterSort(place)
+function NP:StyleFilterSort(place)
 	if self[2] and place[2] then
 		return self[2] > place[2] --Sort by priority: 1=first, 2=second, 3=third, etc
 	end
 end
 
-function mod:StyleFilterClearVariables(nameplate)
+function NP:StyleFilterClearVariables(nameplate)
 	nameplate.ActionScale = nil
 	nameplate.ThreatScale = nil
 end
 
-mod.StyleFilterTriggerList = {}
-mod.StyleFilterTriggerEvents = {}
-function mod:StyleFilterConfigure()
-	twipe(mod.StyleFilterTriggerList)
-	twipe(mod.StyleFilterTriggerEvents)
+NP.StyleFilterTriggerList = {}
+NP.StyleFilterTriggerEvents = {}
+function NP:StyleFilterConfigure()
+	twipe(NP.StyleFilterTriggerList)
+	twipe(NP.StyleFilterTriggerEvents)
 
 	for filterName, filter in pairs(E.global.nameplates.filters) do
 		local t = filter.triggers
 		if t and E.db.nameplates and E.db.nameplates.filters then
 			if E.db.nameplates.filters[filterName] and E.db.nameplates.filters[filterName].triggers and E.db.nameplates.filters[filterName].triggers.enable then
-				tinsert(mod.StyleFilterTriggerList, {filterName, t.priority or 1})
+				tinsert(NP.StyleFilterTriggerList, {filterName, t.priority or 1})
 
-				mod.StyleFilterTriggerEvents.UpdateElement_All = 1
-				mod.StyleFilterTriggerEvents.NAME_PLATE_UNIT_ADDED = 1
+				NP.StyleFilterTriggerEvents.UpdateElement_All = 1
+				NP.StyleFilterTriggerEvents.NAME_PLATE_UNIT_ADDED = 1
 
 				if t.casting then
 					if next(t.casting.spells) then
 						for _, value in pairs(t.casting.spells) do
 							if value then
-								mod.StyleFilterTriggerEvents.FAKE_Casting = 0
+								NP.StyleFilterTriggerEvents.FAKE_Casting = 0
 								break
 					end end end
 
 					if (t.casting.interruptible or t.casting.notInterruptible)
 					or (t.casting.isCasting or t.casting.isChanneling or t.casting.notCasting or t.casting.notChanneling) then
-						mod.StyleFilterTriggerEvents.FAKE_Casting = 0
+						NP.StyleFilterTriggerEvents.FAKE_Casting = 0
 					end
 				end
 
 				if t.raidTarget and (t.raidTarget.star or t.raidTarget.circle or t.raidTarget.diamond or t.raidTarget.triangle or t.raidTarget.moon or t.raidTarget.square or t.raidTarget.cross or t.raidTarget.skull) then
-					mod.StyleFilterTriggerEvents.RAID_TARGET_UPDATE = 1
+					NP.StyleFilterTriggerEvents.RAID_TARGET_UPDATE = 1
 				end
 
 				-- real events
-				mod.StyleFilterTriggerEvents.PLAYER_TARGET_CHANGED = true
+				NP.StyleFilterTriggerEvents.PLAYER_TARGET_CHANGED = true
 
 				if t.healthThreshold then
-					mod.StyleFilterTriggerEvents.UNIT_HEALTH = 1
-					mod.StyleFilterTriggerEvents.UNIT_MAXHEALTH = 1
+					NP.StyleFilterTriggerEvents.UNIT_HEALTH = 1
+					NP.StyleFilterTriggerEvents.UNIT_MAXHEALTH = 1
 				end
 
 				if t.powerThreshold then
-					mod.StyleFilterTriggerEvents.UNIT_MANA = 1
-					mod.StyleFilterTriggerEvents.UNIT_ENERGY = 1
-					mod.StyleFilterTriggerEvents.UNIT_FOCUS = 1
-					mod.StyleFilterTriggerEvents.UNIT_RAGE = 1
-					mod.StyleFilterTriggerEvents.UNIT_RUNIC_POWER = 1
-					mod.StyleFilterTriggerEvents.UNIT_DISPLAYPOWER = 1
+					NP.StyleFilterTriggerEvents.UNIT_MANA = 1
+					NP.StyleFilterTriggerEvents.UNIT_ENERGY = 1
+					NP.StyleFilterTriggerEvents.UNIT_FOCUS = 1
+					NP.StyleFilterTriggerEvents.UNIT_RAGE = 1
+					NP.StyleFilterTriggerEvents.UNIT_RUNIC_POWER = 1
+					NP.StyleFilterTriggerEvents.UNIT_DISPLAYPOWER = 1
 				end
 
 				if t.names and next(t.names) then
 					for _, value in pairs(t.names) do
 						if value then
-							mod.StyleFilterTriggerEvents.UNIT_NAME_UPDATE = 1
+							NP.StyleFilterTriggerEvents.UNIT_NAME_UPDATE = 1
 							break
 				end end end
 
 				if t.inCombat or t.outOfCombat then
-					mod.StyleFilterTriggerEvents.PLAYER_REGEN_DISABLED = true
-					mod.StyleFilterTriggerEvents.PLAYER_REGEN_ENABLED = true
+					NP.StyleFilterTriggerEvents.PLAYER_REGEN_DISABLED = true
+					NP.StyleFilterTriggerEvents.PLAYER_REGEN_ENABLED = true
 				end
 
 				if t.isResting then
-					mod.StyleFilterTriggerEvents.PLAYER_UPDATE_RESTING = 1
+					NP.StyleFilterTriggerEvents.PLAYER_UPDATE_RESTING = 1
 				end
 
 				if t.cooldowns and t.cooldowns.names and next(t.cooldowns.names) then
 					for _, value in pairs(t.cooldowns.names) do
 						if value == "ONCD" or value == "OFFCD" then
-							mod.StyleFilterTriggerEvents.SPELL_UPDATE_COOLDOWN = 1
+							NP.StyleFilterTriggerEvents.SPELL_UPDATE_COOLDOWN = 1
 							break
 				end end end
 
 				if t.buffs and t.buffs.names and next(t.buffs.names) then
 					for _, value in pairs(t.buffs.names) do
 						if value then
-							mod.StyleFilterTriggerEvents.UNIT_AURA = true
+							NP.StyleFilterTriggerEvents.UNIT_AURA = true
 							break
 				end end end
 
 				if t.debuffs and t.debuffs.names and next(t.debuffs.names) then
 					for _, value in pairs(t.debuffs.names) do
 						if value then
-							mod.StyleFilterTriggerEvents.UNIT_AURA = true
+							NP.StyleFilterTriggerEvents.UNIT_AURA = true
 							break
 				end end end
 			end
 		end
 	end
 
-	if next(mod.StyleFilterTriggerList) then
-		sort(mod.StyleFilterTriggerList, mod.StyleFilterSort) -- sort by priority
+	if next(NP.StyleFilterTriggerList) then
+		sort(NP.StyleFilterTriggerList, NP.StyleFilterSort) -- sort by priority
 	else
-		mod:ForEachPlate("StyleFilterClear")
+		NP:ForEachPlate("StyleFilterClear")
 	end
 end
 
-function mod:StyleFilterUpdate(frame, event)
-	local hasEvent = mod.StyleFilterTriggerEvents[event]
+function NP:StyleFilterUpdate(frame, event)
+	local hasEvent = NP.StyleFilterTriggerEvents[event]
 	if not hasEvent then
 		return
 	elseif hasEvent == true then -- skip on 1 or 0
@@ -827,30 +827,30 @@ function mod:StyleFilterUpdate(frame, event)
 		end
 	end
 
-	mod:StyleFilterClear(frame)
+	NP:StyleFilterClear(frame)
 
-	for filterNum in ipairs(mod.StyleFilterTriggerList) do
-		local filter = E.global.nameplates.filters[mod.StyleFilterTriggerList[filterNum][1]]
+	for filterNum in ipairs(NP.StyleFilterTriggerList) do
+		local filter = E.global.nameplates.filters[NP.StyleFilterTriggerList[filterNum][1]]
 		if filter then
-			mod:StyleFilterConditionCheck(frame, filter, filter.triggers)
+			NP:StyleFilterConditionCheck(frame, filter, filter.triggers)
 		end
 	end
 end
 
-function mod:StyleFilterAddCustomCheck(name, func)
-	if not mod.StyleFilterCustomChecks then
-		mod.StyleFilterCustomChecks = {}
+function NP:StyleFilterAddCustomCheck(name, func)
+	if not NP.StyleFilterCustomChecks then
+		NP.StyleFilterCustomChecks = {}
 	end
 
-	mod.StyleFilterCustomChecks[name] = func
+	NP.StyleFilterCustomChecks[name] = func
 end
 
-function mod:StyleFilterRemoveCustomCheck(name)
-	if not mod.StyleFilterCustomChecks then
+function NP:StyleFilterRemoveCustomCheck(name)
+	if not NP.StyleFilterCustomChecks then
 		return
 	end
 
-	mod.StyleFilterCustomChecks[name] = nil
+	NP.StyleFilterCustomChecks[name] = nil
 end
 
 -- Shamelessy taken from AceDB-3.0 and stripped down by Simpy
@@ -878,7 +878,7 @@ local function removeDefaults(db, defaults)
 	end
 end
 
-function mod:StyleFilterClearDefaults()
+function NP:StyleFilterClearDefaults()
 	for filterName, filterTable in pairs(E.global.nameplates.filters) do
 		if G.nameplates.filters[filterName] then
 			local defaultTable = E:CopyTable({}, E.StyleFilterDefaults)
@@ -890,12 +890,12 @@ function mod:StyleFilterClearDefaults()
 	end
 end
 
-function mod:StyleFilterCopyDefaults(tbl)
+function NP:StyleFilterCopyDefaults(tbl)
 	copyDefaults(tbl, E.StyleFilterDefaults)
 end
 
-function mod:StyleFilterInitialize()
+function NP:StyleFilterInitialize()
 	for _, filterTable in pairs(E.global.nameplates.filters) do
-		mod:StyleFilterCopyDefaults(filterTable)
+		NP:StyleFilterCopyDefaults(filterTable)
 	end
 end

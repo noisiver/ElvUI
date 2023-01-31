@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local DT = E:GetModule("DataTexts")
 
 --Lua functions
@@ -260,8 +260,8 @@ local function OnUpdate(self, elapsed)
 	int = 1
 	lastPanel = self
 
-	if GameTimeFrame.flashInvite then
-		E:Flash(self, 0.53)
+	if E.global.datatexts.settings.Time.flashInvite and _G.GameTimeFrame.flashInvite then
+		E:Flash(self, 0.53, true)
 	else
 		E:StopFlash(self)
 	end
@@ -288,4 +288,4 @@ local function ValueColorUpdate(hex)
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("Time", {"UPDATE_INSTANCE_INFO"}, OnEvent, OnUpdate, OnClick, OnEnter, OnLeave)
+DT:RegisterDatatext('Time', nil, { 'UPDATE_INSTANCE_INFO', 'LOADING_SCREEN_ENABLED' }, OnEvent, OnUpdate, OnClick, OnEnter, OnLeave, nil, nil, ValueColorUpdate)

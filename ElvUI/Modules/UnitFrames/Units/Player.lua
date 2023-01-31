@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local UF = E:GetModule("UnitFrames")
 local _, ns = ...
 local ElvUF = ns.oUF
@@ -55,9 +55,9 @@ function UF:Construct_PlayerFrame(frame)
 	frame.PvPIndicator = self:Construct_PvPIcon(frame)
 	frame.Fader = self:Construct_Fader()
 	frame.Cutaway = self:Construct_Cutaway(frame)
-	frame.customTexts = {}
 
-	frame:Point("BOTTOMLEFT", E.UIParent, "BOTTOM", -413, 68) --Set to default position
+	frame.customTexts = {}
+	frame:Point("BOTTOM", E.UIParent, "BOTTOM", -342, 139)
 	E:CreateMover(frame, frame:GetName().."Mover", L["Player Frame"], nil, nil, nil, "ALL,SOLO", nil, "unitframe,player,generalGroup")
 
 	frame.unitframeType = "player"

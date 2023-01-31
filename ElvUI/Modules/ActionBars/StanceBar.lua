@@ -1,348 +1,255 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-local AB = E:GetModule("ActionBars")
+local E, L, V, P, G = unpack(ElvUI)
+local AB = E:GetModule('ActionBars')
 
---Lua functions
 local _G = _G
-local ceil = math.ceil
-local find, format, gsub, match = string.find, string.format, string.gsub, string.match
---WoW API / Variables
-local CooldownFrame_SetTimer = CooldownFrame_SetTimer
+local gsub = gsub
+local format, ipairs = format, ipairs
 local CreateFrame = CreateFrame
 local GetBindingKey = GetBindingKey
 local GetNumShapeshiftForms = GetNumShapeshiftForms
 local GetShapeshiftForm = GetShapeshiftForm
 local GetShapeshiftFormCooldown = GetShapeshiftFormCooldown
 local GetShapeshiftFormInfo = GetShapeshiftFormInfo
-local GetSpellInfo = GetSpellInfo
+local GetSpellTexture = GetSpellTexture
 local InCombatLockdown = InCombatLockdown
 local RegisterStateDriver = RegisterStateDriver
+local NUM_SHAPESHIFT_SLOTS = NUM_SHAPESHIFT_SLOTS or 10
 
-local NUM_SHAPESHIFT_SLOTS = NUM_SHAPESHIFT_SLOTS
-
-local bar = CreateFrame("Frame", "ElvUI_StanceBar", E.UIParent, "SecureHandlerStateTemplate")
-bar:SetFrameStrata("LOW")
+local Masque = E.Masque
+local MasqueGroup = Masque and Masque:Group('ElvUI', 'Stance Bar')
+local WispSplode = [[Interface\Icons\Spell_Nature_WispSplode]]
+local bar = CreateFrame('Frame', 'ElvUI_StanceBar', E.UIParent, 'SecureHandlerStateTemplate')
+bar.buttons = {}
 
 function AB:UPDATE_SHAPESHIFT_COOLDOWN()
 	local numForms = GetNumShapeshiftForms()
-	local start, duration, enable, cooldown
+	local start, duration, active, cooldown
 	for i = 1, NUM_SHAPESHIFT_SLOTS do
 		if i <= numForms then
 			cooldown = _G["ElvUI_StanceBarButton"..i.."Cooldown"]
-			start, duration, enable = GetShapeshiftFormCooldown(i)
-			CooldownFrame_SetTimer(cooldown, start, duration, enable)
+			start, duration, active = GetShapeshiftFormCooldown(i)
+			if (active and active ~= 0) and start > 0 and duration > 0 then
+				CooldownFrame_SetTimer(cooldown, start, duration, active)
+			end
 		end
 	end
 
-	self:StyleShapeShift("UPDATE_SHAPESHIFT_COOLDOWN")
+	AB:StyleShapeShift("UPDATE_SHAPESHIFT_COOLDOWN")
 end
 
 function AB:StyleShapeShift()
 	local numForms = GetNumShapeshiftForms()
-	local texture, name, isActive, isCastable, _
-	local buttonName, button, icon, cooldown
 	local stance = GetShapeshiftForm()
+	local darken = AB.db.stanceBar.style == 'darkenInactive'
 
 	for i = 1, NUM_SHAPESHIFT_SLOTS do
-		buttonName = "ElvUI_StanceBarButton"..i
-		button = _G[buttonName]
-		icon = _G[buttonName.."Icon"]
-		cooldown = _G[buttonName.."Cooldown"]
+		local buttonName = "ElvUI_StanceBarButton"..i
+		local button = _G[buttonName]
+		local icon = _G[buttonName.."Icon"]
+		local cooldown = _G[buttonName.."Cooldown"]
 
-		if i <= numForms then
-			texture, name, isActive, isCastable = GetShapeshiftFormInfo(i)
+		if i > numForms then
+			break
+		else
+			local texture, spellName, isActive, isCastable = GetShapeshiftFormInfo(i)
+			icon:SetTexture(((darken or not isActive) and spellName and GetSpellTexture(spellName)) or WispSplode)
+			icon:SetInside()
 
-			if self.db.stanceBar.style == "darkenInactive" then
-				if name then
-					_, _, texture = GetSpellInfo(name)
-				end
-			end
+			if not button.useMasque then
+				cooldown:SetAlpha(texture and 1 or 0)
 
-			if not texture then
-				texture = "Interface\\Icons\\Spell_Nature_WispSplode"
-			end
-
-			if texture then
-				cooldown:SetAlpha(1)
-			else
-				cooldown:SetAlpha(0)
-			end
-
-			if isActive then
-				button:GetCheckedTexture():SetTexture(1, 1, 1, 0.5)
-
-				if numForms == 1 and (E.myclass ~= "WARRIOR" and E.myclass ~= "DEATHKNIGHT") then
-					button:SetChecked(true)
-				else
-					button:SetChecked(self.db.stanceBar.style ~= "darkenInactive")
-				end
-			else
-				if numForms == 1 or stance == 0 then
+				if isActive then
+					-- button:GetCheckedTexture():SetTexture(1, 1, 1, 0.3)
+					button:SetChecked(numForms == 1 and darken)
+					button.checked:SetTexture(1, 1, 1, 0.3)
+				elseif numForms == 1 or stance == 0 then
 					button:SetChecked(false)
 				else
-					button:SetChecked(self.db.stanceBar.style == "darkenInactive")
-					button:GetCheckedTexture():SetAlpha(1)
-					if self.db.stanceBar.style == "darkenInactive" then
-						button:GetCheckedTexture():SetTexture(0, 0, 0, 0.5)
+					button:SetChecked(darken)
+					button.checked:SetAlpha(1)
+
+					if darken then
+						button.checked:SetTexture(0, 0, 0, 0.6)
 					else
-						button:GetCheckedTexture():SetTexture(1, 1, 1, 0.5)
+						button.checked:SetTexture(1, 1, 1, 0.6)
 					end
 				end
+			else
+				button:SetChecked(isActive)
 			end
-
-			icon:SetTexture(texture)
 
 			if isCastable then
 				icon:SetVertexColor(1.0, 1.0, 1.0)
 			else
-				icon:SetVertexColor(0.4, 0.4, 0.4)
+				icon:SetVertexColor(0.3, 0.3, 0.3)
 			end
 		end
 	end
 end
 
 function AB:PositionAndSizeBarShapeShift()
-	local buttonSpacing = E:Scale(self.db.stanceBar.buttonspacing)
-	local backdropSpacing = E:Scale((self.db.stanceBar.backdropSpacing or self.db.stanceBar.buttonspacing))
-	local buttonsPerRow = self.db.stanceBar.buttonsPerRow
-	local numButtons = self.db.stanceBar.buttons
-	local size = E:Scale(self.db.stanceBar.buttonsize)
-	local point = self.db.stanceBar.point
-	local widthMult = self.db.stanceBar.widthMult
-	local heightMult = self.db.stanceBar.heightMult
+	local db = AB.db.stanceBar
 
-	--Now that we have set positionOverride for mover, convert "TOP" or "BOTTOM" to anchor points we can use
-	local position = E:GetScreenQuadrant(bar)
-	if find(position, "LEFT") or position == "TOP" or position == "BOTTOM" then
-		if point == "TOP" then
-			point = "TOPLEFT"
-		elseif point == "BOTTOM" then
-			point = "BOTTOMLEFT"
-		end
-	else
-		if point == "TOP" then
-			point = "TOPRIGHT"
-		elseif point == "BOTTOM" then
-			point = "BOTTOMRIGHT"
-		end
+	local buttonSpacing = db.buttonSpacing
+	local backdropSpacing = db.backdropSpacing
+	local buttonsPerRow = db.buttonsPerRow
+	local numButtons = db.buttons
+	local point = db.point
+
+	bar.db = db
+	bar.mouseover = db.mouseover
+
+	if bar.LastButton then
+		if numButtons > bar.LastButton then numButtons = bar.LastButton end
+		if buttonsPerRow > bar.LastButton then buttonsPerRow = bar.LastButton end
 	end
-
-	bar.db = self.db.stanceBar
-	bar.db.position = nil --Depreciated
-	bar.mouseover = self.db.stanceBar.mouseover
-
-	if bar.LastButton and numButtons > bar.LastButton then
-		numButtons = bar.LastButton
-	end
-
-	if bar.LastButton and buttonsPerRow > bar.LastButton then
-		buttonsPerRow = bar.LastButton
-	end
-
 	if numButtons < buttonsPerRow then
 		buttonsPerRow = numButtons
 	end
 
-	local numColumns = ceil(numButtons / buttonsPerRow)
-	if numColumns < 1 then
-		numColumns = 1
-	end
+	bar:SetParent(db.inheritGlobalFade and AB.fadeParent or E.UIParent)
+	bar:EnableMouse(not db.clickThrough)
+	bar:SetAlpha(bar.mouseover and 0 or db.alpha)
+	AB:FadeBarBlings(bar, bar.mouseover and 0 or db.alpha)
 
-	if self.db.stanceBar.backdrop then
+	if db.backdrop then
 		bar.backdrop:Show()
 	else
 		bar.backdrop:Hide()
-		--Set size multipliers to 1 when backdrop is disabled
-		widthMult = 1
-		heightMult = 1
 	end
+	bar.backdrop:ClearAllPoints()
 
-	local barWidth = (size * (buttonsPerRow * widthMult)) + ((buttonSpacing * (buttonsPerRow - 1)) * widthMult) + (buttonSpacing * (widthMult-1)) + ((self.db.stanceBar.backdrop and (E.Border + backdropSpacing) or E.Spacing)*2)
-	local barHeight = (size * (numColumns * heightMult)) + ((buttonSpacing * (numColumns - 1)) * heightMult) + (buttonSpacing * (heightMult-1)) + ((self.db.stanceBar.backdrop and (E.Border + backdropSpacing) or E.Spacing)*2)
-	bar:Width(barWidth)
-	bar:Height(barHeight)
+	AB:MoverMagic(bar)
 
-	if self.db.stanceBar.enabled then
-		bar:SetScale(1)
-		bar:SetAlpha(bar.db.alpha)
-		E:EnableMover(bar.mover:GetName())
-	else
-		bar:SetScale(0.0001)
-		bar:SetAlpha(0)
-		E:DisableMover(bar.mover:GetName())
-	end
+	local _, horizontal, anchorUp, anchorLeft = AB:GetGrowth(point)
+	local button, lastButton, lastColumnButton, anchorRowButton, lastShownButton
+	local useMasque = MasqueGroup and E.private.actionbar.masque.stanceBar
 
-	local horizontalGrowth, verticalGrowth
-	if point == "TOPLEFT" or point == "TOPRIGHT" then
-		verticalGrowth = "DOWN"
-	else
-		verticalGrowth = "UP"
-	end
-
-	if point == "BOTTOMLEFT" or point == "TOPLEFT" then
-		horizontalGrowth = "RIGHT"
-	else
-		horizontalGrowth = "LEFT"
-	end
-
-	if self.db.stanceBar.inheritGlobalFade then
-		bar:SetParent(self.fadeParent)
-	else
-		bar:SetParent(E.UIParent)
-	end
-
-	local button, lastButton, lastColumnButton
-	local firstButtonSpacing = (self.db.stanceBar.backdrop and (E.Border + backdropSpacing) or E.Spacing)
 	for i = 1, NUM_SHAPESHIFT_SLOTS do
 		button = _G["ElvUI_StanceBarButton"..i]
 		lastButton = _G["ElvUI_StanceBarButton"..i - 1]
 		lastColumnButton = _G["ElvUI_StanceBarButton"..i - buttonsPerRow]
 
-		button:SetParent(bar)
-		button:ClearAllPoints()
-		button:Size(size)
+		button.commandName = 'SHAPESHIFTBUTTON'..i
 
-		if self.db.stanceBar.mouseover then
-			bar:SetAlpha(0)
-		else
-			bar:SetAlpha(bar.db.alpha)
-		end
+		button.db = db
 
-		if i == 1 then
-			local x, y
-			if point == "BOTTOMLEFT" then
-				x, y = firstButtonSpacing, firstButtonSpacing
-			elseif point == "TOPRIGHT" then
-				x, y = -firstButtonSpacing, -firstButtonSpacing
-			elseif point == "TOPLEFT" then
-				x, y = firstButtonSpacing, -firstButtonSpacing
-			else
-				x, y = -firstButtonSpacing, firstButtonSpacing
-			end
-
-			button:Point(point, bar, point, x, y)
-		elseif (i - 1) % buttonsPerRow == 0 then
-			local x = 0
-			local y = -buttonSpacing
-			local buttonPoint, anchorPoint = "TOP", "BOTTOM"
-			if verticalGrowth == "UP" then
-				y = buttonSpacing
-				buttonPoint = "BOTTOM"
-				anchorPoint = "TOP"
-			end
-			button:Point(buttonPoint, lastColumnButton, anchorPoint, x, y)
-		else
-			local x = buttonSpacing
-			local y = 0
-			local buttonPoint, anchorPoint = "LEFT", "RIGHT"
-			if horizontalGrowth == "LEFT" then
-				x = -buttonSpacing
-				buttonPoint = "RIGHT"
-				anchorPoint = "LEFT"
-			end
-
-			button:Point(buttonPoint, lastButton, anchorPoint, x, y)
+		if i == 1 or i == buttonsPerRow then
+			anchorRowButton = button
 		end
 
 		if i > numButtons then
 			button:SetScale(0.0001)
 			button:SetAlpha(0)
+			button.handleBackdrop = nil
 		else
 			button:SetScale(1)
-			button:SetAlpha(bar.db.alpha)
+			button:SetAlpha(db.alpha)
+			lastShownButton = button
+			button.handleBackdrop = true -- keep over HandleButton
 		end
 
-		self:StyleButton(button, nil, (self.LBFGroup or self.MSQGroup) and E.private.actionbar.lbf.enable or nil)
+		AB:HandleButton(bar, button, i, lastButton, lastColumnButton)
+		AB:StyleButton(button, nil, useMasque, true)
+
+		if useMasque then
+			MasqueGroup:AddButton(bar.buttons[i])
+		elseif db.style == 'darkenInactive' then
+			button.checked:SetBlendMode('BLEND')
+		else
+			button.checked:SetBlendMode('ADD')
+		end
 	end
 
-	if self.LBFGroup and E.private.actionbar.lbf.enable then
-		self.LBFGroup:Skin(E.private.actionbar.lbf.skin)
-	elseif self.MSQGroup and E.private.actionbar.lbf.enable then
-		self.MSQGroup:ReSkin()
+	AB:HandleBackdropMultiplier(bar, backdropSpacing, buttonSpacing, db.widthMult, db.heightMult, anchorUp, anchorLeft, horizontal, lastShownButton, anchorRowButton)
+	AB:HandleBackdropMover(bar, backdropSpacing)
+
+	if db.enabled then
+		E:EnableMover(bar.mover.name)
+	else
+		E:DisableMover(bar.mover.name)
+	end
+
+	local visibility = gsub(db.visibility, '[\n\r]', '')
+	RegisterStateDriver(bar, 'visibility', (not db.enabled or GetNumShapeshiftForms() == 0) and 'hide' or visibility)
+
+	if useMasque then
+		MasqueGroup:ReSkin()
+
+		for _, btn in ipairs(bar.buttons) do
+			AB:TrimIcon(btn, true)
+		end
 	end
 end
 
 function AB:AdjustMaxStanceButtons(event)
 	if InCombatLockdown() then
 		AB.NeedsAdjustMaxStanceButtons = event or true
-		self:RegisterEvent("PLAYER_REGEN_ENABLED")
+		AB:RegisterEvent('PLAYER_REGEN_ENABLED')
 		return
 	end
 
-	local visibility = self.db.stanceBar.visibility
-	if visibility and match(visibility, "[\n\r]") then
-		visibility = gsub(visibility, "[\n\r]", "")
-	end
-
-	for i = 1, #bar.buttons do
-		bar.buttons[i]:Hide()
+	for _, button in ipairs(bar.buttons) do
+		button:Hide()
 	end
 
 	local numButtons = GetNumShapeshiftForms()
 	for i = 1, NUM_SHAPESHIFT_SLOTS do
 		if not bar.buttons[i] then
-			bar.buttons[i] = CreateFrame("CheckButton", format(bar:GetName().."Button%d", i), bar, "ShapeshiftButtonTemplate")
+			bar.buttons[i] = CreateFrame('CheckButton', format(bar:GetName()..'Button%d', i), bar, 'ShapeshiftButtonTemplate')
 			bar.buttons[i]:SetID(i)
-			if (self.LBFGroup or self.MSQGroup) and E.private.actionbar.lbf.enable then
-				(self.LBFGroup or self.MSQGroup):AddButton(bar.buttons[i])
-			end
-			self:HookScript(bar.buttons[i], "OnEnter", "Button_OnEnter")
-			self:HookScript(bar.buttons[i], "OnLeave", "Button_OnLeave")
+
+			AB:HookScript(bar.buttons[i], 'OnEnter', 'Button_OnEnter')
+			AB:HookScript(bar.buttons[i], 'OnLeave', 'Button_OnLeave')
+		end
+
+		local blizz = _G[format('StanceButton%d', i)]
+		if blizz and blizz.commandName then
+			bar.buttons[i].commandName = blizz.commandName
 		end
 
 		if i <= numButtons then
 			bar.buttons[i]:Show()
 			bar.LastButton = i
-		else
-			bar.buttons[i]:Hide()
 		end
 	end
 
-	self:PositionAndSizeBarShapeShift()
+	AB:PositionAndSizeBarShapeShift()
 
 	-- sometimes after combat lock down `event` may be true because of passing it back with `AB.NeedsAdjustMaxStanceButtons`
-	if event == "UPDATE_SHAPESHIFT_FORMS" then
-		self:StyleShapeShift()
+	if event == 'UPDATE_SHAPESHIFT_FORMS' or event == 'PLAYER_ENTERING_WORLD' then
+		AB:StyleShapeShift()
 	end
-
-	RegisterStateDriver(bar, "visibility", (numButtons == 0 and "hide") or visibility)
 end
 
 function AB:UpdateStanceBindings()
-	local color = self.db.fontColor
-
 	for i = 1, NUM_SHAPESHIFT_SLOTS do
-		if self.db.hotkeytext then
-			local key = GetBindingKey("SHAPESHIFTBUTTON"..i)
-			local hotkey = _G["ElvUI_StanceBarButton"..i.."HotKey"]
-			hotkey:Show()
-			hotkey:SetText(key)
-			hotkey:SetTextColor(color.r, color.g, color.b)
-			self:FixKeybindText(_G["ElvUI_StanceBarButton"..i])
-		else
-			_G["ElvUI_StanceBarButton"..i.."HotKey"]:Hide()
-		end
+		local button = _G['ElvUI_StanceBarButton'..i]
+		if not button then break end
+
+		local HotKey = _G[button:GetName().."HotKey"]
+
+		HotKey:SetText(GetBindingKey('SHAPESHIFTBUTTON'..i))
+		AB:FixKeybindText(button)
+		AB:FixKeybindColor(button)
 	end
 end
 
 function AB:CreateBarShapeShift()
-	bar:CreateBackdrop(self.db.transparentBackdrops and "Transparent")
-	bar.backdrop:SetAllPoints()
-	bar:Point("TOPLEFT", E.UIParent, "TOPLEFT", 4, -4)
-	bar.buttons = {}
+	bar:CreateBackdrop(AB.db.transparent and 'Transparent', nil, nil, nil, nil, nil, nil, nil, 0)
 
-	self:HookScript(bar, "OnEnter", "Bar_OnEnter")
-	self:HookScript(bar, "OnLeave", "Bar_OnLeave")
+	bar:Point('TOPLEFT', E.UIParent, 'BOTTOMLEFT', 4, -769)
 
-	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS", "AdjustMaxStanceButtons")
-	self:RegisterEvent("UPDATE_SHAPESHIFT_COOLDOWN")
-	self:RegisterEvent("UPDATE_SHAPESHIFT_USABLE", "StyleShapeShift")
-	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM", "StyleShapeShift")
-	self:RegisterEvent("ACTIONBAR_PAGE_CHANGED", "StyleShapeShift")
-	E:ShapeshiftDelayedUpdate(AB.StyleShapeShift, self)
+	AB:HookScript(bar, 'OnEnter', 'Bar_OnEnter')
+	AB:HookScript(bar, 'OnLeave', 'Bar_OnLeave')
 
-	E:CreateMover(bar, "ShiftAB", L["Stance Bar"], nil, -3, nil, "ALL,ACTIONBARS", nil, "actionbar,stanceBar")
-	self:AdjustMaxStanceButtons()
-	self:PositionAndSizeBarShapeShift()
-	self:StyleShapeShift()
-	self:UpdateStanceBindings()
+	AB:RegisterEvent('UPDATE_SHAPESHIFT_COOLDOWN')
+	AB:RegisterEvent('UPDATE_SHAPESHIFT_FORMS', 'AdjustMaxStanceButtons')
+	AB:RegisterEvent('UPDATE_SHAPESHIFT_FORM', 'StyleShapeShift')
+	AB:RegisterEvent('UPDATE_SHAPESHIFT_USABLE', 'StyleShapeShift')
+	AB:RegisterEvent('ACTIONBAR_PAGE_CHANGED', 'StyleShapeShift')
+
+	E:ShapeshiftDelayedUpdate(AB.StyleShapeShift, AB)
+
+	E:CreateMover(bar, 'ShiftAB', L["Stance Bar"], nil, -3, nil, 'ALL,ACTIONBARS', nil, 'actionbar,stanceBar')
 end

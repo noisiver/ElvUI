@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local DT = E:GetModule("DataTexts")
 
 --Lua functions
@@ -57,7 +57,9 @@ local function OnEvent(self, event)
 
 	local curMoney = GetMoney()
 
-	if not dataUpdated and (event == "PLAYER_ENTERING_WORLD" or event == "ELVUI_FORCE_RUN") then
+	if not dataUpdated and (event == "PLAYER_ENTERING_WORLD" or event == "ELVUI_FORCE_UPDATE") then
+		ElvDB = ElvDB or {}
+
 		ElvDB.gold = ElvDB.gold or {}
 		ElvDB.gold[E.myrealm] = ElvDB.gold[E.myrealm] or {}
 		ElvDB.gold[E.myrealm][E.myname] = ElvDB.gold[E.myrealm][E.myname] or curMoney
@@ -146,7 +148,7 @@ local function OnEnter(self)
 	DT.tooltip:Show()
 end
 
-local function OnClick(self, btn)
+local function Click(self, btn)
 	if btn == "RightButton" and IsShiftKeyDown() then
 		ElvDB.gold = nil
 		dataUpdated = nil
@@ -163,4 +165,4 @@ local function OnClick(self, btn)
 	end
 end
 
-DT:RegisterDatatext("Gold", {"PLAYER_ENTERING_WORLD", "PLAYER_MONEY", "SEND_MAIL_MONEY_CHANGED", "SEND_MAIL_COD_CHANGED", "PLAYER_TRADE_MONEY", "TRADE_MONEY_CHANGED"}, OnEvent, nil, OnClick, OnEnter, nil, L["Gold"])
+DT:RegisterDatatext('Gold', nil, {"PLAYER_ENTERING_WORLD", "PLAYER_MONEY", "SEND_MAIL_MONEY_CHANGED", "SEND_MAIL_COD_CHANGED", "PLAYER_TRADE_MONEY", "TRADE_MONEY_CHANGED"}, OnEvent, nil, Click, OnEnter, nil, L["Gold"])

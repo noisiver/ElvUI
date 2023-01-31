@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local A = E:GetModule("Auras")
 local LSM = E.Libs.LSM
 local LBF = E.Libs.LBF
@@ -129,13 +129,13 @@ local OnClick = function(self)
 end
 
 function A:CreateIcon(button)
-	local font = LSM:Fetch("font", self.db.font)
+	local font = LSM:Fetch("font", A.db.font)
 	local auraType = button:GetParent().filter
 
-	local db = self.db.debuffs
+	local db = A.db.debuffs
 	button.auraType = "debuffs" -- used to update cooldown text
 	if auraType == "HELPFUL" then
-		db = self.db.buffs
+		db = A.db.buffs
 		button.auraType = "buffs"
 	end
 
@@ -146,11 +146,11 @@ function A:CreateIcon(button)
 	button.texture:SetTexCoord(unpack(E.TexCoords))
 
 	button.count = button:CreateFontString(nil, "ARTWORK")
-	button.count:Point("BOTTOMRIGHT", -1 + self.db.countXOffset, 1 + self.db.countYOffset)
-	button.count:FontTemplate(font, db.countFontSize, self.db.fontOutline)
+	button.count:Point("BOTTOMRIGHT", -1 + A.db.countXOffset, 1 + A.db.countYOffset)
+	button.count:FontTemplate(font, db.countFontSize, A.db.fontOutline)
 
 	button.text = button:CreateFontString(nil, "ARTWORK")
-	button.text:Point("TOP", button, "BOTTOM", 1 + self.db.timeXOffset, 0 + self.db.timeYOffset)
+	button.text:Point("TOP", button, "BOTTOM", 1 + A.db.timeXOffset, 0 + A.db.timeYOffset)
 
 	button.highlight = button:CreateTexture(nil, "HIGHLIGHT")
 	button.highlight:SetTexture(1, 1, 1, 0.45)
@@ -158,7 +158,7 @@ function A:CreateIcon(button)
 
 	button.statusBar = CreateFrame("StatusBar", "$parentStatusBar", button)
 	button.statusBar:Hide()
-	button.statusBar:SetStatusBarTexture(LSM:Fetch("statusbar", self.db.barTexture))
+	button.statusBar:SetStatusBarTexture(LSM:Fetch("statusbar", A.db.barTexture))
 	button.statusBar:CreateBackdrop()
 	E:SetSmoothing(button.statusBar)
 
@@ -175,7 +175,7 @@ function A:CreateIcon(button)
 		tinsert(E.RegisteredCooldowns.auras, button)
 	end
 
-	button.text:FontTemplate(font, db.durationFontSize, self.db.fontOutline)
+	button.text:FontTemplate(font, db.durationFontSize, A.db.fontOutline)
 
 	A:Update_CooldownOptions(button)
 
@@ -184,7 +184,7 @@ function A:CreateIcon(button)
 	button:SetScript("OnLeave", OnLeave)
 	button:SetScript("OnClick", OnClick)
 
-	if (self.LBFGroup or self.MSQGroup) and E.private.auras.lbf.enable then
+	if (A.LBFGroup or A.MSQGroup) and E.private.auras.lbf.enable then
 		local ButtonData = {
 			Icon = button.texture,
 			Flash = nil,
@@ -195,9 +195,9 @@ function A:CreateIcon(button)
 			Count = false,
 			Name = nil,
 			Highlight = button.highlight
-		}
+		};
 
-		(self.LBFGroup or self.MSQGroup):AddButton(button, ButtonData)
+		(A.LBFGroup or A.MSQGroup):AddButton(button, ButtonData)
 	else
 		button:SetTemplate("Default")
 	end
@@ -211,7 +211,7 @@ function A:SetAuraTime(button, expiration, duration)
 
 	if not button.timeLeft then
 		button.timeLeft = expiration
-		button:SetScript("OnUpdate", self.UpdateTime)
+		button:SetScript("OnUpdate", A.UpdateTime)
 	else
 		button.timeLeft = expiration
 	end
@@ -246,15 +246,15 @@ function A:HasEnchant(index, weapon, expiration)
 end
 
 function A:Update_CooldownOptions(button)
-	E:Cooldown_Options(button, self.db.cooldown, button)
+	E:Cooldown_Options(button, A.db.cooldown, button)
 end
 
 local buttons = {}
 function A:ConfigureAuras(header, auraTable, weaponPosition)
 	local headerName = header:GetName()
-	local db = self.db.debuffs
+	local db = A.db.debuffs
 	if header.filter == "HELPFUL" then
-		db = self.db.buffs
+		db = A.db.buffs
 	end
 
 	local xOffset, yOffset, wrapXOffset, wrapYOffset, minWidth, minHeight
@@ -287,7 +287,7 @@ function A:ConfigureAuras(header, auraTable, weaponPosition)
 			if button:IsShown() then button:Hide() end
 		else
 			button = CreateFrame("Button", "$parentAuraButton"..i, header)
-			self:CreateIcon(button)
+			A:CreateIcon(button)
 		end
 		local buffInfo = auraTable[i]
 		button:SetID(buffInfo.index)
@@ -304,17 +304,17 @@ function A:ConfigureAuras(header, auraTable, weaponPosition)
 			button.count:SetText("")
 		end
 
-		if (self.db.barShow and buffInfo.duration > 0) or (self.db.barShow and self.db.barNoDuration and buffInfo.duration == 0) then
+		if (A.db.barShow and buffInfo.duration > 0) or (A.db.barShow and A.db.barNoDuration and buffInfo.duration == 0) then
 			button.statusBar:Show()
 
-			if not button.timeLeft or not self.db.barColorGradient then
-				button.statusBar:SetStatusBarColor(self.db.barColor.r, self.db.barColor.g, self.db.barColor.b)
+			if not button.timeLeft or not A.db.barColorGradient then
+				button.statusBar:SetStatusBarColor(A.db.barColor.r, A.db.barColor.g, A.db.barColor.b)
 			end
 		else
 			button.statusBar:Hide()
 		end
 
-		if self.db.showDuration then
+		if A.db.showDuration then
 			button.text:Show()
 		else
 			button.text:Hide()
@@ -342,7 +342,7 @@ function A:ConfigureAuras(header, auraTable, weaponPosition)
 				if not button then
 					button = CreateFrame("Button", "$parentTempEnchant"..weapon, header)
 					button.IsWeapon = true
-					self:CreateIcon(button)
+					A:CreateIcon(button)
 				end
 				if button then
 					if button:IsShown() then button:Hide() end
@@ -368,17 +368,17 @@ function A:ConfigureAuras(header, auraTable, weaponPosition)
 						A:ClearAuraTime(button)
 					end
 
-					if (self.db.barShow and duration > 0) or (self.db.barShow and self.db.barNoDuration and duration == 0) then
+					if (A.db.barShow and duration > 0) or (A.db.barShow and A.db.barNoDuration and duration == 0) then
 						button.statusBar:Show()
 
-						if not button.timeLeft or not self.db.barColorGradient then
-							button.statusBar:SetStatusBarColor(self.db.barColor.r, self.db.barColor.g, self.db.barColor.b)
+						if not button.timeLeft or not A.db.barColorGradient then
+							button.statusBar:SetStatusBarColor(A.db.barColor.r, A.db.barColor.g, A.db.barColor.b)
 						end
 					else
 						button.statusBar:Hide()
 					end
 
-					if self.db.showDuration then
+					if A.db.showDuration then
 						button.text:Show()
 					else
 						button.text:Hide()
@@ -403,7 +403,7 @@ function A:ConfigureAuras(header, auraTable, weaponPosition)
 		display = min(display, wrapAfter * maxWraps)
 	end
 
-	local pos, spacing, iconSize = self.db.barPosition, self.db.barSpacing, db.size - (E.Border * 2)
+	local pos, spacing, iconSize = A.db.barPosition, A.db.barSpacing, db.size - (E.Border * 2)
 	local isOnTop = pos == "TOP" and true or false
 	local isOnBottom = pos == "BOTTOM" and true or false
 	local isOnLeft = pos == "LEFT" and true or false
@@ -419,21 +419,21 @@ function A:ConfigureAuras(header, auraTable, weaponPosition)
 		button:SetSize(size, size)
 
 		if button.text then
-			local font = LSM:Fetch("font", self.db.font)
+			local font = LSM:Fetch("font", A.db.font)
 			button.text:ClearAllPoints()
-			button.text:Point("TOP", button, "BOTTOM", 1 + self.db.timeXOffset, 0 + self.db.timeYOffset)
-			button.text:FontTemplate(font, db.durationFontSize, self.db.fontOutline)
+			button.text:Point("TOP", button, "BOTTOM", 1 + A.db.timeXOffset, 0 + A.db.timeYOffset)
+			button.text:FontTemplate(font, db.durationFontSize, A.db.fontOutline)
 
 			button.count:ClearAllPoints()
-			button.count:Point("BOTTOMRIGHT", -1 + self.db.countXOffset, 0 + self.db.countYOffset)
-			button.count:FontTemplate(font, db.countFontSize, self.db.fontOutline)
+			button.count:Point("BOTTOMRIGHT", -1 + A.db.countXOffset, 0 + A.db.countYOffset)
+			button.count:FontTemplate(font, db.countFontSize, A.db.fontOutline)
 		end
 
-		button.statusBar:Width((isOnTop or isOnBottom) and iconSize or (self.db.barWidth + (E.PixelMode and 0 or 2)))
-		button.statusBar:Height((isOnLeft or isOnRight) and iconSize or (self.db.barHeight + (E.PixelMode and 0 or 2)))
+		button.statusBar:Width((isOnTop or isOnBottom) and iconSize or (A.db.barWidth + (E.PixelMode and 0 or 2)))
+		button.statusBar:Height((isOnLeft or isOnRight) and iconSize or (A.db.barHeight + (E.PixelMode and 0 or 2)))
 		button.statusBar:ClearAllPoints()
 		button.statusBar:Point(E.InversePoints[pos], button, pos, (isOnTop or isOnBottom) and 0 or ((isOnLeft and -((E.PixelMode and 1 or 3) + spacing)) or ((E.PixelMode and 1 or 3) + spacing)), (isOnLeft or isOnRight) and 0 or ((isOnTop and ((E.PixelMode and 1 or 3) + spacing) or -((E.PixelMode and 1 or 3) + spacing))))
-		button.statusBar:SetStatusBarTexture(LSM:Fetch("statusbar", self.db.barTexture))
+		button.statusBar:SetStatusBarTexture(LSM:Fetch("statusbar", A.db.barTexture))
 		if isOnLeft or isOnRight then
 			button.statusBar:SetOrientation("VERTICAL")
 		else
@@ -541,13 +541,13 @@ sorters.TIME = sorters.EXPIRES
 local sortingTable = {}
 function A:UpdateHeader(header)
 	local filter = header.filter
-	local db = self.db.debuffs
+	local db = A.db.debuffs
 
 	wipe(sortingTable)
 
 	local weaponPosition
 	if filter == "HELPFUL" then
-		db = self.db.buffs
+		db = A.db.buffs
 		weaponPosition = 1
 	end
 
@@ -569,27 +569,28 @@ function A:UpdateHeader(header)
 	local sortMethod = (sorters[db.sortMethod] or sorters.INDEX)[db.sortDir == "-"][db.seperateOwn]
 	tsort(sortingTable, sortMethod)
 
-	self:ConfigureAuras(header, sortingTable, weaponPosition)
+	A:ConfigureAuras(header, sortingTable, weaponPosition)
 	while sortingTable[1] do
 		releaseTable(tremove(sortingTable))
 	end
 
-	if self.LBFGroup then
-		self.LBFGroup:Skin(E.private.auras.lbf.skin)
-	elseif self.MSQGroup then
-		self.MSQGroup:ReSkin()
+	if A.LBFGroup then
+		A.LBFGroup:Skin(E.private.auras.lbf.skin)
+	elseif A.MSQGroup then
+		A.MSQGroup:ReSkin()
 	end
 end
 
 function A:CreateAuraHeader(filter)
-	local name = "ElvUIPlayerDebuffs"
-	if filter == "HELPFUL" then
-		name = "ElvUIPlayerBuffs"
-	end
+	local name, auraType = filter == 'HELPFUL' and 'ElvUIPlayerBuffs' or 'ElvUIPlayerDebuffs', filter == 'HELPFUL' and 'buffs' or 'debuffs'
+
 
 	local header = CreateFrame("Frame", name, UIParent)
 	header:SetClampedToScreen(true)
+	header:SetAttribute('unit', 'player')
+	header:SetAttribute('filter', filter)
 	header.filter = filter
+	header.auraType = auraType
 
 	header:RegisterEvent("UNIT_AURA")
 	header:SetScript("OnEvent", function(self, _, unit)
@@ -598,7 +599,7 @@ function A:CreateAuraHeader(filter)
 		A:UpdateHeader(self)
 	end)
 
-	self:UpdateHeader(header)
+	A:UpdateHeader(header)
 
 	return header
 end
@@ -606,43 +607,50 @@ end
 function A:Initialize()
 	if E.private.auras.disableBlizzard then
 		BuffFrame:Kill()
-		ConsolidatedBuffs:Kill()
 		TemporaryEnchantFrame:Kill()
+		ConsolidatedBuffs:Kill()
 	end
 
 	if not E.private.auras.enable then return end
 
-	self.Initialized = true
-	self.db = E.db.auras
+	A.Initialized = true
+	A.db = E.db.auras
 
 	if LBF then
-		self.LBFGroup = LBF and LBF:Group("ElvUI", "Auras")
+		A.LBFGroup = LBF and LBF:Group("ElvUI", "Auras")
 	elseif E.Masque then
-		self.MSQGroup = E.Masque:Group("ElvUI", "Auras")
+		A.MSQGroup = E.Masque:Group("ElvUI", "Auras")
 	end
 
-	self.BuffFrame = self:CreateAuraHeader("HELPFUL")
-	self.BuffFrame:Point("TOPRIGHT", MMHolder, "TOPLEFT", -(6 + E.Border), -E.Border - E.Spacing)
-	E:CreateMover(self.BuffFrame, "BuffsMover", L["Player Buffs"], nil, nil, nil, nil, nil, "auras,buffs")
+	local xoffset = -(6 + E.Border)
+	if E.private.auras.buffsHeader then
+		A.BuffFrame = A:CreateAuraHeader("HELPFUL")
+		A.BuffFrame:ClearAllPoints()
+		A.BuffFrame:Point("TOPRIGHT", MinimapCluster, "TOPLEFT", xoffset, E.Spacing)
+		E:CreateMover(A.BuffFrame, 'BuffsMover', L["Player Buffs"], nil, nil, nil, nil, nil, 'auras,buffs')
 
-	self.BuffFrame.nextUpdate = -1
-	self.BuffFrame:SetScript("OnUpdate", function(bf, elapsed)
-		if bf.nextUpdate > 0 then
-			bf.nextUpdate = bf.nextUpdate - elapsed
-			return
-		end
+		A.BuffFrame.nextUpdate = -1
+		A.BuffFrame:SetScript("OnUpdate", function(bf, elapsed)
+			if bf.nextUpdate > 0 then
+				bf.nextUpdate = bf.nextUpdate - elapsed
+				return
+			end
 
-		bf.nextUpdate = 1
+			bf.nextUpdate = 1
 
-		local hasMainHandEnchant, mainHandExpiration, _, hasOffHandEnchant, offHandExpiration = GetWeaponEnchantInfo()
-		if A:HasEnchant(1, hasMainHandEnchant, mainHandExpiration) or A:HasEnchant(2, hasOffHandEnchant, offHandExpiration) then
-			A:UpdateHeader(bf)
-		end
-	end)
+			local hasMainHandEnchant, mainHandExpiration, _, hasOffHandEnchant, offHandExpiration = GetWeaponEnchantInfo()
+			if A:HasEnchant(1, hasMainHandEnchant, mainHandExpiration) or A:HasEnchant(2, hasOffHandEnchant, offHandExpiration) then
+				A:UpdateHeader(bf)
+			end
+		end)
+	end
 
-	self.DebuffFrame = self:CreateAuraHeader("HARMFUL")
-	self.DebuffFrame:Point("BOTTOMRIGHT", MMHolder, "BOTTOMLEFT", -(6 + E.Border), E.Border + E.Spacing)
-	E:CreateMover(self.DebuffFrame, "DebuffsMover", L["Player Debuffs"], nil, nil, nil, nil, nil, "auras,debuffs")
+	if E.private.auras.debuffsHeader then
+		A.DebuffFrame = A:CreateAuraHeader("HARMFUL")
+		A.DebuffFrame:ClearAllPoints()
+		A.DebuffFrame:Point("BOTTOMRIGHT", MinimapCluster, "BOTTOMLEFT", xoffset, E.Spacing)
+		E:CreateMover(A.DebuffFrame, 'DebuffsMover', L["Player Debuffs"], nil, nil, nil, nil, nil, 'auras,debuffs')
+	end
 end
 
 local function InitializeCallback()

@@ -3,4 +3,5 @@
 	<Script file="Experience.lua"/>
 	<Script file="PetExperience.lua"/>
 	<Script file="Reputation.lua"/>
+	<Script file="Threat.lua"/>
 </Ui>

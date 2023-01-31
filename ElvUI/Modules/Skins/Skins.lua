@@ -1,11 +1,10 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local S = E:GetModule("Skins")
 
 --Lua functions
 local _G = _G
-local unpack, pairs, ipairs, select, type = unpack, pairs, ipairs, select, type
-local floor = math.floor
-local find, format, lower = string.find, string.format, string.lower
+local tinsert, xpcall, next, ipairs, pairs = tinsert, xpcall, next, ipairs, pairs
+local unpack, assert, type, strfind = unpack, assert, type, strfind
 --WoW API / Variables
 local IsAddOnLoaded = IsAddOnLoaded
 local UIPanelWindows = UIPanelWindows
@@ -16,209 +15,572 @@ S.allowBypass = {}
 S.addonCallbacks = {}
 S.nonAddonCallbacks = {["CallPriority"] = {}}
 
-S.ArrowRotation = {
-	["up"] = 0,
-	["down"] = 3.14,
-	["left"] = 1.57,
-	["right"] = -1.57,
+S.Blizzard = {}
+S.Blizzard.Regions = {
+	'Left',
+	'Middle',
+	'Right',
+	'Mid',
+	'LeftDisabled',
+	'MiddleDisabled',
+	'RightDisabled',
+	'TopLeft',
+	'TopRight',
+	'BottomLeft',
+	'BottomRight',
+	'TopMiddle',
+	'MiddleLeft',
+	'MiddleRight',
+	'BottomMiddle',
+	'MiddleMiddle',
+	'TabSpacer',
+	'TabSpacer1',
+	'TabSpacer2',
+	'_RightSeparator',
+	'_LeftSeparator',
+	'Cover',
+	'Border',
+	'Background',
+	'TopTex',
+	'TopLeftTex',
+	'TopRightTex',
+	'LeftTex',
+	'BottomTex',
+	'BottomLeftTex',
+	'BottomRightTex',
+	'RightTex',
+	'MiddleTex',
+	'Center'
 }
 
+-- Depends on the arrow texture to be up by default.
+S.ArrowRotation = {
+	up = 0,
+	down = 3.14,
+	left = 1.57,
+	right = -1.57,
+}
+
+do
+	local function HighlightOnEnter(button)
+		local r, g, b = unpack(E.media.rgbvaluecolor)
+		button.HighlightTexture:SetVertexColor(r, g, b, 0.50)
+		button.HighlightTexture:Show()
+	end
+
+	local function HighlightOnLeave(button)
+		button.HighlightTexture:SetVertexColor(0, 0, 0, 0)
+		button.HighlightTexture:Hide()
+	end
+
+	function S:HandleCategoriesButtons(button, strip)
+		if button.isSkinned then return end
+
+		if button.SetNormalTexture then button:SetNormalTexture(E.ClearTexture) end
+		if button.SetHighlightTexture then button:SetHighlightTexture(E.ClearTexture) end
+		if button.SetPushedTexture then button:SetPushedTexture(E.ClearTexture) end
+		if button.SetDisabledTexture then button:SetDisabledTexture(E.ClearTexture) end
+
+		if strip then button:StripTextures() end
+		S:HandleBlizzardRegions(button)
+
+		button.HighlightTexture = button:CreateTexture(nil, "BACKGROUND")
+		button.HighlightTexture:SetBlendMode("BLEND")
+		button.HighlightTexture:SetSize(button:GetSize())
+		button.HighlightTexture:Point('CENTER', button, 0, 2)
+		button.HighlightTexture:SetTexture(E.Media.Textures.Highlight)
+		button.HighlightTexture:SetVertexColor(0, 0, 0, 0)
+		button.HighlightTexture:Hide()
+
+		button:HookScript('OnEnter', HighlightOnEnter)
+		button:HookScript('OnLeave', HighlightOnLeave)
+
+		button.isSkinned = true
+	end
+end
+
+function S:HandleButtonHighlight(frame, r, g, b)
+	if frame.SetHighlightTexture then
+		frame:SetHighlightTexture(E.ClearTexture)
+	end
+
+	if not frame.highlightGradient then
+		local width, h = frame:GetSize()
+		local height = h * 0.95
+
+		local gradient = frame:CreateTexture(nil, 'HIGHLIGHT')
+		gradient:SetTexture(E.Media.Textures.Highlight)
+		gradient:Point('LEFT', frame)
+		gradient:Size(width, height)
+
+		frame.highlightGradient = gradient
+	end
+
+	if not r then r = 0.9 end
+	if not g then g = 0.9 end
+	if not b then b = 0.9 end
+
+	frame.highlightGradient:SetVertexColor(r, g, b, 0.3)
+end
+
+function S:HandlePointXY(frame, x, y)
+	local a, b, c, d, e = frame:GetPoint()
+	frame:SetPoint(a, b, c, x or d, y or e)
+end
+
+function S:HandleFrame(frame, setBackdrop, template, x1, y1, x2, y2)
+	assert(frame, "doesn't exist!")
+
+	local name = frame and frame.GetName and frame:GetName()
+	local insetFrame = name and _G[name..'Inset'] or frame.Inset
+	local portraitFrame = name and _G[name..'Portrait'] or frame.Portrait or frame.portrait
+	local portraitFrameOverlay = name and _G[name..'PortraitOverlay'] or frame.PortraitOverlay
+	local artFrameOverlay = name and _G[name..'ArtOverlayFrame'] or frame.ArtOverlayFrame
+
+	frame:StripTextures()
+
+	if portraitFrame then portraitFrame:SetAlpha(0) end
+	if portraitFrameOverlay then portraitFrameOverlay:SetAlpha(0) end
+	if artFrameOverlay then artFrameOverlay:SetAlpha(0) end
+
+	if insetFrame then
+		S:HandleInsetFrame(insetFrame)
+	end
+
+	if frame.CloseButton then
+		S:HandleCloseButton(frame.CloseButton)
+	end
+
+	if setBackdrop then
+		frame:CreateBackdrop(template or 'Transparent')
+	else
+		frame:SetTemplate(template or 'Transparent')
+	end
+
+	if frame.backdrop then
+		frame.backdrop:Point('TOPLEFT', x1 or 0, y1 or 0)
+		frame.backdrop:Point('BOTTOMRIGHT', x2 or 0, y2 or 0)
+	end
+end
+
+function S:HandleInsetFrame(frame)
+	assert(frame, 'doesnt exist!')
+
+	if frame.InsetBorderTop then frame.InsetBorderTop:Hide() end
+	if frame.InsetBorderTopLeft then frame.InsetBorderTopLeft:Hide() end
+	if frame.InsetBorderTopRight then frame.InsetBorderTopRight:Hide() end
+
+	if frame.InsetBorderBottom then frame.InsetBorderBottom:Hide() end
+	if frame.InsetBorderBottomLeft then frame.InsetBorderBottomLeft:Hide() end
+	if frame.InsetBorderBottomRight then frame.InsetBorderBottomRight:Hide() end
+
+	if frame.InsetBorderLeft then frame.InsetBorderLeft:Hide() end
+	if frame.InsetBorderRight then frame.InsetBorderRight:Hide() end
+
+	if frame.Bg then frame.Bg:Hide() end
+end
+
+-- All frames that have a Portrait
+function S:HandlePortraitFrame(frame, createBackdrop, noStrip)
+	assert(frame, 'doesnt exist!')
+
+	local name = frame and frame.GetName and frame:GetName()
+
+	local insetFrame = name and _G[name..'Inset'] or frame.Inset
+	local portraitFrame = name and _G[name..'Portrait'] or frame.Portrait or frame.portrait
+	local portraitFrameOverlay = name and _G[name..'PortraitOverlay'] or frame.PortraitOverlay
+	local artFrameOverlay = name and _G[name..'ArtOverlayFrame'] or frame.ArtOverlayFrame
+
+	if not noStrip then
+		frame:StripTextures()
+
+		if portraitFrame then portraitFrame:SetAlpha(0) end
+		if portraitFrameOverlay then portraitFrameOverlay:SetAlpha(0) end
+		if artFrameOverlay then artFrameOverlay:SetAlpha(0) end
+
+		if insetFrame then
+			S:HandleInsetFrame(insetFrame)
+		end
+	end
+
+	if frame.CloseButton then
+		S:HandleCloseButton(frame.CloseButton)
+	end
+
+	if createBackdrop then
+		frame:CreateBackdrop('Transparent', nil, nil, nil, nil, nil, nil, true)
+	else
+		frame:SetTemplate('Transparent')
+	end
+end
+
+function S:SetBackdropBorderColor(frame, script)
+	if frame.backdrop then frame = frame.backdrop end
+	if frame.SetBackdropBorderColor then
+		frame:SetBackdropBorderColor(unpack(script == 'OnEnter' and E.media.rgbvaluecolor or E.media.bordercolor))
+	end
+end
+
 function S:SetModifiedBackdrop()
-	if self.backdrop then self = self.backdrop end
-	self:SetBackdropBorderColor(unpack(E.media.rgbvaluecolor))
+	if self:IsEnabled() then
+		S:SetBackdropBorderColor(self, 'OnEnter')
+	end
 end
 
 function S:SetOriginalBackdrop()
-	if self.backdrop then self = self.backdrop end
-	self:SetBackdropBorderColor(unpack(E.media.bordercolor))
+	if self:IsEnabled() then
+		S:SetBackdropBorderColor(self, 'OnLeave')
+	end
+end
+
+function S:SetDisabledBackdrop()
+	if self:IsMouseOver() then
+		S:SetBackdropBorderColor(self, 'OnDisable')
+	end
+end
+
+-- function to handle the recap button script
+function S:UpdateRecapButton()
+	-- when UpdateRecapButton runs and enables the button, it unsets OnEnter
+	-- we need to reset it with ours. blizzard will replace it when the button
+	-- is disabled. so, we don't have to worry about anything else.
+	if self and self.button4 and self.button4:IsEnabled() then
+		self.button4:SetScript('OnEnter', S.SetModifiedBackdrop)
+		self.button4:SetScript('OnLeave', S.SetOriginalBackdrop)
+	end
 end
 
 function S:StatusBarColorGradient(bar, value, max, backdrop)
+	if not (bar and value) then return end
+
 	local current = (not max and value) or (value and max and max ~= 0 and value/max)
-	if not (bar and current) then return end
+	if not current then return end
+
 	local r, g, b = E:ColorGradient(current, 0.8,0,0, 0.8,0.8,0, 0,0.8,0)
-	local bg = backdrop or bar.backdrop
-	if bg then bg:SetBackdropColor(r*0.25, g*0.25, b*0.25) end
 	bar:SetStatusBarColor(r, g, b)
-end
 
-function S:HandleButton(button, strip, isDeclineButton, useCreateBackdrop, noSetTemplate)
-	if button.isSkinned then return end
-
-	local buttonName = button.GetName and button:GetName()
-	if buttonName then
-		local left = _G[buttonName.."Left"]
-		local middle = _G[buttonName.."Middle"]
-		local right = _G[buttonName.."Right"]
-
-		if left then left:SetAlpha(0) end
-		if middle then middle:SetAlpha(0) end
-		if right then right:SetAlpha(0) end
+	if not backdrop then
+		backdrop = bar.backdrop
 	end
 
-	if button.Left then button.Left:SetAlpha(0) end
-	if button.Middle then button.Middle:SetAlpha(0) end
-	if button.Right then button.Right:SetAlpha(0) end
+	if backdrop then
+		backdrop:SetBackdropColor(r * 0.25, g * 0.25, b * 0.25)
+	end
+end
 
-	if button.SetNormalTexture then button:SetNormalTexture("") end
-	if button.SetHighlightTexture then button:SetHighlightTexture("") end
-	if button.SetPushedTexture then button:SetPushedTexture("") end
-	if button.SetDisabledTexture then button:SetDisabledTexture("") end
+-- DropDownMenu library support
+function S:SkinLibDropDownMenu(prefix)
+	if S[prefix..'_UIDropDownMenuSkinned'] then return end
+
+	local key = (prefix == 'L4' or prefix == 'L3') and 'L' or prefix
+
+	local bd = _G[key..'_DropDownList1Backdrop']
+	local mbd = _G[key..'_DropDownList1MenuBackdrop']
+	if bd and not bd.template then bd:SetTemplate('Transparent') end
+	if mbd and not mbd.template then mbd:SetTemplate('Transparent') end
+
+	S[prefix..'_UIDropDownMenuSkinned'] = true
+
+	local lib = prefix == 'L4' and LibStub.libs['LibUIDropDownMenu-4.0']
+	if (lib and lib.UIDropDownMenu_CreateFrames) or _G[key..'_UIDropDownMenu_CreateFrames'] then
+		hooksecurefunc(lib or _G, (lib and '' or key..'_') .. 'UIDropDownMenu_CreateFrames', function()
+			local lvls = _G[(key == 'Lib' and 'LIB' or key)..'_UIDROPDOWNMENU_MAXLEVELS']
+			local ddbd = lvls and _G[key..'_DropDownList'..lvls..'Backdrop']
+			local ddmbd = lvls and _G[key..'_DropDownList'..lvls..'MenuBackdrop']
+			if ddbd and not ddbd.template then ddbd:SetTemplate('Transparent') end
+			if ddmbd and not ddmbd.template then ddmbd:SetTemplate('Transparent') end
+		end)
+	end
+end
+
+function S:SkinTalentListButtons(frame)
+	local name = frame and frame:GetName()
+	if name then
+		local bcl = _G[name..'BtnCornerLeft']
+		local bcr = _G[name..'BtnCornerRight']
+		local bbb = _G[name..'ButtonBottomBorder']
+		if bcl then bcl:SetTexture() end
+		if bcr then bcr:SetTexture() end
+		if bbb then bbb:SetTexture() end
+	end
+
+	if frame.Inset then
+		S:HandleInsetFrame(frame.Inset)
+
+		frame.Inset:Point('TOPLEFT', 4, -60)
+		frame.Inset:Point('BOTTOMRIGHT', -6, 26)
+	end
+end
+
+function S:HandleButton(button, strip, isDecline, noStyle, createBackdrop, template, noGlossTex, overrideTex, frameLevel, regionsKill, regionsZero)
+	assert(button, 'doesnt exist!')
+
+	if button.isSkinned then return end
+
+	if button.SetNormalTexture and not overrideTex then button:SetNormalTexture(E.ClearTexture) end
+	if button.SetHighlightTexture then button:SetHighlightTexture(E.ClearTexture) end
+	if button.SetPushedTexture then button:SetPushedTexture(E.ClearTexture) end
+	if button.SetDisabledTexture then button:SetDisabledTexture(E.ClearTexture) end
 
 	if strip then button:StripTextures() end
 
-	if useCreateBackdrop then
-		button:CreateBackdrop(nil, true)
-	elseif not noSetTemplate then
-		button:SetTemplate(nil, true)
+	S:HandleBlizzardRegions(button, nil, regionsKill, regionsZero)
+
+	if button.Icon then
+		local Texture = button.Icon:GetTexture()
+		if Texture and (type(Texture) == 'string' and strfind(Texture, [[Interface\ChatFrame\ChatFrameExpandArrow]])) then
+			button.Icon:SetTexture(E.Media.Textures.ArrowUp)
+			button.Icon:SetRotation(S.ArrowRotation.right)
+			button.Icon:SetVertexColor(1, 1, 1)
+		end
 	end
 
-	button:HookScript("OnEnter", S.SetModifiedBackdrop)
-	button:HookScript("OnLeave", S.SetOriginalBackdrop)
+	if isDecline and button.Icon then
+		button.Icon:SetTexture(E.Media.Textures.Close)
+	end
+
+	if not noStyle then
+		if createBackdrop then
+			button:CreateBackdrop(template, not noGlossTex, nil, nil, nil, nil, nil, true, frameLevel)
+		else
+			button:SetTemplate(template, not noGlossTex)
+		end
+
+		button:HookScript('OnEnter', S.SetModifiedBackdrop)
+		button:HookScript('OnLeave', S.SetOriginalBackdrop)
+		button:HookScript('OnDisable', S.SetDisabledBackdrop)
+	end
 
 	button.isSkinned = true
 end
 
-function S:HandleButtonHighlight(frame, r, g, b, a)
-	if not r then r = 0.9 end
-	if not g then g = 0.9 end
-	if not b then b = 0.9 end
-	if not a then a = 0.35 end
+do
+	local function GetElement(frame, element, useParent)
+		if useParent then frame = frame:GetParent() end
 
-	local highlightTexture
+		local child = frame[element]
+		if child then return child end
 
-	if frame.SetHighlightTexture then
-		highlightTexture = frame:GetHighlightTexture()
-		highlightTexture:SetAllPoints(frame)
-	elseif frame.SetTexture then
-		highlightTexture = frame
-		frame:SetAllPoints(frame:GetParent())
-	elseif frame.HighlightTexture then
-		highlightTexture = frame.HighlightTexture
-	else
-		highlightTexture = frame:CreateTexture(nil, "HIGHLIGHT")
-		highlightTexture:SetAllPoints(frame)
-		frame.HighlightTexture = highlightTexture
+		local name = frame:GetName()
+		if name then return _G[name..element] end
 	end
 
-	highlightTexture:SetTexture(E.Media.Textures.Highlight)
-	highlightTexture:SetVertexColor(r, g, b, a)
-end
-
-function S:HandleScrollBar(frame, horizontal)
-	if frame.backdrop then return end
-
-	local parent = frame:GetParent()
-	local frameName = frame:GetName()
-
-	local scrollUpButton, scrollDownButton
-	local thumb = frame.thumbTexture or frame.GetThumbTexture and frame:GetThumbTexture() or _G[format("%s%s", frameName, "ThumbTexture")]
-
-	if frameName then
-		if not horizontal then
-			scrollUpButton = parent.scrollUp or _G[format("%s%s", frameName, "ScrollUpButton")] or _G[format("%s%s", frameName, "UpButton")] or _G[format("%s%s", frameName, "ScrollUp")]
-			scrollDownButton = parent.scrollDown or _G[format("%s%s", frameName, "ScrollDownButton")] or _G[format("%s%s", frameName, "DownButton")] or _G[format("%s%s", frameName, "ScrollDown")]
-		else
-			scrollUpButton = _G[format("%s%s", frameName, "ScrollLeftButton")] or _G[format("%s%s", frameName, "LeftButton")] or _G[format("%s%s", frameName, "ScrollLeft")]
-			scrollDownButton = _G[format("%s%s", frameName, "ScrollRightButton")] or _G[format("%s%s", frameName, "RightButton")] or _G[format("%s%s", frameName, "ScrollRight")]
+	local function GetButton(frame, buttons)
+		for _, data in ipairs(buttons) do
+			if type(data) == 'string' then
+				local found = GetElement(frame, data)
+				if found then return found end
+			else -- has useParent
+				local found = GetElement(frame, data[1], data[2])
+				if found then return found end
+			end
 		end
-	else
-		for i, child in ipairs({frame:GetChildren()}) do
-			if child:GetObjectType() == "Button" then
-				if child:GetNormalTexture():GetTexture() == [[Interface\Buttons\UI-ScrollBar-ScrollUpButton-Up]] then
-					scrollUpButton = child
-				elseif child:GetNormalTexture():GetTexture() == [[Interface\Buttons\UI-ScrollBar-ScrollDownButton-Up]] then
-					scrollDownButton = child
+	end
+
+	local function ThumbStatus(frame)
+		if not frame.Thumb then
+			return
+		elseif not frame:IsEnabled() then
+			frame.Thumb.backdrop:SetBackdropColor(0.3, 0.3, 0.3)
+			return
+		end
+
+		local _, max = frame:GetMinMaxValues()
+		if max == 0 then
+			frame.Thumb.backdrop:SetBackdropColor(0.3, 0.3, 0.3)
+		else
+			frame.Thumb.backdrop:SetBackdropColor(unpack(E.media.rgbvaluecolor))
+		end
+	end
+
+	local function ThumbWatcher(frame)
+		hooksecurefunc(frame, 'Enable', ThumbStatus)
+		hooksecurefunc(frame, 'Disable', ThumbStatus)
+		hooksecurefunc(frame, 'SetMinMaxValues', ThumbStatus)
+		ThumbStatus(frame)
+	end
+
+	local upButtons = {'ScrollUpButton', 'UpButton', 'ScrollUp', {'scrollUp', true}, 'Back'}
+	local downButtons = {'ScrollDownButton', 'DownButton', 'ScrollDown', {'scrollDown', true}, 'Forward'}
+	local thumbButtons = {'ThumbTexture', 'thumbTexture', 'Thumb'}
+
+	function S:HandleScrollBar(frame, thumbY, thumbX, template)
+		assert(frame, 'doesnt exist!')
+
+		if frame.backdrop then return end
+
+		local upButton, downButton = GetButton(frame, upButtons), GetButton(frame, downButtons)
+		local thumb = GetButton(frame, thumbButtons) or (frame.GetThumbTexture and frame:GetThumbTexture())
+
+		frame:StripTextures()
+		frame:CreateBackdrop(template or 'Transparent', nil, nil, nil, nil, nil, nil, nil, true)
+		frame.backdrop:Point('TOPLEFT', upButton or frame, upButton and 'BOTTOMLEFT' or 'TOPLEFT', 0, 1)
+		frame.backdrop:Point('BOTTOMRIGHT', downButton or frame, upButton and 'TOPRIGHT' or 'BOTTOMRIGHT', 0, -1)
+
+		if frame.Background then frame.Background:Hide() end
+		if frame.ScrollUpBorder then frame.ScrollUpBorder:Hide() end
+		if frame.ScrollDownBorder then frame.ScrollDownBorder:Hide() end
+
+		local frameLevel = frame:GetFrameLevel()
+		if upButton then
+			S:HandleNextPrevButton(upButton, 'up')
+			upButton:SetFrameLevel(frameLevel + 2)
+		end
+		if downButton then
+			S:HandleNextPrevButton(downButton, 'down')
+			downButton:SetFrameLevel(frameLevel + 2)
+		end
+		if thumb and not thumb.backdrop then
+			thumb:SetTexture()
+			thumb:CreateBackdrop(nil, true, true, nil, nil, nil, nil, nil, frameLevel + 1)
+
+			if not frame.Thumb then
+				frame.Thumb = thumb
+			end
+
+			if thumb.backdrop then
+				if not thumbX then thumbX = 0 end
+				if not thumbY then thumbY = 0 end
+
+				thumb.backdrop:Point('TOPLEFT', thumb, thumbX, -thumbY)
+				thumb.backdrop:Point('BOTTOMRIGHT', thumb, -thumbX, thumbY)
+
+				if frame.SetEnabled then
+					ThumbWatcher(frame)
+				else
+					thumb.backdrop:SetBackdropColor(unpack(E.media.rgbvaluecolor))
 				end
 			end
 		end
 	end
 
-	if not horizontal then
-		frame:Width(18)
-	else
-		frame:Height(18)
-	end
+	-- WoWTrimScrollBar
+	local function ReskinScrollBarArrow(frame, direction)
+		S:HandleNextPrevButton(frame, direction)
 
-	local frameLevel = frame:GetFrameLevel()
-	frame:StripTextures()
-	frame:CreateBackdrop()
-	frame.backdrop:SetAllPoints()
-	frame.backdrop:SetFrameLevel(frameLevel)
+		if frame.Texture then
+			frame.Texture:SetAlpha(0)
 
-	if scrollUpButton then
-		if not horizontal then
-			scrollUpButton:Point("BOTTOM", frame, "TOP", 0, 1)
-			S:HandleNextPrevButton(scrollUpButton, "up")
+			if frame.Overlay then
+				frame.Overlay:SetAlpha(0)
+			end
 		else
-			scrollUpButton:Point("RIGHT", frame, "LEFT", -1, 0)
-			S:HandleNextPrevButton(scrollUpButton, "left")
+			frame:StripTextures()
 		end
 	end
 
-	if scrollDownButton then
-		if not horizontal then
-			scrollDownButton:Point("TOP", frame, "BOTTOM", 0, -1)
-			S:HandleNextPrevButton(scrollDownButton, "down")
-		else
-			scrollDownButton:Point("LEFT", frame, "RIGHT", 1, 0)
-			S:HandleNextPrevButton(scrollDownButton, "right")
+	local function ThumbOnEnter(frame)
+		local r, g, b = unpack(E.media.rgbvaluecolor)
+		local thumb = frame.thumb or frame
+		if thumb.backdrop then
+			thumb.backdrop:SetBackdropColor(r, g, b, .75)
 		end
 	end
 
-	if thumb and not thumb.backdrop then
-		if not horizontal then
-			thumb:Size(18, 22)
-		else
-			thumb:Size(22, 18)
+	local function ThumbOnLeave(frame)
+		local r, g, b = unpack(E.media.rgbvaluecolor)
+		local thumb = frame.thumb or frame
+
+		if thumb.backdrop and not thumb.__isActive then
+			thumb.backdrop:SetBackdropColor(r, g, b, .25)
+		end
+	end
+
+	local function ThumbOnMouseDown(frame)
+		local r, g, b = unpack(E.media.rgbvaluecolor)
+		local thumb = frame.thumb or frame
+		thumb.__isActive = true
+
+		if thumb.backdrop then
+			thumb.backdrop:SetBackdropColor(r, g, b, .75)
+		end
+	end
+
+	local function ThumbOnMouseUp(frame)
+		local r, g, b = unpack(E.media.rgbvaluecolor)
+		local thumb = frame.thumb or frame
+		thumb.__isActive = nil
+
+		if thumb.backdrop then
+			thumb.backdrop:SetBackdropColor(r, g, b, .25)
+		end
+	end
+
+	function S:HandleTrimScrollBar(frame, small)
+		assert(frame, 'does not exist.')
+
+		frame:StripTextures()
+
+		ReskinScrollBarArrow(frame.Back, 'up')
+		ReskinScrollBarArrow(frame.Forward, 'down')
+
+		if frame.Background then
+			frame.Background:Hide()
 		end
 
-		thumb:SetTexture()
-		thumb:CreateBackdrop(nil, true, true)
-		thumb.backdrop:SetFrameLevel(frameLevel + 1)
-		thumb.backdrop:SetBackdropColor(0.6, 0.6, 0.6)
+		local track = frame.Track
+		if track then
+			track:DisableDrawLayer('ARTWORK')
+		end
 
-		thumb.backdrop:Point("TOPLEFT", thumb, "TOPLEFT", 2, -2)
-		thumb.backdrop:Point("BOTTOMRIGHT", thumb, "BOTTOMRIGHT", -2, 2)
+		local thumb = frame:GetThumb()
+		if thumb then
+			thumb:DisableDrawLayer('BACKGROUND')
+			thumb:CreateBackdrop('Transparent')
+			thumb.backdrop:SetFrameLevel(thumb:GetFrameLevel()+1)
 
-		if not frame.thumbTexture then
-			frame.thumbTexture = thumb
+			local r, g, b = unpack(E.media.rgbvaluecolor)
+			thumb.backdrop:SetBackdropColor(r, g, b, .25)
+
+			if not small then
+				thumb.backdrop:Point('TOPLEFT', 4, -1)
+				thumb.backdrop:Point('BOTTOMRIGHT', -4, 1)
+			end
+
+			thumb:HookScript('OnEnter', ThumbOnEnter)
+			thumb:HookScript('OnLeave', ThumbOnLeave)
+			thumb:HookScript('OnMouseUp', ThumbOnMouseUp)
+			thumb:HookScript('OnMouseDown', ThumbOnMouseDown)
 		end
 	end
 end
 
-local tabs = {
-	"LeftDisabled",
-	"MiddleDisabled",
-	"RightDisabled",
-	"Left",
-	"Middle",
-	"Right"
-}
+do --Tab Regions
+	local tabs = {
+		"LeftDisabled",
+		"MiddleDisabled",
+		"RightDisabled",
+		"Left",
+		"Middle",
+		"Right"
+	}
 
-function S:HandleTab(tab, noBackdrop)
-	if (not tab) or (tab.backdrop and not noBackdrop) then return end
+	function S:HandleTab(tab, noBackdrop, template)
+		if not tab or (tab.backdrop and not noBackdrop) then return end
 
-	for _, object in ipairs(tabs) do
-		local tex = _G[tab:GetName()..object]
-		if tex then
-			tex:SetTexture()
+		for _, object in pairs(tabs) do
+			local textureName = tab:GetName() and _G[tab:GetName()..object]
+			if textureName then
+				textureName:SetTexture()
+			elseif tab[object] then
+				tab[object]:SetTexture()
+			end
 		end
-	end
 
-	local highlightTex = tab.GetHighlightTexture and tab:GetHighlightTexture()
-	if highlightTex then
-		highlightTex:SetTexture()
-	else
-		tab:StripTextures()
-	end
+		local highlightTex = tab.GetHighlightTexture and tab:GetHighlightTexture()
+		if highlightTex then
+			highlightTex:SetTexture()
+		else
+			tab:StripTextures()
+		end
 
-	if not noBackdrop then
-		tab:CreateBackdrop()
-		tab.backdrop:Point("TOPLEFT", 10, E.PixelMode and -1 or -3)
-		tab.backdrop:Point("BOTTOMRIGHT", -10, 3)
+		if not noBackdrop then
+			tab:CreateBackdrop(template)
 
-		tab:SetHitRectInsets(10, 10, E.PixelMode and 1 or 3, 3)
+			local spacing = 10
+			tab.backdrop:Point('TOPLEFT', spacing, E.PixelMode and -1 or -3)
+			tab.backdrop:Point('BOTTOMRIGHT', -spacing, 3)
+		end
 	end
 end
 
@@ -244,53 +606,75 @@ function S:HandleRotateButton(btn)
 	btn.isSkinned = true
 end
 
-function S:HandleEditBox(frame)
-	if frame.backdrop then return end
-
-	frame:CreateBackdrop()
-	frame.backdrop:SetFrameLevel(frame:GetFrameLevel())
-
-	local EditBoxName = frame.GetName and frame:GetName()
-	if EditBoxName then
-		if _G[EditBoxName.."Left"] then _G[EditBoxName.."Left"]:SetAlpha(0) end
-		if _G[EditBoxName.."Middle"] then _G[EditBoxName.."Middle"]:SetAlpha(0) end
-		if _G[EditBoxName.."Right"] then _G[EditBoxName.."Right"]:SetAlpha(0) end
-		if _G[EditBoxName.."Mid"] then _G[EditBoxName.."Mid"]:SetAlpha(0) end
-
-		if find(EditBoxName, "Silver") or find(EditBoxName, "Copper") then
-			frame.backdrop:Point("BOTTOMRIGHT", -12, -2)
+function S:HandleBlizzardRegions(frame, name, kill, zero)
+	if not name then name = frame.GetName and frame:GetName() end
+	for _, area in pairs(S.Blizzard.Regions) do
+		local object = (name and _G[name..area]) or frame[area]
+		if object then
+			if kill then
+				object:Kill()
+			elseif zero then
+				object:SetAlpha(0)
+			else
+				object:Hide()
+			end
 		end
 	end
 end
 
-local dropdownArrowColor = {1, 0.8, 0}
-function S:HandleDropDownBox(frame, width, direction)
+function S:HandleEditBox(frame, template)
+	assert(frame, 'doesnt exist!')
+
 	if frame.backdrop then return end
 
-	local FrameName = frame.GetName and frame:GetName()
-	local button = FrameName and _G[FrameName.."Button"]
-	local text = FrameName and _G[FrameName.."Text"]
+	frame:CreateBackdrop(template, nil, nil, nil, nil, nil, nil, nil, true)
+	frame.backdrop:SetPoint('TOPLEFT', -2, 0)
+	frame.backdrop:SetPoint('BOTTOMRIGHT')
+	S:HandleBlizzardRegions(frame)
 
-	frame:StripTextures()
-	frame:CreateBackdrop()
-	frame.backdrop:SetFrameLevel(frame:GetFrameLevel())
-	frame.backdrop:Point("TOPLEFT", 20, -3)
-	frame.backdrop:Point("BOTTOMRIGHT", button, "BOTTOMRIGHT", 2, -2)
+	local EditBoxName = frame:GetName()
+	if EditBoxName and (strfind(EditBoxName, 'Silver') or strfind(EditBoxName, 'Copper')) then
+		frame.backdrop:Point('BOTTOMRIGHT', -12, -2)
+	end
+end
 
-	if not width then width = 155 end
+function S:HandleDropDownBox(frame, width, pos, template)
+	assert(frame, 'doesnt exist!')
+
+	local frameName = frame.GetName and frame:GetName()
+	local button = frame.Button or frameName and (_G[frameName..'Button'] or _G[frameName..'_Button'])
+	local text = frameName and _G[frameName..'Text'] or frame.Text
+	local icon = frame.Icon
+
+	if not width then
+		width = 155
+	end
 
 	frame:Width(width)
+	frame:StripTextures()
+	frame:CreateBackdrop(template)
+	frame:SetFrameLevel(frame:GetFrameLevel() + 2)
+	frame.backdrop:Point('TOPLEFT', 20, -2)
+	frame.backdrop:Point('BOTTOMRIGHT', button, 'BOTTOMRIGHT', 2, -2)
+
+	button:ClearAllPoints()
+
+	if pos then
+		button:Point('TOPRIGHT', frame.Right, -20, -21)
+	else
+		button:Point('RIGHT', frame, 'RIGHT', -10, 3)
+	end
+
+	button.SetPoint = E.noop
+	S:HandleNextPrevButton(button, 'down')
 
 	if text then
 		text:ClearAllPoints()
-		text:Point("RIGHT", button, "LEFT", -2, 0)
+		text:Point('RIGHT', button, 'LEFT', -2, 0)
 	end
 
-	if button then
-		S:HandleNextPrevButton(button, direction or nil, dropdownArrowColor)
-		button:ClearAllPoints()
-		button:Point("RIGHT", frame, "RIGHT", -10, 3)
-		button:Size(16, 16)
+	if icon then
+		icon:Point('LEFT', 23, 0)
 	end
 end
 
@@ -468,57 +852,139 @@ function S:HandleItemButton(b, shrinkIcon)
 	b.isSkinned = true
 end
 
-local handleCloseButtonOnEnter = function(btn) if btn.Texture then btn.Texture:SetVertexColor(unpack(E.media.rgbvaluecolor)) end end
-local handleCloseButtonOnLeave = function(btn) if btn.Texture then btn.Texture:SetVertexColor(1, 1, 1) end end
+do
+	local closeOnEnter = function(btn) if btn.Texture then btn.Texture:SetVertexColor(unpack(E.media.rgbvaluecolor)) end end
+	local closeOnLeave = function(btn) if btn.Texture then btn.Texture:SetVertexColor(1, 1, 1) end end
 
-function S:HandleCloseButton(f, point)
-	f:StripTextures()
+	function S:HandleCloseButton(f, point, x, y)
+		assert(f, 'doenst exist!')
 
-	if f:GetNormalTexture() then f:SetNormalTexture("") f.SetNormalTexture = E.noop end
-	if f:GetPushedTexture() then f:SetPushedTexture("") f.SetPushedTexture = E.noop end
+		f:StripTextures()
 
-	if not f.Texture then
-		f.Texture = f:CreateTexture(nil, "OVERLAY")
-		f.Texture:Point("CENTER")
-		f.Texture:SetTexture(E.Media.Textures.Close)
-		f.Texture:Size(12, 12)
-		f:HookScript("OnEnter", handleCloseButtonOnEnter)
-		f:HookScript("OnLeave", handleCloseButtonOnLeave)
-		f:SetHitRectInsets(7, 6, 7, 6)
+		if not f.Texture then
+			f.Texture = f:CreateTexture(nil, 'OVERLAY')
+			f.Texture:Point('CENTER')
+			f.Texture:SetTexture(E.Media.Textures.Close)
+			f.Texture:Size(12, 12)
+			f:HookScript('OnEnter', closeOnEnter)
+			f:HookScript('OnLeave', closeOnLeave)
+			f:SetHitRectInsets(6, 6, 7, 7)
+		end
+
+		if point then
+			f:Point('TOPRIGHT', point, 'TOPRIGHT', x or 2, y or 2)
+		end
 	end
 
-	if point then
-		f:Point("TOPRIGHT", point, "TOPRIGHT", 2, 3)
+	function S:HandleNextPrevButton(btn, arrowDir, color, noBackdrop, stripTexts, frameLevel)
+		if btn.isSkinned then return end
+
+		if not arrowDir then
+			arrowDir = 'down'
+
+			local name = btn:GetName()
+			local ButtonName = name and name:lower()
+			if ButtonName then
+				if strfind(ButtonName, 'left') or strfind(ButtonName, 'prev') or strfind(ButtonName, 'decrement') or strfind(ButtonName, 'backward') or strfind(ButtonName, 'back') then
+					arrowDir = 'left'
+				elseif strfind(ButtonName, 'right') or strfind(ButtonName, 'next') or strfind(ButtonName, 'increment') or strfind(ButtonName, 'forward') then
+					arrowDir = 'right'
+				elseif strfind(ButtonName, 'scrollup') or strfind(ButtonName, 'upbutton') or strfind(ButtonName, 'top') or strfind(ButtonName, 'asc') or strfind(ButtonName, 'home') or strfind(ButtonName, 'maximize') then
+					arrowDir = 'up'
+				end
+			end
+		end
+
+		btn:StripTextures()
+
+		if btn.Texture then
+			btn.Texture:SetAlpha(0)
+		end
+
+		if not noBackdrop then
+			S:HandleButton(btn, nil, nil, true, nil, nil, nil, nil, frameLevel)
+		end
+
+		if stripTexts then
+			btn:StripTexts()
+		end
+
+		btn:SetNormalTexture(E.Media.Textures.ArrowUp)
+		btn:SetPushedTexture(E.Media.Textures.ArrowUp)
+		btn:SetDisabledTexture(E.Media.Textures.ArrowUp)
+
+		local Normal, Disabled, Pushed = btn:GetNormalTexture(), btn:GetDisabledTexture(), btn:GetPushedTexture()
+
+		if noBackdrop then
+			btn:Size(20, 20)
+			Disabled:SetVertexColor(.5, .5, .5)
+			btn.Texture = Normal
+
+			if not color then
+				btn:HookScript('OnEnter', closeOnEnter)
+				btn:HookScript('OnLeave', closeOnLeave)
+			end
+		else
+			btn:Size(18, 18)
+			Disabled:SetVertexColor(.3, .3, .3)
+		end
+
+		Normal:SetInside()
+		Pushed:SetInside()
+		Disabled:SetInside()
+
+		Normal:SetTexCoord(0, 1, 0, 1)
+		Pushed:SetTexCoord(0, 1, 0, 1)
+		Disabled:SetTexCoord(0, 1, 0, 1)
+
+		local rotation = S.ArrowRotation[arrowDir]
+		if rotation then
+			Normal:SetRotation(rotation)
+			Pushed:SetRotation(rotation)
+			Disabled:SetRotation(rotation)
+		end
+
+		if color then
+			Normal:SetVertexColor(color.r, color.g, color.b)
+		else
+			Normal:SetVertexColor(1, 1, 1)
+		end
+
+		btn.isSkinned = true
 	end
 end
 
-local sliderOnDisable = function(self) self:GetThumbTexture():SetVertexColor(0.6, 0.6, 0.6, 0.8) end
-local sliderOnEnable = function(self) self:GetThumbTexture():SetVertexColor(1, 0.82, 0, 0.8) end
-
 function S:HandleSliderFrame(frame)
+	assert(frame, 'doesnt exist!')
+
 	local orientation = frame:GetOrientation()
+	local SIZE = 12
+
+	if frame.SetBackdrop then
+		frame:SetBackdrop(nil)
+	end
 
 	frame:StripTextures()
-	frame:SetTemplate()
 	frame:SetThumbTexture(E.Media.Textures.Melli)
+
+	if not frame.backdrop then
+		frame:SetTemplate()
+	end
 
 	local thumb = frame:GetThumbTexture()
 	thumb:SetVertexColor(1, 0.82, 0, 0.8)
-	thumb:Size(10)
+	thumb:Size(SIZE-2)
 
-	frame:HookScript("OnDisable", sliderOnDisable)
-	frame:HookScript("OnEnable", sliderOnEnable)
-
-	if orientation == "VERTICAL" then
-		frame:Width(12)
+	if orientation == 'VERTICAL' then
+		frame:Width(SIZE)
 	else
-		frame:Height(12)
+		frame:Height(SIZE)
 
 		for i = 1, frame:GetNumRegions() do
 			local region = select(i, frame:GetRegions())
 			if region and region:IsObjectType("FontString") then
 				local point, anchor, anchorPoint, x, y = region:GetPoint()
-				if find(anchorPoint, "BOTTOM") then
+				if strfind(anchorPoint, "BOTTOM") then
 					region:Point(point, anchor, anchorPoint, x, y - 4)
 				end
 			end
@@ -554,70 +1020,6 @@ function S:HandleIconSelectionFrame(frame, numIcons, buttonNameTemplate, frameNa
 		icon:SetInside()
 		icon:SetTexCoord(unpack(E.TexCoords))
 	end
-end
-
-local defaultArrowColor = {1, 1, 1}
-function S:HandleNextPrevButton(btn, arrowDir, color, noBackdrop, stipTexts)
-	if btn.isSkinned then return end
-
-	if not arrowDir then
-		arrowDir = "down"
-		local ButtonName = btn:GetName() and lower(btn:GetName())
-
-		if ButtonName then
-			if (find(ButtonName, "left") or find(ButtonName, "prev") or find(ButtonName, "decrement")) then
-				arrowDir = "left"
-			elseif (find(ButtonName, "right") or find(ButtonName, "next") or find(ButtonName, "increment")) then
-				arrowDir = "right"
-			elseif (find(ButtonName, "scrollup") or find(ButtonName, "upbutton") or find(ButtonName, "top") or find(ButtonName, "promote")) then
-				arrowDir = "up"
-			end
-		end
-	end
-
-	btn:SetHitRectInsets(0, 0, 0, 0)
-
-	btn:StripTextures()
-	if not noBackdrop then
-		S:HandleButton(btn)
-	end
-
-	if stipTexts then
-		btn:StripTexts()
-	end
-
-	btn:SetNormalTexture(E.Media.Textures.ArrowUp)
-	btn:SetPushedTexture(E.Media.Textures.ArrowUp)
-	btn:SetDisabledTexture(E.Media.Textures.ArrowUp)
-
-	local Normal, Disabled, Pushed = btn:GetNormalTexture(), btn:GetDisabledTexture(), btn:GetPushedTexture()
-
-	if noBackdrop then
-		btn:Size(20, 20)
-		Disabled:SetVertexColor(.5, .5, .5)
-		btn.Texture = Normal
-		btn:HookScript("OnEnter", handleCloseButtonOnEnter)
-		btn:HookScript("OnLeave", handleCloseButtonOnLeave)
-	else
-		btn:Size(18, 18)
-		Disabled:SetVertexColor(.3, .3, .3)
-	end
-
-	Normal:SetInside()
-	Pushed:SetInside()
-	Disabled:SetInside()
-
-	Normal:SetTexCoord(0, 1, 0, 1)
-	Pushed:SetTexCoord(0, 1, 0, 1)
-	Disabled:SetTexCoord(0, 1, 0, 1)
-
-	Normal:SetRotation(S.ArrowRotation[arrowDir])
-	Pushed:SetRotation(S.ArrowRotation[arrowDir])
-	Disabled:SetRotation(S.ArrowRotation[arrowDir])
-
-	Normal:SetVertexColor(unpack(color or defaultArrowColor))
-
-	btn.isSkinned = true
 end
 
 function S:SetNextPrevButtonDirection(frame, arrowDir)
@@ -728,54 +1130,40 @@ function S:HandleCollapseExpandButton(button, defaultState, useFontString, xOffs
 	button.isSkinned = true
 end
 
-do -- Handle collapse like retail (including UIPanelButtonTemplate2)
-	local function UpdateCollapseTexture(button, texture)
-		local tex = button:GetNormalTexture()
-		if strfind(texture, "Plus") or strfind(texture, "Closed") then
-			tex:SetTexture(E.Media.Textures.PlusButton)
-		elseif strfind(texture, "Minus") or strfind(texture, "Open") then
-			tex:SetTexture(E.Media.Textures.MinusButton)
-		end
-	end
+do -- Handle collapse
+	local function UpdateCollapseTexture(button, texture, skip)
+		if skip then return end
 
-	local function UpdatePushedTexture(button)
-		button:GetPushedTexture():SetTexture("")
+		if type(texture) == 'number' then -- 130821 minus, 130838 plus
+			button:SetNormalTexture(texture == 130838 and E.Media.Textures.PlusButton or E.Media.Textures.MinusButton, true)
+		elseif strfind(texture, 'Plus') or strfind(texture, 'Closed') then
+			button:SetNormalTexture(E.Media.Textures.PlusButton, true)
+		elseif strfind(texture, 'Minus') or strfind(texture, 'Open') then
+			button:SetNormalTexture(E.Media.Textures.MinusButton, true)
+		end
 	end
 
 	local function syncPushTexture(button, _, skip)
-		if not skip then
-			local normal = button:GetNormalTexture():GetTexture()
-			button:SetPushedTexture(normal, true)
-		end
+		if skip then return end
+
+		local normal = button:GetNormalTexture():GetTexture()
+		button:SetPushedTexture(normal, true)
 	end
 
 	function S:HandleCollapseTexture(button, syncPushed)
 		if syncPushed then -- not needed always
-			hooksecurefunc(button, "SetPushedTexture", syncPushTexture)
+			hooksecurefunc(button, 'SetPushedTexture', syncPushTexture)
 			syncPushTexture(button)
 		else
-			button:SetPushedTexture("")
-			hooksecurefunc(button, "SetPushedTexture", UpdatePushedTexture) -- make it permanent
+			button:SetPushedTexture(E.ClearTexture)
 		end
 
 		hooksecurefunc(button, 'SetNormalTexture', UpdateCollapseTexture)
 		UpdateCollapseTexture(button, button:GetNormalTexture():GetTexture())
-
-		-- Find the button textures that is still present
-		for i = 1, 3 do
-			local region = select(i, button:GetRegions())
-			if region and region:IsObjectType("Texture") and region:GetTexture() then -- region:GetTexture() nil check so strfind doesn't error
-				if strfind(region:GetTexture(), "Up") then
-					region:Kill() -- Remove the button backdrop texture for good
-				end
-			end
-		end
 	end
 end
 
 function S:ADDON_LOADED(_, addon)
-	S:SkinAce3()
-
 	if self.allowBypass[addon] then
 		if self.addonCallbacks[addon] then
 			--Fire events to the skins that rely on this addon
@@ -795,6 +1183,39 @@ function S:ADDON_LOADED(_, addon)
 			self.addonCallbacks[addon][event] = nil
 			self.addonCallbacks[addon].CallPriority[index] = nil
 			E.callbacks:Fire(event)
+		end
+	end
+end
+
+local function errorhandler(err)
+	return geterrorhandler()(err)
+end
+
+function S:RegisterSkin(addonName, func, forceLoad, bypass, position)
+	if bypass then
+		self.allowBypass[addonName] = true
+	end
+
+	if forceLoad then
+		xpcall(func, errorhandler)
+		self.addonsToLoad[addonName] = nil
+	elseif addonName == 'ElvUI' then
+		if position then
+			tinsert(self.nonAddonsToLoad, position, func)
+		else
+			tinsert(self.nonAddonsToLoad, func)
+		end
+	else
+		local addon = self.addonsToLoad[addonName]
+		if not addon then
+			self.addonsToLoad[addonName] = {}
+			addon = self.addonsToLoad[addonName]
+		end
+
+		if position then
+			tinsert(addon, position, func)
+		else
+			tinsert(addon, func)
 		end
 	end
 end
@@ -980,21 +1401,20 @@ function S:AddCallback(eventName, loadFunc)
 	E.RegisterCallback(E, eventName, loadFunc)
 end
 
-function S:SkinAce3()
-	S:HookAce3(LibStub("AceGUI-3.0", true))
-	S:Ace3_SkinTooltip(LibStub("AceConfigDialog-3.0", true))
-	S:Ace3_SkinTooltip(E.Libs.AceConfigDialog, E.LibsMinor.AceConfigDialog)
+function S:CallLoadedAddon(addonName, object)
+	for _, func in next, object do
+		xpcall(func, errorhandler)
+	end
+
+	self.addonsToLoad[addonName] = nil
 end
 
 function S:Initialize()
 	self.Initialized = true
-
 	self.db = E.private.skins
 
 	self.uiPanelQueue = {}
 	self.hitRectQueue = {}
-
-	S:SkinAce3()
 
 	--Fire event for all skins that doesn't rely on a Blizzard addon
 	for index, event in ipairs(self.nonAddonCallbacks.CallPriority) do
@@ -1011,6 +1431,25 @@ function S:Initialize()
 				self.addonCallbacks[addon].CallPriority[index] = nil
 				E.callbacks:Fire(event)
 			end
+		end
+	end
+
+	-- Early Skin Handling (populated before ElvUI is loaded from the Ace3 file)
+	if E.private.skins.ace3Enable and S.EarlyAceWidgets then
+		for _, n in next, S.EarlyAceWidgets do
+			if n.SetLayout then
+				S:Ace3_RegisterAsContainer(n)
+			else
+				S:Ace3_RegisterAsWidget(n)
+			end
+		end
+		for _, n in next, S.EarlyAceTooltips do
+			S:Ace3_SkinTooltip(LibStub(n, true))
+		end
+	end
+	if S.EarlyDropdowns then
+		for _, n in next, S.EarlyDropdowns do
+			S:SkinLibDropDownMenu(n)
 		end
 	end
 end

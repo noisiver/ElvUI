@@ -1,11 +1,7 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-local DT = E:GetModule("DataTexts")
+local E, L, V, P, G = unpack(ElvUI)
+local DT = E:GetModule('DataTexts')
 
---Lua functions
-local select = select
-local abs = math.abs
-local format, join = string.format, string.join
---WoW API / Variables
+local format, strjoin, abs = format, strjoin, abs
 local GetBlockChance = GetBlockChance
 local GetBonusBarOffset = GetBonusBarOffset
 local GetDodgeChance = GetDodgeChance
@@ -14,104 +10,126 @@ local GetInventorySlotInfo = GetInventorySlotInfo
 local GetItemInfo = GetItemInfo
 local GetParryChance = GetParryChance
 local UnitLevel = UnitLevel
-local BLOCK_CHANCE = BLOCK_CHANCE
+local UnitExists = UnitExists
+local UnitDefense = UnitDefense
 local BOSS = BOSS
-local DEFENSE = DEFENSE
+local BLOCK_CHANCE = BLOCK_CHANCE
 local DODGE_CHANCE = DODGE_CHANCE
 local PARRY_CHANCE = PARRY_CHANCE
 
-local displayString = ""
-local chanceString = "%.2f%%"
-local chanceString2 = "+%.2f%%"
-local AVD_DECAY_RATE = 0.2
-local targetlvl, playerlvl
-local baseMissChance, levelDifference, dodge, parry, block, avoidance, unhittable
-local lastPanel
+local displayString, lastPanel, targetlv, playerlv
+local basemisschance, misschance, baseDef, armorDef, leveldifference, dodge, parry, block, unhittable
+local AVD_DECAY_RATE, chanceString = 0.2, '%.2f%%'	--According to Light's Club discord, avoidance decay should be 0.2% per level per avoidance (thus 102.4 for +3 crush cap)
 
 local function IsWearingShield()
-	local slotID = GetInventorySlotInfo("SecondaryHandSlot")
-	local itemID = GetInventoryItemID("player", slotID)
+	local slotID = GetInventorySlotInfo('SecondaryHandSlot')
+	local itemID = GetInventoryItemID('player', slotID)
 
 	if itemID then
-		return select(9, GetItemInfo(itemID))
+		local _, _, _, _, _, _, _, _, itemEquipLoc = GetItemInfo(itemID)
+		return itemEquipLoc == 'INVTYPE_SHIELD'
 	end
 end
 
 local function OnEvent(self)
-	targetlvl, playerlvl = UnitLevel("target"), E.mylevel
+	targetlv, playerlv = UnitLevel('target'), E.mylevel
 
-	baseMissChance = E.myrace == "NightElf" and 7 or 5
-	if targetlvl == -1 then
-		levelDifference = 3
-	elseif targetlvl > playerlvl then
-		levelDifference = (targetlvl - playerlvl)
-	elseif targetlvl < playerlvl and targetlvl > 0 then
-		levelDifference = (targetlvl - playerlvl)
+	basemisschance = 5	--Base miss chance is 5%.
+
+	if targetlv == -1 then
+		leveldifference = 3
+	elseif targetlv > playerlv then
+		leveldifference = (targetlv - playerlv)
+	elseif targetlv < playerlv and targetlv > 0 then
+		leveldifference = (targetlv - playerlv)
 	else
-		levelDifference = 0
+		leveldifference = 0
+	end
+	if not UnitExists('target') then --If there's no target, we'll assume we're talking about a lvl +3 boss. You can click yourself to see against your level.
+		leveldifference = 3
+		targetlv = 73
+	end
+	if leveldifference >= 0 then
+		dodge = (GetDodgeChance() - leveldifference * AVD_DECAY_RATE)
+		parry = (GetParryChance() - leveldifference * AVD_DECAY_RATE)
+		block = (GetBlockChance() - leveldifference * AVD_DECAY_RATE)
+		basemisschance = (basemisschance - leveldifference * AVD_DECAY_RATE)
+	else
+		dodge = (GetDodgeChance() + abs(leveldifference * AVD_DECAY_RATE))
+		parry = (GetParryChance() + abs(leveldifference * AVD_DECAY_RATE))
+		block = (GetBlockChance() + abs(leveldifference * AVD_DECAY_RATE))
+		basemisschance = (basemisschance+ abs(leveldifference * AVD_DECAY_RATE))
 	end
 
-	if levelDifference >= 0 then
-		dodge = (GetDodgeChance() - levelDifference * AVD_DECAY_RATE)
-		parry = (GetParryChance() - levelDifference * AVD_DECAY_RATE)
-		block = (GetBlockChance() - levelDifference * AVD_DECAY_RATE)
-		baseMissChance = (baseMissChance - levelDifference * AVD_DECAY_RATE)
-	else
-		dodge = (GetDodgeChance() + abs(levelDifference * AVD_DECAY_RATE))
-		parry = (GetParryChance() + abs(levelDifference * AVD_DECAY_RATE))
-		block = (GetBlockChance() + abs(levelDifference * AVD_DECAY_RATE))
-		baseMissChance = (baseMissChance+ abs(levelDifference * AVD_DECAY_RATE))
+	local unhittableMax = 100
+	local numAvoidances = 4
+	if dodge <= 0 then
+		dodge = 0
+		numAvoidances = numAvoidances - 1
 	end
-
-	if dodge <= 0 then dodge = 0 end
-	if parry <= 0 then parry = 0 end
-	if block <= 0 then block = 0 end
-
-	if E.myclass == "DRUID" and GetBonusBarOffset() == 3 then
+	if parry <= 0 then
 		parry = 0
+		numAvoidances = numAvoidances - 1
 	end
-
-	if IsWearingShield() ~= "INVTYPE_SHIELD" then
+	if block <= 0 then
 		block = 0
+		numAvoidances = numAvoidances - 1
 	end
 
-	avoidance = (dodge + parry + block + baseMissChance)
-	unhittable = avoidance - 102.4
+	if E.myclass == 'DRUID' and GetBonusBarOffset() == 3 then
+		parry = 0
+		numAvoidances = numAvoidances - 1
+	end
 
-	self.text:SetFormattedText(displayString, avoidance)
+	if not IsWearingShield() then
+		block = 0
+		numAvoidances = numAvoidances - 1
+	end
+
+	unhittableMax = unhittableMax + ((AVD_DECAY_RATE * leveldifference) * numAvoidances);
+	baseDef, armorDef = UnitDefense('player');
+	misschance = (basemisschance + (armorDef + baseDef - (5*playerlv))*0.04);
+
+	local avoided = (dodge+parry+misschance) --First roll on hit table determining if the hit missed
+	local blocked = block
+	local avoidance = (avoided+blocked)
+	unhittable = avoidance - unhittableMax
+
+	if E.global.datatexts.settings.Avoidance.NoLabel then
+		self.text:SetFormattedText(displayString, avoidance)
+	else
+		self.text:SetFormattedText(displayString, E.global.datatexts.settings.Avoidance.Label ~= '' and E.global.datatexts.settings.Avoidance.Label or L["AVD: "], avoidance)
+	end
 
 	lastPanel = self
 end
 
-local function OnEnter(self)
-	DT:SetupTooltip(self)
-
-	if targetlvl > 1 then
-		DT.tooltip:AddDoubleLine(L["Avoidance Breakdown"], join("", " (", L["lvl"], " ", targetlvl, ")"))
-	elseif targetlvl == -1 then
-		DT.tooltip:AddDoubleLine(L["Avoidance Breakdown"], join("", " (", BOSS, ")"))
+local function OnEnter()
+	DT.tooltip:ClearLines()
+	if targetlv > 0 then
+		DT.tooltip:AddDoubleLine(L["Avoidance Breakdown"], strjoin('', ' (', L["lvl"], ' ', targetlv, ')'))
+	elseif targetlv == -1 then
+		DT.tooltip:AddDoubleLine(L["Avoidance Breakdown"], strjoin('', ' (', BOSS, ')'))
 	else
-		DT.tooltip:AddDoubleLine(L["Avoidance Breakdown"], join("", " (", L["lvl"], " ", playerlvl, ")"))
+		DT.tooltip:AddDoubleLine(L["Avoidance Breakdown"], strjoin('', ' (', L["lvl"], ' ', playerlv, ')'))
 	end
-
-	DT.tooltip:AddLine(" ")
-	DT.tooltip:AddDoubleLine(DODGE_CHANCE, format(chanceString, dodge), 1, 1, 1)
-	DT.tooltip:AddDoubleLine(PARRY_CHANCE, format(chanceString, parry), 1, 1, 1)
-	DT.tooltip:AddDoubleLine(BLOCK_CHANCE, format(chanceString, block), 1, 1, 1)
-	DT.tooltip:AddDoubleLine(L["Miss Chance"], format(chanceString, baseMissChance), 1, 1, 1)
-	DT.tooltip:AddLine(" ")
+	DT.tooltip:AddLine(' ')
+	DT.tooltip:AddDoubleLine(DODGE_CHANCE, format(chanceString, dodge),1,1,1)
+	DT.tooltip:AddDoubleLine(PARRY_CHANCE, format(chanceString, parry),1,1,1)
+	DT.tooltip:AddDoubleLine(BLOCK_CHANCE, format(chanceString, block),1,1,1)
+	DT.tooltip:AddDoubleLine(L["Miss Chance"], format(chanceString, misschance),1,1,1)
+	DT.tooltip:AddLine(' ')
 
 	if unhittable > 0 then
-		DT.tooltip:AddDoubleLine(L["Unhittable:"], format(chanceString2, unhittable), 1, 1, 1, 0, 1, 0)
+		DT.tooltip:AddDoubleLine(L["Unhittable:"], '+'..format(chanceString, unhittable), 1, 1, 1, 0, 1, 0)
 	else
 		DT.tooltip:AddDoubleLine(L["Unhittable:"], format(chanceString, unhittable), 1, 1, 1, 1, 0, 0)
 	end
-
 	DT.tooltip:Show()
 end
 
 local function ValueColorUpdate(hex)
-	displayString = join("", DEFENSE, ": ", hex, "%.2f%%|r")
+	displayString = strjoin('', E.global.datatexts.settings.Avoidance.NoLabel and '' or '%s', hex, '%.'..E.global.datatexts.settings.Avoidance.decimalLength..'f%%|r')
 
 	if lastPanel ~= nil then
 		OnEvent(lastPanel)
@@ -119,4 +137,4 @@ local function ValueColorUpdate(hex)
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("Avoidance", {"COMBAT_RATING_UPDATE", "PLAYER_TARGET_CHANGED"}, OnEvent, nil, nil, OnEnter, nil, L["Avoidance Breakdown"])
+DT:RegisterDatatext('Avoidance', L["Enhancements"], { 'UNIT_TARGET', 'UNIT_STATS', 'UNIT_AURA', 'PLAYER_EQUIPMENT_CHANGED' }, OnEvent, nil, nil, OnEnter, nil, L["Avoidance Breakdown"], nil, ValueColorUpdate)

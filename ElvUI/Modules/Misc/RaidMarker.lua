@@ -1,9 +1,8 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local M = E:GetModule("Misc")
 
---Lua functions
-local sin, cos, pi = math.sin, math.cos, math.pi
---WoW API / Variables
+local sin, cos, rad = math.sin, math.cos, rad
+
 local CreateFrame = CreateFrame
 local GetNumPartyMembers = GetNumPartyMembers
 local UnitInRaid = UnitInRaid
@@ -15,6 +14,7 @@ local PlaySound = PlaySound
 local SetRaidTarget = SetRaidTarget
 local SetRaidTargetIconTexture = SetRaidTargetIconTexture
 local UIErrorsFrame = UIErrorsFrame
+-- GLOBALS: RaidMark_HotkeyPressed
 
 local ButtonIsDown
 
@@ -69,16 +69,17 @@ function M:RaidMarkButton_OnLeave()
 end
 
 function M:RaidMarkButton_OnClick(button)
-	PlaySound("UChatScrollButton")
+	PlaySound(1115) --U_CHAT_SCROLL_BUTTON
 	SetRaidTarget("target", (button ~= "RightButton") and self:GetID() or 0)
 	self:GetParent():Hide()
 end
 
+local ANG_RAD = rad(360) / 7
 function M:LoadRaidMarker()
 	local marker = CreateFrame("Frame", nil, E.UIParent)
 	marker:EnableMouse(true)
-	marker:Size(100)
 	marker:SetFrameStrata("DIALOG")
+	marker:Size(100)
 
 	for i = 1, 8 do
 		local button = CreateFrame("Button", "RaidMarkIconButton"..i, marker)
@@ -95,7 +96,7 @@ function M:LoadRaidMarker()
 		if i == 8 then
 			button:Point("CENTER")
 		else
-			local angle = pi / 0.7 * i
+			local angle = ANG_RAD * (i - 1)
 			button:Point("CENTER", sin(angle) * 60, cos(angle) * 60)
 		end
 	end

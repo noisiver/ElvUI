@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local M = E:GetModule("Misc")
 local Bags = E:GetModule("Bags")
 
@@ -39,6 +39,7 @@ local StaticPopup_Hide = StaticPopup_Hide
 local UninviteUnit = UninviteUnit
 local UnitGUID = UnitGUID
 local UnitName = UnitName
+local UIErrorsFrame = UIErrorsFrame
 
 local MAX_PARTY_MEMBERS = MAX_PARTY_MEMBERS
 
@@ -70,6 +71,26 @@ do
 			self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 		else
 			self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+		end
+	end
+
+	function M:ErrorFrameToggle(event)
+		if not E.db.general.hideErrorFrame then return end
+
+		if event == 'PLAYER_REGEN_DISABLED' then
+			UIErrorsFrame:UnregisterEvent('UI_ERROR_MESSAGE')
+		else
+			UIErrorsFrame:RegisterEvent('UI_ERROR_MESSAGE')
+		end
+	end
+
+	function M:ZoneTextToggle()
+		if E.db.general.hideZoneText then
+			ZoneTextFrame:UnregisterAllEvents()
+		else
+			ZoneTextFrame:RegisterEvent('ZONE_CHANGED')
+			ZoneTextFrame:RegisterEvent('ZONE_CHANGED_INDOORS')
+			ZoneTextFrame:RegisterEvent('ZONE_CHANGED_NEW_AREA')
 		end
 	end
 
@@ -237,7 +258,7 @@ function M:MERCHANT_SHOW()
 
 	if E.db.bags.vendorGrays.enable then
 		local itemCount
-		itemCount, greyValue = Bags:GetGraysInfo()
+		itemCount, greyValue = Bags:GetGrays()
 
 		if itemCount > 0 then
 			Bags:VendorGrays()
@@ -326,26 +347,29 @@ function M:ForceCVars(event)
 end
 
 function M:Initialize()
-	self:LoadRaidMarker()
-	self:LoadLoot()
-	self:LoadLootRoll()
-	self:LoadChatBubbles()
+	M.Initialized = true
 
-	self:ToggleErrorHandling()
-	self:ToggleInterruptAnnounce()
+	M:LoadRaidMarker()
+	M:LoadLootRoll()
+	M:LoadChatBubbles()
+	M:LoadLoot()
+	M:ToggleItemLevelInfo(true)
+	M:ZoneTextToggle()
 
-	self:RegisterEvent("CHAT_MSG_BG_SYSTEM_HORDE", "PVPMessageEnhancement")
-	self:RegisterEvent("CHAT_MSG_BG_SYSTEM_ALLIANCE", "PVPMessageEnhancement")
-	self:RegisterEvent("CHAT_MSG_BG_SYSTEM_NEUTRAL", "PVPMessageEnhancement")
-	self:RegisterEvent("PARTY_INVITE_REQUEST", "AutoInvite")
-	self:RegisterEvent("MERCHANT_SHOW")
+	M:ToggleErrorHandling()
+	M:ToggleInterruptAnnounce()
+
+	M:RegisterEvent("CHAT_MSG_BG_SYSTEM_HORDE", "PVPMessageEnhancement")
+	M:RegisterEvent("CHAT_MSG_BG_SYSTEM_ALLIANCE", "PVPMessageEnhancement")
+	M:RegisterEvent("CHAT_MSG_BG_SYSTEM_NEUTRAL", "PVPMessageEnhancement")
+	M:RegisterEvent("PARTY_INVITE_REQUEST", "AutoInvite")
+	M:RegisterEvent("MERCHANT_SHOW")
 
 	if E.private.actionbar.enable then
-		self:RegisterEvent("CVAR_UPDATE", "ForceCVars")
-		self:RegisterEvent("PLAYER_ENTERING_WORLD", "ForceCVars")
+		M:RegisterEvent("CVAR_UPDATE", "ForceCVars")
+		M:RegisterEvent("PLAYER_ENTERING_WORLD", "ForceCVars")
 	end
 
-	self.Initialized = true
 end
 
 local function InitializeCallback()

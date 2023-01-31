@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local S = E:GetModule("Skins")
 
 --Lua functions
@@ -10,33 +10,18 @@ local unpack = unpack
 S:AddCallback("Skin_Misc", function()
 	if not E.private.skins.blizzard.enable or not E.private.skins.blizzard.misc then return end
 
-	-- ESC/Menu Buttons
-	GameMenuFrame:StripTextures()
-	GameMenuFrame:CreateBackdrop("Transparent")
-
-	GameMenuFrameHeader:Point("TOP", 0, 7)
-
-	local menuButtons = {
-		GameMenuButtonOptions,
-		GameMenuButtonSoundOptions,
-		GameMenuButtonUIOptions,
-	--	GameMenuButtonMacOptions,
-		GameMenuButtonKeybindings,
-		GameMenuButtonMacros,
-	--	GameMenuButtonRatings,
-		GameMenuButtonLogout,
-		GameMenuButtonQuit,
-		GameMenuButtonContinue,
-
-		ElvUI_MenuButton
-	}
-
-	for i = 1, #menuButtons do
-		local button = menuButtons[i]
-		if button then
-			S:HandleButton(menuButtons[i])
+	-- reskin all esc/menu buttons
+	for _, Button in pairs({_G.GameMenuFrame:GetChildren()}) do
+		if Button.IsObjectType and Button:IsObjectType("Button") then
+			S:HandleButton(Button)
 		end
 	end
+
+	GameMenuFrame:StripTextures()
+	GameMenuFrame:SetTemplate("Transparent")
+	GameMenuFrameHeader:SetTexture()
+	GameMenuFrameHeader:ClearAllPoints()
+	GameMenuFrameHeader:Point("TOP", GameMenuFrame, 0, 7)
 
 	-- Static Popups
 	for i = 1, 4 do
@@ -216,7 +201,7 @@ S:AddCallback("Skin_Misc", function()
 						local button = _G["DropDownList"..i.."Button"..j]
 
 						if not button.isSkinned then
-							S:HandleButtonHighlight(_G["DropDownList"..i.."Button"..j.."Highlight"])
+							-- S:HandleButtonHighlight(_G["DropDownList"..i.."Button"..j.."Highlight"])
 
 							if checkBoxSkin then
 								local check = _G["DropDownList"..i.."Button"..j.."Check"]

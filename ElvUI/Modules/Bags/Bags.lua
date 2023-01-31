@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local B = E:GetModule("Bags")
 local TT = E:GetModule("Tooltip")
 local Skins = E:GetModule("Skins")
@@ -121,8 +121,8 @@ end
 
 function B:UpdateSearch()
 	local search = self:GetText()
-	if self.Instructions then
-		self.Instructions:SetShown(search == "")
+	if self.Instructions and search == "" then
+		self.Instructions:Show()
 	end
 
 	local MIN_REPEAT_CHARACTERS = 3
@@ -249,7 +249,7 @@ function B:SetGuildBankSearch(query)
 	end
 end
 
-function B:UpdateItemLevelDisplay()
+function B:UpdateItemDisplay()
 	if not E.private.bags.enable then return end
 
 	local font = E.Libs.LSM:Fetch("font", E.db.bags.itemLevelFont)
@@ -1040,7 +1040,7 @@ function B:FormatMoney(amount)
 	return str
 end
 
-function B:GetGraysInfo()
+function B:GetGrays()
 	if #self.SellFrame.Info.itemList > 0 then
 		twipe(self.SellFrame.Info.itemList)
 	end
@@ -1069,6 +1069,10 @@ function B:GetGraysInfo()
 	return #itemList, value
 end
 
+function B:GetGraysValue()
+	return B:GetGrays()
+end
+
 function B:VendorGrays(delete)
 	if self.SellFrame:IsShown() then return end
 
@@ -1093,7 +1097,7 @@ function B:VendorGrays(delete)
 end
 
 function B:VendorGrayCheck()
-	local itemCount, value = B:GetGraysInfo()
+	local itemCount, value = B:GetGrays()
 
 	if itemCount == 0 then
 		E:Print(L["No gray items to delete."])

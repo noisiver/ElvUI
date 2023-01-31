@@ -1,78 +1,96 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-local DT = E:GetModule("DataTexts")
+local E, L, V, P, G = unpack(ElvUI)
+local DT = E:GetModule('DataTexts')
 
---Lua functions
-local format, join = string.format, string.join
---WoW API / Variables
-local ContainerIDToInventoryID = ContainerIDToInventoryID
-local GetBackpackCurrencyInfo = GetBackpackCurrencyInfo
+local format = format
+local strjoin = strjoin
+local ToggleAllBags = ToggleAllBags
+local GetInventoryItemQuality = GetInventoryItemQuality
+local GetInventoryItemTexture = GetInventoryItemTexture
+local GetItemQualityColor = GetItemQualityColor
+
+local GetBagName = GetBagName
 local GetContainerNumFreeSlots = GetContainerNumFreeSlots
 local GetContainerNumSlots = GetContainerNumSlots
-local GetInventoryItemLink = GetInventoryItemLink
-local GetItemInfo = GetItemInfo
-local GetItemQualityColor = GetItemQualityColor
-local BACKPACK_TOOLTIP = BACKPACK_TOOLTIP
-local CURRENCY = CURRENCY
-local MAX_WATCHED_TOKENS = MAX_WATCHED_TOKENS
-local NUM_BAG_SLOTS = NUM_BAG_SLOTS
+local ContainerIDToInventoryID = ContainerIDToInventoryID
 
-local currencyString = "|T%s:14:14:0:0:64:64:4:60:4:60|t %s"
-local displayString = ""
-local lastPanel
+local MAX_WATCHED_TOKENS = MAX_WATCHED_TOKENS or 3
+local NUM_BAG_SLOTS = NUM_BAG_SLOTS -- add the profession bag
+local CURRENCY = CURRENCY
+
+local displayString, lastPanel = ''
+local iconString = '|T%s:14:14:0:0:64:64:4:60:4:60|t  %s'
+local BAG_TYPES = {
+	[0x0001] = 'Quiver',
+	[0x0002] = 'Ammo Pouch',
+	[0x0004] = 'Soul Bag',
+}
 
 local function OnEvent(self)
+	lastPanel = self
+
 	local free, total = 0, 0
 	for i = 0, NUM_BAG_SLOTS do
-		free, total = free + GetContainerNumFreeSlots(i), total + GetContainerNumSlots(i)
+		local freeSlots, bagType = GetContainerNumFreeSlots(i)
+		if not bagType or bagType == 0 then
+			free, total = free + freeSlots, total + GetContainerNumSlots(i)
+		end
 	end
-	self.text:SetFormattedText(displayString, total - free, total)
 
-	lastPanel = self
+	local textFormat = E.global.datatexts.settings.Bags.textFormat
+	if textFormat == 'FREE' then
+		self.text:SetFormattedText(displayString, free)
+	elseif textFormat == 'USED' then
+		self.text:SetFormattedText(displayString, total - free)
+	elseif textFormat == 'FREE_TOTAL' then
+		self.text:SetFormattedText(displayString, free, total)
+	else
+		self.text:SetFormattedText(displayString, total - free, total)
+	end
 end
 
 local function OnClick()
-	OpenAllBags()
+	ToggleAllBags()
 end
 
-local function OnEnter(self)
-	DT:SetupTooltip(self)
-
-	local r, g, b
-	local _, name, quality, link
-	local free, total, used
+local function OnEnter()
+	DT.tooltip:ClearLines()
 
 	for i = 0, NUM_BAG_SLOTS do
-		free, total = GetContainerNumFreeSlots(i), GetContainerNumSlots(i)
-		used = total - free
+		local bagName = GetBagName(i)
+		if bagName then
+			local numSlots = GetContainerNumSlots(i)
+			local freeSlots, bagType = GetContainerNumFreeSlots(i)
+			local usedSlots = numSlots - freeSlots
+			local r, g, b, r2, g2, b2, icon
 
-		if i == 0 then
-			DT.tooltip:AddLine(L["Bags"]..":")
-			DT.tooltip:AddDoubleLine(BACKPACK_TOOLTIP, format("%d / %d", used, total), 1, 1, 1)
-		else
-			link = GetInventoryItemLink("player", ContainerIDToInventoryID(i))
-			if link then
-				name, _, quality = GetItemInfo(link)
-				r, g, b = GetItemQualityColor(quality)
-				DT.tooltip:AddDoubleLine(name, format("%d / %d", used, total), r, g, b)
+			if BAG_TYPES[bagType] then -- reverse for ammo bags
+				r2, g2, b2 = E:ColorGradient(usedSlots/numSlots, 1,.1,.1, 1,1,.1, .1,1,.1) -- red, yellow, green
+			else
+				r2, g2, b2 = E:ColorGradient(usedSlots/numSlots, .1,1,.1, 1,1,.1, 1,.1,.1) -- green, yellow, red
 			end
+
+			if i > 0 then
+				local id = ContainerIDToInventoryID(i)
+				r, g, b = GetItemQualityColor(GetInventoryItemQuality('player', id) or 1)
+				icon = GetInventoryItemTexture('player', id)
+			end
+
+			DT.tooltip:AddDoubleLine(format(iconString, icon or E.Media.Textures.Backpack, bagName), format('%d / %d', usedSlots, numSlots), r or 1, g or 1, b or 1, r2, g2, b2)
 		end
 	end
 
-	local count, currencyType, icon
 	for i = 1, MAX_WATCHED_TOKENS do
-		name, count, currencyType, icon = GetBackpackCurrencyInfo(i)
-		if name and i == 1 then
-			DT.tooltip:AddLine(" ")
-			DT.tooltip:AddLine(CURRENCY..":")
+		local info, name = DT:BackpackCurrencyInfo(i)
+		if not name then break end
+
+		if i == 1 then
+			DT.tooltip:AddLine(' ')
+			DT.tooltip:AddLine(CURRENCY)
+			DT.tooltip:AddLine(' ')
 		end
 
-		if name and count then
-			if currencyType == 1 then
-				icon = "Interface\\PVPFrame\\PVP-ArenaPoints-Icon"
-			elseif currencyType == 2 then
-				icon = "Interface\\PVPFrame\\PVP-Currency-"..E.myfaction
-			end
-			DT.tooltip:AddDoubleLine(format(currencyString, icon, name), count, 1, 1, 1)
+		if info.quantity then
+			DT.tooltip:AddDoubleLine(format(iconString, info.iconFileID, name), info.quantity, 1, 1, 1, 1, 1, 1)
 		end
 	end
 
@@ -80,12 +98,14 @@ local function OnEnter(self)
 end
 
 local function ValueColorUpdate(hex)
-	displayString = join("", L["Bags"], ": ", hex, "%d/%d|r")
+	local textFormat = E.global.datatexts.settings.Bags.textFormat
+	local noLabel = E.global.datatexts.settings.Bags.NoLabel and ''
+	local labelString = noLabel or (E.global.datatexts.settings.Bags.Label ~= '' and E.global.datatexts.settings.Bags.Label) or strjoin('', L["Bags"], ': ')
 
-	if lastPanel ~= nil then
-		OnEvent(lastPanel)
-	end
+	displayString = strjoin('', labelString, hex, (textFormat == 'FREE' or textFormat == 'USED') and '%d|r' or '%d/%d|r')
+
+	if lastPanel then OnEvent(lastPanel) end
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("Bags", {"PLAYER_ENTERING_WORLD", "BAG_UPDATE"}, OnEvent, nil, OnClick, OnEnter, nil, L["Bags"])
+DT:RegisterDatatext('Bags', nil, {'BAG_UPDATE'}, OnEvent, nil, OnClick, OnEnter, nil, L["Bags"], nil, ValueColorUpdate)

@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local S = E:GetModule("Skins")
 
 --Lua functions
@@ -27,10 +27,8 @@ S:AddCallback("Skin_Character", function()
 	if not E.private.skins.blizzard.enable or not E.private.skins.blizzard.character then return end
 
 	-- CharacterFrame
-	CharacterFrame:StripTextures(true)
-	CharacterFrame:CreateBackdrop("Transparent")
-	CharacterFrame.backdrop:Point("TOPLEFT", 11, -12)
-	CharacterFrame.backdrop:Point("BOTTOMRIGHT", -32, 76)
+	local CharacterFrame = _G.CharacterFrame
+	S:HandleFrame(CharacterFrame, true, nil, 11, -12, -32, 76)
 
 	S:SetUIPanelWindowInfo(CharacterFrame, "width")
 
@@ -86,10 +84,10 @@ S:AddCallback("Skin_Character", function()
 	S:HandleRotateButton(CharacterModelFrameRotateLeftButton)
 	S:HandleRotateButton(CharacterModelFrameRotateRightButton)
 
-	PlayerStatFrameLeftDropDown:Point("BOTTOMLEFT", PlayerStatLeftTop, "TOPLEFT", -19, -8)
-
-	S:HandleDropDownBox(PlayerStatFrameLeftDropDown, 140, "down")
-	S:HandleDropDownBox(PlayerStatFrameRightDropDown, 140, "down")
+	S:HandleDropDownBox(_G.PlayerStatFrameRightDropDown, 145)
+	S:HandleDropDownBox(_G.PlayerStatFrameLeftDropDown, 147)
+	_G.PlayerStatFrameRightDropDown:Point('TOP', -2, 24)
+	_G.PlayerStatFrameLeftDropDown:Point('LEFT', -25, 24)
 
 	CharacterAttributesFrame:StripTextures()
 

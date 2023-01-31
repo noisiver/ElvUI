@@ -1,7 +1,8 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local NP = E:GetModule("NamePlates")
---local LSM = E.Libs.LSM
+local LSM = E.Libs.LSM
 local LAI = E.Libs.LAI
+local ElvUF = E.oUF
 
 --Lua functions
 local _G = _G
@@ -130,7 +131,7 @@ end
 
 function NP:StyleFrame(parent, noBackdrop, point)
 	point = point or parent
-	local noscalemult = E.mult * UIParent:GetScale()
+	local noscalemult = E.mult * E.uiscale
 
 	if point.bordertop then return end
 
@@ -1217,11 +1218,14 @@ function NP:Initialize()
 	self:UpdateCVars()
 
 	local ElvNP_Test = CreateFrame("Button", "ElvNP_Test")
+	ElvNP_Test:SetScale(1)
+	ElvNP_Test:ClearAllPoints()
 	ElvNP_Test:Point("BOTTOM", UIParent, "BOTTOM", 0, 250)
 	ElvNP_Test:SetMovable(true)
 	ElvNP_Test:RegisterForDrag("LeftButton", "RightButton")
 	ElvNP_Test:SetScript("OnDragStart", function() ElvNP_Test:StartMoving() end)
 	ElvNP_Test:SetScript("OnDragStop", function() ElvNP_Test:StopMovingOrSizing() end)
+	ElvNP_Test.frameType = 'PLAYER'
 
 	CreateFrame("StatusBar", nil, ElvNP_Test)
 	CreateFrame("StatusBar", nil, ElvNP_Test)

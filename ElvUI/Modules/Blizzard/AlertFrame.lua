@@ -1,4 +1,4 @@
-local E, L = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L = unpack(select(2, ...))
 local B = E:GetModule("Blizzard")
 local Misc = E:GetModule("Misc")
 

@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local S = E:GetModule("Skins")
 
 --Lua functions
@@ -57,4 +57,23 @@ S:AddCallbackForAddon("Blizzard_DebugTools", "Skin_Blizzard_DebugTools", functio
 	end)
 
 	S:HandleCloseButton(EventTraceFrameCloseButton, EventTraceFrame)
+
+	if IsAddOnLoaded("ViragDevTool") then
+		ViragDevToolFrame:StripTextures()
+		ViragDevToolFrame:SetTemplate("Transparent")
+		ViragDevToolFrameSideBar:StripTextures()
+		ViragDevToolFrameSideBar:SetTemplate("Transparent")
+		ViragDevToolOptionsMainFrame:StripTextures()
+		ViragDevToolOptionsMainFrame:SetTemplate("Transparent")
+		ViragDevToolFrameScrollFrame:StripTextures()
+		ViragDevToolFrameSideBarScrollFrame:StripTextures()
+
+		S:HandleEditBox(ViragDevToolFrameSideBarTextArea)
+		S:HandleEditBox(ViragDevToolFrameTextArea)
+
+		S:HandleScrollBar(ViragDevToolFrameScrollFrameScrollBar)
+		S:HandleScrollBar(ViragDevToolFrameSideBarScrollFrameScrollBar)
+
+		S:HandleCloseButton(ViragDevToolFrameCloseWndButton)
+	end
 end)

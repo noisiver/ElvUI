@@ -1,231 +1,265 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-local DT = E:GetModule("DataTexts")
+local E, L, V, P, G = unpack(select(2, ...))
+local DT = E:GetModule('DataTexts')
 
---Lua functions
 local collectgarbage = collectgarbage
-local floor = math.floor
-local format = string.format
-local tinsert, sort = table.insert, table.sort
---WoW API / Variables
-local CopyTable = CopyTable
+local tremove, tinsert, sort, wipe, type = tremove, tinsert, sort, wipe, type
+local ipairs, pairs, floor, format, strmatch = ipairs, pairs, floor, format, strmatch
 local GetAddOnCPUUsage = GetAddOnCPUUsage
 local GetAddOnInfo = GetAddOnInfo
 local GetAddOnMemoryUsage = GetAddOnMemoryUsage
+local SetCVar = SetCVar
+local GetCVar = GetCVar
+local ReloadUI = ReloadUI
 local GetFramerate = GetFramerate
 local GetNetStats = GetNetStats
 local GetNumAddOns = GetNumAddOns
-local HideUIPanel = HideUIPanel
 local IsAddOnLoaded = IsAddOnLoaded
-local IsModifierKeyDown = IsModifierKeyDown
 local IsShiftKeyDown = IsShiftKeyDown
-local PlaySound = PlaySound
+local IsControlKeyDown = IsControlKeyDown
 local ResetCPUUsage = ResetCPUUsage
-local ShowUIPanel = ShowUIPanel
 local UpdateAddOnCPUUsage = UpdateAddOnCPUUsage
 local UpdateAddOnMemoryUsage = UpdateAddOnMemoryUsage
+local InCombatLockdown = InCombatLockdown
 
-local cpuProfiling = GetCVar("scriptProfile") == "1"
-
-local int = 5 -- initial delay
 local statusColors = {
-	"|cff0CD809",
-	"|cffE8DA0F",
-	"|cffFF9000",
-	"|cffD80909"
+	'|cff0CD809',
+	'|cffE8DA0F',
+	'|cffFF9000',
+	'|cffD80909'
 }
 
-local enteredFrame
-local homeLatencyString = "%d ms"
-local kiloByteString = "%d kb"
-local megaByteString = "%.2f mb"
+local enteredFrame = false
+local bandwidthString = '%.2f Mbps'
+local percentageString = '%.2f%%'
+local homeLatencyString = '%d ms'
+local kiloByteString = '%d kb'
+local megaByteString = '%.2f mb'
+local profilingString = '%s%s|r |cffffffff/|r %s%s|r'
+local cpuProfiling = GetCVar('scriptProfile') == '1'
 
-local memoryTable = {}
-local cpuTable = {}
-local lodTable = {}
-local disabledTable = {}
-local initialized
-
-local function OnEvent(self, event, addonName)
-	if event == "ADDON_LOADED" then
-		if lodTable[addonName] then
-			tinsert(memoryTable, lodTable[addonName])
-
-			if cpuProfiling then
-				tinsert(cpuTable, CopyTable(lodTable[addonName]))
-			end
-
-			lodTable[addonName] = nil
-		elseif disabledTable[addonName] then
-			tinsert(memoryTable, disabledTable[addonName])
-
-			if cpuProfiling then
-				tinsert(cpuTable, CopyTable(disabledTable[addonName]))
-			end
-
-			disabledTable[addonName] = nil
-		end
-	elseif not initialized and (event == "PLAYER_ENTERING_WORLD" or event == "ELVUI_FORCE_RUN") then
-		local _, name, title, enabled, loadable
-
-		for i = 1, GetNumAddOns() do
-			name, title, _, enabled, loadable = GetAddOnInfo(i)
-
-			if IsAddOnLoaded(i) then
-				tinsert(memoryTable, {i, title, 0})
-
-				if cpuProfiling then
-					tinsert(cpuTable, {i, title, 0})
-				end
-			elseif loadable then
-				lodTable[name] = {i, title, 0}
-			elseif not enabled then
-				disabledTable[name] = {i, title, 0}
-			end
-		end
-
-		initialized = true
-		self:UnregisterEvent(event)
-	elseif initialized and event == "ELVUI_FORCE_RUN" then
-		local name
-
-		for i = 1, GetNumAddOns() do
-			name = GetAddOnInfo(i)
-
-			if (lodTable[name] or disabledTable[name]) and IsAddOnLoaded(i) then
-				OnEvent(self, "ADDON_LOADED", name)
-			end
-		end
-	end
-end
+local CombineAddOns = {
+	['DBM-Core'] = '^<DBM>',
+	['DataStore'] = '^DataStore',
+	['Altoholic'] = '^Altoholic',
+	['AtlasLoot'] = '^AtlasLoot',
+	['Details'] = '^Details!',
+	['RaiderIO'] = '^RaiderIO',
+	['BigWigs'] = '^BigWigs',
+}
 
 local function formatMem(memory)
-	if memory > 999 then
-		return format(megaByteString, memory / 1024)
+	local mult = 10^1
+	if memory >= 1024 then
+		return format(megaByteString, ((memory/1024) * mult) / mult)
 	else
-		return format(kiloByteString, memory)
+		return format(kiloByteString, (memory * mult) / mult)
 	end
 end
 
-local function sortByMemoryOrCPU(a, b)
-	if a and b then
-		return (a[3] == b[3] and a[2] < b[2]) or a[3] > b[3]
-	end
-end
+local infoTable = {}
+DT.SystemInfo = infoTable
 
-local function UpdateMemory()
-	UpdateAddOnMemoryUsage()
+local function BuildAddonList()
+	local addOnCount = GetNumAddOns()
+	if addOnCount == #infoTable then return end
 
-	local totalMemory = 0
-	for i = 1, #memoryTable do
-		memoryTable[i][3] = GetAddOnMemoryUsage(memoryTable[i][1])
-		totalMemory = totalMemory + memoryTable[i][3]
-	end
+	wipe(infoTable)
 
-	sort(memoryTable, sortByMemoryOrCPU)
-
-	return totalMemory
-end
-
-local function UpdateCPU()
-	UpdateAddOnCPUUsage()
-
-	local totalCPU = 0
-	for i = 1, #cpuTable do
-		cpuTable[i][3] = GetAddOnCPUUsage(cpuTable[i][1])
-		totalCPU = totalCPU + cpuTable[i][3]
-	end
-
-	sort(cpuTable, sortByMemoryOrCPU)
-
-	return totalCPU
-end
-
-local function ToggleGameMenuFrame()
-	if GameMenuFrame:IsShown() then
-		PlaySound("igMainMenuQuit")
-		HideUIPanel(GameMenuFrame)
-	else
-		PlaySound("igMainMenuOpen")
-		ShowUIPanel(GameMenuFrame)
-	end
-end
-
-local function OnClick(_, btn)
-	if IsModifierKeyDown() then
-		collectgarbage("collect")
-		ResetCPUUsage()
-	elseif btn == "LeftButton" then
-		ToggleGameMenuFrame()
-	end
-end
-
-local function OnEnter(self)
-	DT:SetupTooltip(self)
-
-	local totalMemory = UpdateMemory()
-	local _, _, homeLatency = GetNetStats()
-
-	DT.tooltip:AddDoubleLine(L["Home Latency:"], format(homeLatencyString, homeLatency), 0.69, 0.31, 0.31, 0.84, 0.75, 0.65)
-	DT.tooltip:AddDoubleLine(L["Total Memory:"], formatMem(totalMemory), 0.69, 0.31, 0.31, 0.84, 0.75, 0.65)
-
-	local totalCPU
-	if cpuProfiling then
-		totalCPU = UpdateCPU()
-		DT.tooltip:AddDoubleLine(L["Total CPU:"], format(homeLatencyString, totalCPU), 0.69, 0.31, 0.31, 0.84, 0.75, 0.65)
-	end
-
-	DT.tooltip:AddLine(" ")
-
-	local addon, red, green
-
-	if IsShiftKeyDown() or not cpuProfiling then
-		for i = 1, #memoryTable do
-			addon = memoryTable[i]
-			red = addon[3] / totalMemory
-			green = 1 - red
-			DT.tooltip:AddDoubleLine(addon[2], formatMem(addon[3]), 1, 1, 1, red, green + .5, 0)
+	for i = 1, addOnCount do
+		local name, title, _, loadable, reason = GetAddOnInfo(i)
+		if loadable or reason == 'DEMAND_LOADED' then
+			tinsert(infoTable, {name = name, index = i, title = title})
 		end
-	else
-		for i = 1, #cpuTable do
-			addon = cpuTable[i]
-			red = addon[3] / totalCPU
-			green = 1 - red
-			DT.tooltip:AddDoubleLine(addon[2], format(homeLatencyString, addon[3]), 1, 1, 1, red, green + .5, 0)
-		end
-
-		DT.tooltip:AddLine(" ")
-		DT.tooltip:AddLine(L["(Hold Shift) Memory Usage"])
 	end
+end
 
-	DT.tooltip:AddLine(L["(Modifer Click) Collect Garbage"])
-	DT.tooltip:Show()
+local function OnClick()
+	if IsShiftKeyDown() then
+		if IsControlKeyDown() then
+			SetCVar('scriptProfile', 1)
+			ReloadUI()
+		else
+			collectgarbage('collect')
+			ResetCPUUsage()
+		end
+	end
+end
+
+local function displayData(data, totalMEM, totalCPU)
+	if not data then return end
+
+	local name, mem, cpu = data.title, data.mem, data.cpu
+	if cpu then
+		local memRed, cpuRed = mem / totalMEM, cpu / totalCPU
+		local memGreen, cpuGreen = (1 - memRed) + .5, (1 - cpuRed) + .5
+		DT.tooltip:AddDoubleLine(name, format(profilingString, E:RGBToHex(memRed, memGreen, 0), formatMem(mem), E:RGBToHex(cpuRed, cpuGreen, 0), format(homeLatencyString, cpu)), 1, 1, 1)
+	else
+		local red = mem / totalMEM
+		local green = (1 - red) + .5
+		DT.tooltip:AddDoubleLine(name, formatMem(mem), 1, 1, 1, red or 1, green or 1, 0)
+	end
+end
+
+local function displaySort(a, b)
+	return a.sort > b.sort
+end
+
+local infoDisplay = {}
+local function OnEnter(_, slow)
+	DT.tooltip:ClearLines()
 	enteredFrame = true
+
+	local _, homePing, worldPing = GetNetStats()
+	DT.tooltip:AddDoubleLine(L["Home Latency:"], format(homeLatencyString, homePing), .69, .31, .31, .84, .75, .65)
+	DT.tooltip:AddDoubleLine(L["World Latency:"], format(homeLatencyString, worldPing), .69, .31, .31, .84, .75, .65)
+
+	if slow == 1 or not slow then
+		UpdateAddOnMemoryUsage()
+	end
+
+	if cpuProfiling and not slow then
+		UpdateAddOnCPUUsage()
+	end
+
+	wipe(infoDisplay)
+
+	local count, totalMEM, totalCPU = 0, 0, 0
+	local showByCPU = cpuProfiling and not IsShiftKeyDown()
+	for _, data in ipairs(infoTable) do
+		local i = data.index
+		if IsAddOnLoaded(i) then
+			local mem = GetAddOnMemoryUsage(i)
+			totalMEM = totalMEM + mem
+
+			local cpu
+			if cpuProfiling then
+				cpu = GetAddOnCPUUsage(i)
+				totalCPU = totalCPU + cpu
+			end
+
+			data.sort = (showByCPU and cpu) or mem
+			data.cpu = showByCPU and cpu
+			data.mem = mem
+
+			count = count + 1
+			infoDisplay[count] = data
+
+			if data.name == 'ElvUI' or data.name == 'ElvUI_OptionUI' or data.name == 'ElvUI_Libraries' then
+				infoTable[data.name] = data
+			end
+		end
+	end
+
+	DT.tooltip:AddDoubleLine(L["AddOn Memory:"], formatMem(totalMEM), .69, .31, .31, .84, .75, .65)
+	if cpuProfiling then
+		DT.tooltip:AddDoubleLine(L["Total CPU:"], format(homeLatencyString, totalCPU), .69, .31, .31, .84, .75, .65)
+	end
+
+	DT.tooltip:AddLine(' ')
+	if not E.global.datatexts.settings.System.ShowOthers then
+		displayData(infoTable.ElvUI, totalMEM, totalCPU)
+		displayData(infoTable.ElvUI_Options, totalMEM, totalCPU)
+		displayData(infoTable.ElvUI_Libraries, totalMEM, totalCPU)
+		DT.tooltip:AddLine(' ')
+	else
+		for addon, searchString in pairs(CombineAddOns) do
+			local addonIndex, memoryUsage, cpuUsage = 0, 0, 0
+			for i, data in pairs(infoDisplay) do
+				if data and data.name == addon then
+					cpuUsage = data.cpu or 0
+					memoryUsage = data.mem
+					addonIndex = i
+					break
+				end
+			end
+
+			for k, data in pairs(infoDisplay) do
+				if type(data) == 'table' then
+					local name, mem, cpu = data.title, data.mem, data.cpu
+					local stripName = E:StripString(data.title)
+					if name and (strmatch(stripName, searchString) or data.name == addon) then
+						if data.name ~= addon and stripName ~= addon then
+							memoryUsage = memoryUsage + mem
+							if showByCPU and cpuProfiling then
+								cpuUsage = cpuUsage + cpu
+							end
+
+							infoDisplay[k] = false
+						end
+					end
+				end
+			end
+
+			local data = addonIndex > 0 and infoDisplay[addonIndex]
+			if data then
+				local mem = memoryUsage > 0 and memoryUsage
+				local cpu = cpuUsage > 0 and cpuUsage
+
+				if mem then data.mem = mem end
+				if cpu then data.cpu = cpu end
+				if mem or cpu then
+					data.sort = (showByCPU and cpu) or mem
+				end
+			end
+		end
+
+		for i = count, 1, -1 do
+			local data = infoDisplay[i]
+			if type(data) == 'boolean' then
+				tremove(infoDisplay, i)
+			end
+		end
+
+		sort(infoDisplay, displaySort)
+
+		for i = 1, count do
+			displayData(infoDisplay[i], totalMEM, totalCPU)
+		end
+
+		DT.tooltip:AddLine(' ')
+		if showByCPU then
+			DT.tooltip:AddLine(L["(Hold Shift) Memory Usage"])
+		end
+	end
+
+	DT.tooltip:AddLine(L["(Shift Click) Collect Garbage"])
+	DT.tooltip:AddLine(L["(Ctrl & Shift Click) Toggle CPU Profiling"])
+	DT.tooltip:Show()
 end
 
 local function OnLeave()
-	enteredFrame = nil
-	DT.tooltip:Hide()
+	enteredFrame = false
 end
 
-local function OnUpdate(self, t)
-	int = int - t
+local wait, count = 10, 0 -- initial delay for update (let the ui load)
+local function OnUpdate(self, elapsed)
+	wait = wait - elapsed
 
-	if int < 0 then
-		local framerate = floor(GetFramerate() + 0.5)
-		local _, _, homeLatency = GetNetStats()
+	if wait < 0 then
+		wait = 1
 
-		self.text:SetFormattedText("FPS: %s%d|r MS: %s%d|r",
-			statusColors[framerate >= 30 and 1 or (framerate >= 20 and framerate < 30) and 2 or (framerate >= 10 and framerate < 20) and 3 or 4],
-			framerate,
-			statusColors[homeLatency < 150 and 1 or (homeLatency >= 150 and homeLatency < 300) and 2 or (homeLatency >= 300 and homeLatency < 500) and 3 or 4],
-			homeLatency)
+		local framerate = floor(GetFramerate())
+		local _, homePing, worldPing = GetNetStats()
+		local latency = E.global.datatexts.settings.System.latency == 'HOME' and homePing or worldPing
 
-		int = 1
+		local fps = framerate >= 30 and 1 or (framerate >= 20 and framerate < 30) and 2 or (framerate >= 10 and framerate < 20) and 3 or 4
+		local ping = latency < 150 and 1 or (latency >= 150 and latency < 300) and 2 or (latency >= 300 and latency < 500) and 3 or 4
+		self.text:SetFormattedText(E.global.datatexts.settings.System.NoLabel and '%s%d|r | %s%d|r' or 'FPS: %s%d|r MS: %s%d|r', statusColors[fps], framerate, statusColors[ping], latency)
 
-		if enteredFrame then
+		if not enteredFrame then return end
+
+		if InCombatLockdown() then
+			if count > 3 then
+				OnEnter(self)
+				count = 0
+			else
+				OnEnter(self, count)
+				count = count + 1
+			end
+		else
 			OnEnter(self)
 		end
 	end
 end
 
-DT:RegisterDatatext("System", {"PLAYER_ENTERING_WORLD", "ADDON_LOADED"}, OnEvent, OnUpdate, OnClick, OnEnter, OnLeave, L["System"])
+DT:RegisterDatatext('System', nil, nil, BuildAddonList, OnUpdate, OnClick, OnEnter, OnLeave, L["System"])

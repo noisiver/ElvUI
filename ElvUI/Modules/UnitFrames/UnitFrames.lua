@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(ElvUI)
 local UF = E:GetModule("UnitFrames")
 local LSM = E.Libs.LSM
 UF.LSM = E.Libs.LSM
@@ -1330,6 +1330,10 @@ end
 function UF:Initialize()
 	self.db = E.db.unitframe
 	self.thinBorders = self.db.thinBorders or E.PixelMode
+
+	UF.SPACING = (UF.thinBorders or E.twoPixelsPlease) and 0 or 1
+	UF.BORDER = (UF.thinBorders and not E.twoPixelsPlease) and 1 or 2
+
 	if E.private.unitframe.enable ~= true then return end
 	self.Initialized = true
 

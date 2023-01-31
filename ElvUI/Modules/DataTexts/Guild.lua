@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local DT = E:GetModule("DataTexts")
 
 --Lua functions
@@ -24,6 +24,7 @@ local UnitInRaid = UnitInRaid
 local GUILD = GUILD
 local GUILD_MOTD = GUILD_MOTD
 local RAID_CLASS_COLORS = RAID_CLASS_COLORS
+local guildTable = {}
 
 local tthead, ttsubh, ttoff = {r=0.4, g=0.78, b=1}, {r=0.75, g=0.9, b=1}, {r=0.3,g=1,b=0.3}
 local activezone, inactivezone = {r=0.3, g=1.0, b=0.3}, {r=0.65, g=0.65, b=0.65}
@@ -53,7 +54,7 @@ local displayString = ""
 local noGuildString = ""
 local lastPanel
 
-local dataTable = {}
+local guildTable = {}
 local guildMotD = ""
 local currentSortMode = false
 local dataUpdated
@@ -91,13 +92,13 @@ local function sortByName(a, b)
 	end
 end
 
-local function SortDataTable(shiftKeyDown)
+local function SortGuildTable(shiftKeyDown)
 	if currentSortMode == shiftKeyDown and not dataUpdated then return end
 
 	if shiftKeyDown then
-		sort(dataTable, sortByRank)
+		sort(guildTable, sortByRank)
 	else
-		sort(dataTable, sortByName)
+		sort(guildTable, sortByName)
 	end
 
 	currentSortMode = shiftKeyDown
@@ -105,7 +106,7 @@ local function SortDataTable(shiftKeyDown)
 end
 
 local function BuildDataTable()
-	wipe(dataTable)
+	wipe(guildTable)
 
 	totalMembers = GetNumGuildMembers()
 	totalOnline = 0
@@ -118,14 +119,14 @@ local function BuildDataTable()
 
 		if connected then
 			totalOnline = totalOnline + 1
-			dataTable[#dataTable + 1] = {name, rank, level, zone, note, officernote, connected, onlineStatus[status], englishClass, rankIndex}
+			guildTable[#guildTable + 1] = {name, rank, level, zone, note, officernote, connected, onlineStatus[status], englishClass, rankIndex}
 		end
 	end
 
 	dataUpdated = true
 end
 
-local function OnClick(_, btn)
+local function Click(_, btn)
 	if btn == "RightButton" and IsInGuild() then
 		if totalOnline <= 1 then return end
 
@@ -137,8 +138,8 @@ local function OnClick(_, btn)
 		local menuCountWhispers, menuCountInvites = 0, 0
 		local classc, levelc, info, grouped
 
-		for i = 1, #dataTable do
-			info = dataTable[i]
+		for i = 1, #guildTable do
+			info = guildTable[i]
 
 			if info[7] and info[1] ~= E.myname then
 				classc = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[info[9]]
@@ -194,7 +195,7 @@ local function OnEnter(self, _, noUpdate)
 	local shown = 0
 
 	if totalOnline > 1 then
-		SortDataTable(shiftKeyDown)
+		SortGuildTable(shiftKeyDown)
 	end
 
 	if guildName and guildRank then
@@ -214,8 +215,8 @@ local function OnEnter(self, _, noUpdate)
 
 	DT.tooltip:AddLine(" ")
 
-	for i = 1, #dataTable do
-		info = dataTable[i]
+	for i = 1, #guildTable do
+		info = guildTable[i]
 
 		if playerZone == info[4] then
 			zonec = activezone
@@ -308,22 +309,31 @@ local function OnEvent(self, event, ...)
 	lastPanel = self
 
 	if IsInGuild() then
-		eventHandlers[event](self, ...)
+		local func = eventHandlers[event]
+		if func then func(self, ...) end
 
-		self.text:SetFormattedText(displayString, totalOnline)
+		if not IsAltKeyDown() and event == 'MODIFIER_STATE_CHANGED' and GetMouseFocus() == self then
+			OnEnter(self)
+		end
+
+		if E.global.datatexts.settings.Guild.NoLabel then
+			self.text:SetFormattedText(displayString, #guildTable)
+		else
+			self.text:SetFormattedText(displayString, E.global.datatexts.settings.Guild.Label ~= '' and E.global.datatexts.settings.Guild.Label or GUILD..': ', #guildTable)
+		end
 	else
 		self.text:SetText(noGuildString)
 	end
 end
 
 local function ValueColorUpdate(hex)
-	displayString = join("", GUILD, ": ", hex, "%d|r")
-	noGuildString = join("", hex, L["No Guild"])
+	displayString = strjoin('', E.global.datatexts.settings.Guild.NoLabel and '' or '%s', hex, '%d|r')
+	noGuildString = hex..L["No Guild"]
 
-	if lastPanel ~= nil then
-		OnEvent(lastPanel, "ELVUI_COLOR_UPDATE")
+	if lastPanel then
+		OnEvent(lastPanel, 'ELVUI_COLOR_UPDATE')
 	end
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("Guild", {"CHAT_MSG_SYSTEM", "GUILD_ROSTER_UPDATE", "PLAYER_GUILD_UPDATE", "GUILD_MOTD"}, OnEvent, nil, OnClick, OnEnter, nil, GUILD)
+DT:RegisterDatatext('Guild', SOCIAL_LABEL, {'CHAT_MSG_SYSTEM', 'GUILD_ROSTER_UPDATE', 'PLAYER_GUILD_UPDATE', 'GUILD_MOTD', 'MODIFIER_STATE_CHANGED'}, OnEvent, nil, Click, OnEnter, nil, GUILD, nil, ValueColorUpdate)

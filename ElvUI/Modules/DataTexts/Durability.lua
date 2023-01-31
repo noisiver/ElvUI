@@ -1,94 +1,101 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-local DT = E:GetModule("DataTexts")
+local E, L, V, P, G = unpack(select(2, ...))
+local DT = E:GetModule('DataTexts')
 
---Lua functions
-local ipairs = ipairs
-local format, join = string.format, string.join
---WoW API / Variables
+local _G = _G
+local select, wipe = select, wipe
+local format, pairs = format, pairs
 local GetInventoryItemDurability = GetInventoryItemDurability
-local GetInventorySlotInfo = GetInventorySlotInfo
 local ToggleCharacter = ToggleCharacter
-local DURABILITY = DURABILITY
+local InCombatLockdown = InCombatLockdown
+local GetInventoryItemTexture = GetInventoryItemTexture
+local GetInventoryItemLink = GetInventoryItemLink
+local GetMoneyString = GetMoneyString
 
-local displayString = ""
-local tooltipString = "%d%%"
-local lastPanel
-local totalDurability, current, maxDur
+local DURABILITY = DURABILITY
+local REPAIR_COST = REPAIR_COST
+local tooltipString = '%d%%'
+local totalDurability = 0
 local invDurability = {}
+local totalRepairCost
 
 local slots = {
-	"HeadSlot",
-	"ShoulderSlot",
-	"ChestSlot",
-	"WristSlot",
-	"HandsSlot",
-	"WaistSlot",
-	"LegsSlot",
-	"FeetSlot",
-	"MainHandSlot",
-	"SecondaryHandSlot",
-	"RangedSlot",
-}
-
-local slotsLocales = {
-	["HeadSlot"] = HEADSLOT,
-	["ShoulderSlot"] = SHOULDERSLOT,
-	["ChestSlot"] = CHESTSLOT,
-	["WristSlot"] = WRISTSLOT,
-	["HandsSlot"] = HANDSSLOT,
-	["WaistSlot"] = WAISTSLOT,
-	["LegsSlot"] = LEGSSLOT,
-	["FeetSlot"] = FEETSLOT,
-	["MainHandSlot"] = MAINHANDSLOT,
-	["SecondaryHandSlot"] = SECONDARYHANDSLOT,
-	["RangedSlot"] = RANGEDSLOT,
+	[1] = INVTYPE_HEAD,
+	[3] = INVTYPE_SHOULDER,
+	[5] = INVTYPE_CHEST,
+	[6] = INVTYPE_WAIST,
+	[7] = INVTYPE_LEGS,
+	[8] = INVTYPE_FEET,
+	[9] = INVTYPE_WRIST,
+	[10] = INVTYPE_HAND,
+	[16] = INVTYPE_WEAPONMAINHAND,
+	[17] = INVTYPE_WEAPONOFFHAND,
+	[18] = INVTYPE_RANGED,
 }
 
 local function OnEvent(self)
-	lastPanel = self
 	totalDurability = 100
+	totalRepairCost = 0
 
-	for _, sType in ipairs(slots) do
-		local slot = GetInventorySlotInfo(sType)
-		current, maxDur = GetInventoryItemDurability(slot)
+	wipe(invDurability)
 
-		if current then
-			invDurability[sType] = (current / maxDur) * 100
+	for index in pairs(slots) do
+		local currentDura, maxDura = GetInventoryItemDurability(index)
+		if currentDura and maxDura > 0 then
+			local perc, repairCost = (currentDura/maxDura)*100
+			invDurability[index] = perc
 
-			if invDurability[sType] < totalDurability then
-				totalDurability = invDurability[sType]
+			if perc < totalDurability then
+				totalDurability = perc
 			end
-		else
-			invDurability[sType] = nil
+
+			if E.ScanTooltip.GetTooltipData then
+				E.ScanTooltip:SetInventoryItem('player', index)
+				E.ScanTooltip:Show()
+
+				local data = E.ScanTooltip:GetTooltipData()
+				repairCost = data and data.repairCost
+			else
+				repairCost = select(3, E.ScanTooltip:SetInventoryItem('player', index))
+			end
+
+			totalRepairCost = totalRepairCost + (repairCost or 0)
 		end
 	end
 
-	self.text:SetFormattedText(displayString, totalDurability)
+	local r, g, b = E:ColorGradient(totalDurability * .01, 1, .1, .1, 1, 1, .1, .1, 1, .1)
+	local hex = E:RGBToHex(r, g, b)
+
+	if E.global.datatexts.settings.Durability.NoLabel then
+		self.text:SetFormattedText('%s%d%%|r', hex, totalDurability)
+	else
+		self.text:SetFormattedText('%s%s%d%%|r', E.global.datatexts.settings.Durability.Label ~= '' and E.global.datatexts.settings.Durability.Label or (DURABILITY..': '), hex, totalDurability)
+	end
+
+	if totalDurability <= E.global.datatexts.settings.Durability.percThreshold then
+		E:Flash(self, 0.53, true)
+	else
+		E:StopFlash(self)
+	end
 end
 
-local function OnClick()
-	ToggleCharacter("PaperDollFrame")
+local function Click()
+	if InCombatLockdown() then UIErrorsFrame:AddMessage(E.InfoColor..ERR_NOT_IN_COMBAT) return end
+	ToggleCharacter('PaperDollFrame')
 end
 
-local function OnEnter(self)
-	DT:SetupTooltip(self)
+local function OnEnter()
+	DT.tooltip:ClearLines()
 
-	for _, sType in ipairs(slots) do
-		if invDurability[sType] then
-			DT.tooltip:AddDoubleLine(slotsLocales[sType], format(tooltipString, invDurability[sType]), 1, 1, 1, E:ColorGradient(invDurability[sType] * 0.01, 1, 0, 0, 1, 1, 0, 0, 1, 0))
-		end
+	for slot, durability in pairs(invDurability) do
+		DT.tooltip:AddDoubleLine(format('|T%s:14:14:0:0:64:64:4:60:4:60|t %s', GetInventoryItemTexture('player', slot), GetInventoryItemLink('player', slot)), format(tooltipString, durability), 1, 1, 1, E:ColorGradient(durability * 0.01, 1, .1, .1, 1, 1, .1, .1, 1, .1))
+	end
+
+	if totalRepairCost > 0 then
+		DT.tooltip:AddLine(' ')
+		DT.tooltip:AddDoubleLine(REPAIR_COST, GetMoneyString(totalRepairCost), .6, .8, 1, 1, 1, 1)
 	end
 
 	DT.tooltip:Show()
 end
 
-local function ValueColorUpdate(hex)
-	displayString = join("", DURABILITY, ": ", hex, "%d%%|r")
-
-	if lastPanel ~= nil then
-		OnEvent(lastPanel, "ELVUI_COLOR_UPDATE")
-	end
-end
-E.valueColorUpdateFuncs[ValueColorUpdate] = true
-
-DT:RegisterDatatext("Durability", {"PLAYER_ENTERING_WORLD", "UPDATE_INVENTORY_DURABILITY", "MERCHANT_SHOW"}, OnEvent, nil, OnClick, OnEnter, nil, DURABILITY)
+DT:RegisterDatatext('Durability', nil, {'UPDATE_INVENTORY_DURABILITY', 'MERCHANT_SHOW'}, OnEvent, nil, Click, OnEnter, nil, DURABILITY)

@@ -1,16 +1,14 @@
-local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 local S = E:GetModule("Skins")
 local TT = E:GetModule("Tooltip")
 
 --Lua functions
 --WoW API / Variables
 
-S:AddCallback("Skin_Tooltip", function()
-	if not E.private.skins.blizzard.enable or not E.private.skins.blizzard.tooltip then return end
+function S:StyleTooltips()
+	if not (E.private.skins.blizzard.enable and E.private.skins.blizzard.tooltip) then return end
 
-	S:HandleCloseButton(ItemRefCloseButton, ItemRefTooltip)
-
-	local tooltips = {
+	for _, tt in pairs({
 		GameTooltip,
 		ItemRefTooltip,
 		ItemRefShoppingTooltip1,
@@ -25,18 +23,30 @@ S:AddCallback("Skin_Tooltip", function()
 		WorldMapTooltip,
 		WorldMapCompareTooltip1,
 		WorldMapCompareTooltip2,
-		WorldMapCompareTooltip3
-	}
-	for _, tt in ipairs(tooltips) do
+		WorldMapCompareTooltip3,
+		DataTextTooltip,
+		-- ours
+		ElvUIConfigTooltip,
+	}) do
 		TT:SecureHookScript(tt, "OnShow", "SetStyle")
 	end
+end
 
+S:AddCallback("Skin_Tooltip", function()
+	if not (E.private.skins.blizzard.enable and E.private.skins.blizzard.tooltip) then return end
+
+	S:StyleTooltips()
+	S:HandleCloseButton(ItemRefCloseButton)
+
+	-- Skin GameTooltip Status Bar
 	GameTooltipStatusBar:SetStatusBarTexture(E.media.normTex)
+	GameTooltipStatusBar:CreateBackdrop('Transparent')
+	GameTooltipStatusBar:ClearAllPoints()
+	GameTooltipStatusBar:Point('TOPLEFT', GameTooltip, 'BOTTOMLEFT', E.Border, -(E.Spacing * 3))
+	GameTooltipStatusBar:Point('TOPRIGHT', GameTooltip, 'BOTTOMRIGHT', -E.Border, -(E.Spacing * 3))
 	E:RegisterStatusBar(GameTooltipStatusBar)
-	GameTooltipStatusBar:CreateBackdrop("Transparent")
-	GameTooltipStatusBar:Point("TOPLEFT", GameTooltip, "BOTTOMLEFT", E.Border, -(E.Spacing * 3))
-	GameTooltipStatusBar:Point("TOPRIGHT", GameTooltip, "BOTTOMRIGHT", -E.Border, -(E.Spacing * 3))
 
+	-- Tooltip Styling
 	TT:SecureHook("GameTooltip_ShowStatusBar", "GameTooltip_ShowStatusBar")
 
 	TT:SecureHookScript(GameTooltip, "OnSizeChanged", "CheckBackdropColor")

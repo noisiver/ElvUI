@@ -1,11 +1,10 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-local mod = E:GetModule("DataBars")
-local LSM = LibStub("LibSharedMedia-3.0")
+local E, L, V, P, G = unpack(select(2, ...))
+local DB = E:GetModule('DataBars')
+local LSM = E.Libs.LSM
 
---Lua functions
-local max, min = math.max, math.min
-local format = string.format
---WoW API
+local min, type, format = min, type, format
+local pairs, error = pairs, error
+
 local GetNumQuestLogEntries = GetNumQuestLogEntries
 local GetQuestLogRewardXP = GetQuestLogRewardXP
 local GetQuestLogSelection = GetQuestLogSelection
@@ -18,315 +17,248 @@ local UnitLevel = UnitLevel
 local UnitXP = UnitXP
 local UnitXPMax = UnitXPMax
 
--- GLOBALS: CreateFrame, GameTooltip, LeftChatPanel, ToggleDropDownMenu, XPRM
+local CurrentXP, XPToLevel, PercentRested, PercentXP, RemainXP, RemainTotal, RemainBars
+local RestedXP, QuestLogXP = 0, 0
 
-local function getQuestXP(completedOnly, zoneOnly)
-	local lastQuestLogID = GetQuestLogSelection()
-	local zoneText = GetZoneText()
-	local totalExp = 0
-	local locationName
+function DB:ExperienceBar_CheckQuests(questID, completedOnly)
+	local currentZone = GetZoneText()
+	if not currentZone then return end
 
-	for questIndex = 1, GetNumQuestLogEntries() do
-		SelectQuestLogEntry(questIndex)
-		local title, _, _, _, isHeader, _, isComplete, _, questID = GetQuestLogTitle(questIndex)
-
+	local bar = DB.StatusBars.Experience
+	local currentZoneCheck, isHeader, isComplete, name, _
+	for i = 1, GetNumQuestLogEntries() do
+		name, _, _, _, isHeader, _, isComplete, _, questID = GetQuestLogTitle(i)
 		if isHeader then
-			locationName = title
-		elseif (not completedOnly or isComplete) and (not zoneOnly or locationName == zoneText) then
-			totalExp = totalExp + GetQuestLogRewardXP(questID)
+			currentZoneCheck = bar.db.questCurrentZoneOnly and currentZone == name or not bar.db.questCurrentZoneOnly
+		elseif currentZoneCheck and (not completedOnly or isComplete == 1) then
+			SelectQuestLogEntry(i)
+			QuestLogXP = QuestLogXP + GetQuestLogRewardXP(questID)
 		end
 	end
-
-	SelectQuestLogEntry(lastQuestLogID)
-
-	return totalExp
 end
 
-function mod:ExperienceBar_QuestXPUpdate(event)
-	if event == "ZONE_CHANGED_NEW_AREA" and not self.db.experience.questXP.questCurrentZoneOnly then return end
+local function RestedQuestLayering()
+	local bar = DB.StatusBars.Experience
+	bar.Quest.barTexture:SetDrawLayer('ARTWORK', (QuestLogXP > RestedXP) and 2 or 3)
+	bar.Rested.barTexture:SetDrawLayer('ARTWORK', (QuestLogXP <= RestedXP) and 2 or 3)
+end
 
-	self.questTotalXP = getQuestXP(self.db.experience.questXP.questCompletedOnly, self.db.experience.questXP.questCurrentZoneOnly)
+function DB:ExperienceBar_Update()
+	local bar = DB.StatusBars.Experience
+	DB:SetVisibility(bar)
 
-	if self.questTotalXP > 0 then
-		self.expBar.questBar:SetMinMaxValues(0, self.expBar.maxExp)
-		self.expBar.questBar:SetValue(min(self.expBar.curExp + self.questTotalXP, self.expBar.maxExp))
-		self.expBar.questBar:Show()
+	if not bar.db.enable or bar:ShouldHide() then return end
+
+	CurrentXP, XPToLevel, RestedXP = UnitXP('player'), UnitXPMax('player'), (GetXPExhaustion() or 0)
+	if XPToLevel <= 0 then XPToLevel = 1 end
+
+	local remainXP = XPToLevel - CurrentXP
+	local remainPercent = remainXP / XPToLevel
+	RemainTotal, RemainBars = remainPercent * 100, remainPercent * 20
+	PercentXP, RemainXP = (CurrentXP / XPToLevel) * 100, E:ShortValue(remainXP)
+
+	local expColor, restedColor = DB.db.colors.experience, DB.db.colors.rested
+	bar:SetStatusBarColor(expColor.r, expColor.g, expColor.b, expColor.a)
+	bar.Rested:SetStatusBarColor(restedColor.r, restedColor.g, restedColor.b, restedColor.a)
+
+	local displayString, textFormat = '', DB.db.experience.textFormat
+
+	if E:XPIsLevelMax() then
+		bar:SetMinMaxValues(0, 1)
+		bar:SetValue(1)
+
+		if textFormat ~= 'NONE' then
+			displayString = E:XPIsUserDisabled() and L["Disabled"] or L["Max Level"]
+		end
 	else
-		self.expBar.questBar:Hide()
+		bar:SetMinMaxValues(0, XPToLevel)
+		bar:SetValue(CurrentXP)
+
+		if textFormat == 'PERCENT' then
+			displayString = format('%.2f%%', PercentXP)
+		elseif textFormat == 'CURMAX' then
+			displayString = format('%s - %s', E:ShortValue(CurrentXP), E:ShortValue(XPToLevel))
+		elseif textFormat == 'CURPERC' then
+			displayString = format('%s - %.2f%%', E:ShortValue(CurrentXP), PercentXP)
+		elseif textFormat == 'CUR' then
+			displayString = format('%s', E:ShortValue(CurrentXP))
+		elseif textFormat == 'REM' then
+			displayString = format('%s', RemainXP)
+		elseif textFormat == 'CURREM' then
+			displayString = format('%s - %s', E:ShortValue(CurrentXP), RemainXP)
+		elseif textFormat == 'CURPERCREM' then
+			displayString = format('%s - %.2f%% (%s)', E:ShortValue(CurrentXP), PercentXP, RemainXP)
+		end
+
+		local isRested = RestedXP > 0
+		if isRested then
+			bar.Rested:SetMinMaxValues(0, XPToLevel)
+			bar.Rested:SetValue(min(CurrentXP + RestedXP, XPToLevel))
+
+			PercentRested = (RestedXP / XPToLevel) * 100
+
+			if textFormat == 'PERCENT' then
+				displayString = format('%s R:%.2f%%', displayString, PercentRested)
+			elseif textFormat == 'CURPERC' then
+				displayString = format('%s R:%s [%.2f%%]', displayString, E:ShortValue(RestedXP), PercentRested)
+			elseif textFormat ~= 'NONE' then
+				displayString = format('%s R:%s', displayString, E:ShortValue(RestedXP))
+			end
+		end
+
+		if bar.db.showLevel and textFormat ~= 'NONE' then
+			displayString = format('%s %s : %s', L["Level"], E.mylevel, displayString)
+		end
+
+		RestedQuestLayering()
+		if isRested then
+			bar.Rested:Show()
+		else
+			bar.Rested:Hide()
+		end
+	end
+
+	bar.text:SetText(displayString)
+end
+
+function DB:ExperienceBar_QuestXP()
+	if E:XPIsLevelMax() then return end
+
+	local bar = DB.StatusBars.Experience
+
+	QuestLogXP = 0
+
+	DB:ExperienceBar_CheckQuests(nil, bar.db.questCompletedOnly)
+
+	if bar.db.showQuestXP and QuestLogXP > 0 then
+		bar.Quest:SetMinMaxValues(0, XPToLevel)
+		bar.Quest:SetValue(min(CurrentXP + QuestLogXP, XPToLevel))
+		bar.Quest:SetStatusBarColor(DB.db.colors.quest.r, DB.db.colors.quest.g, DB.db.colors.quest.b, DB.db.colors.quest.a)
+		RestedQuestLayering()
+		bar.Quest:Show()
+	else
+		bar.Quest:Hide()
+	end
+
+	if DB.CustomQuestXPWatchers then
+		for _, func in pairs(DB.CustomQuestXPWatchers) do
+			func(QuestLogXP)
+		end
 	end
 end
 
-function mod:ExperienceBar_Update(event)
-	if not mod.db.experience.enable then return end
-
-	local bar = self.expBar
-	local hideBar = (self.playerLevel == self.maxExpansionLevel and self.db.experience.hideAtMaxLevel) or self.expDisabled
-
-	if hideBar or (event == "PLAYER_REGEN_DISABLED" and self.db.experience.hideInCombat) then
-		E:DisableMover(bar.mover:GetName())
-		bar:Hide()
-	elseif not hideBar and (not self.db.experience.hideInCombat or not self.inCombatLockdown) then
-		E:EnableMover(bar.mover:GetName())
-		bar:Show()
-
-		if self.db.experience.hideInVehicle then
-			E:RegisterObjectForVehicleLock(bar, E.UIParent)
-		else
-			E:UnregisterObjectForVehicleLock(bar)
-		end
-
-		local textFormat = self.db.experience.textFormat
-		local curExp = UnitXP("player")
-		local maxExp = max(1, UnitXPMax("player"))
-		local rested = GetXPExhaustion()
-		bar.curExp = curExp
-		bar.maxExp = maxExp
-
-		bar.statusBar:SetMinMaxValues(min(0, curExp), maxExp)
-	--	bar.statusBar:SetValue(curExp - 1 >= 0 and curExp - 1 or 0)
-		bar.statusBar:SetValue(curExp)
-
-		if rested and rested > 0 then
-			bar.rested:SetMinMaxValues(0, maxExp)
-			bar.rested:SetValue(min(curExp + rested, maxExp))
-
-			if textFormat == "PERCENT" then
-				bar.text:SetFormattedText("%d%% R:%d%%", curExp / maxExp * 100, rested / maxExp * 100)
-			elseif textFormat == "CURMAX" then
-				bar.text:SetFormattedText("%s - %s R:%s", E:ShortValue(curExp), E:ShortValue(maxExp), E:ShortValue(rested))
-			elseif textFormat == "CURPERC" then
-				bar.text:SetFormattedText("%s - %d%% R:%s [%d%%]", E:ShortValue(curExp), curExp / maxExp * 100, E:ShortValue(rested), rested / maxExp * 100)
-			elseif textFormat == "CUR" then
-				bar.text:SetFormattedText("%s R:%s", E:ShortValue(curExp), E:ShortValue(rested))
-			elseif textFormat == "REM" then
-				bar.text:SetFormattedText("%s R:%s", E:ShortValue(maxExp - curExp), E:ShortValue(rested))
-			elseif textFormat == "CURREM" then
-				bar.text:SetFormattedText("%s - %s R:%s", E:ShortValue(curExp), E:ShortValue(maxExp - curExp), E:ShortValue(rested))
-			elseif textFormat == "CURPERCREM" then
-				bar.text:SetFormattedText("%s - %d%% (%s) R:%s", E:ShortValue(curExp), curExp / maxExp * 100, E:ShortValue(maxExp - curExp), E:ShortValue(rested))
-			end
-		else
-			bar.rested:SetMinMaxValues(0, 1)
-			bar.rested:SetValue(0)
-
-			if textFormat == "PERCENT" then
-				bar.text:SetFormattedText("%d%%", curExp / maxExp * 100)
-			elseif textFormat == "CURMAX" then
-				bar.text:SetFormattedText("%s - %s", E:ShortValue(curExp), E:ShortValue(maxExp))
-			elseif textFormat == "CURPERC" then
-				bar.text:SetFormattedText("%s - %d%%", E:ShortValue(curExp), curExp / maxExp * 100)
-			elseif textFormat == "CUR" then
-				bar.text:SetFormattedText("%s", E:ShortValue(curExp))
-			elseif textFormat == "REM" then
-				bar.text:SetFormattedText("%s", E:ShortValue(maxExp - curExp))
-			elseif textFormat == "CURREM" then
-				bar.text:SetFormattedText("%s - %s", E:ShortValue(curExp), E:ShortValue(maxExp - curExp))
-			elseif textFormat == "CURPERCREM" then
-				bar.text:SetFormattedText("%s - %d%% (%s)", E:ShortValue(curExp), curExp / maxExp * 100, E:ShortValue(maxExp - curExp))
-			end
-		end
+function DB:RegisterCustomQuestXPWatcher(name, func)
+	if not name or not func or type(name) ~= 'string' or type(func) ~= 'function' then
+		error('Usage: DB:RegisterCustomQuestXPWatcher(name [string], func [function])')
+		return
 	end
+
+	if not DB.CustomQuestXPWatchers then
+		DB.CustomQuestXPWatchers = {}
+	end
+
+	DB.CustomQuestXPWatchers[name] = func
 end
 
-function mod.ExperienceBar_OnEnter(self)
-	if mod.db.experience.mouseover then
+function DB:ExperienceBar_OnEnter()
+	if self.db.mouseover then
 		E:UIFrameFadeIn(self, 0.4, self:GetAlpha(), 1)
 	end
 
-	local curExp = UnitXP("player")
-	local maxExp = max(1, UnitXPMax("player"))
-	local rested = GetXPExhaustion()
+	if E:XPIsLevelMax() then return end
 
 	GameTooltip:ClearLines()
-	GameTooltip:SetOwner(self, "ANCHOR_CURSOR", 0, -4)
+	GameTooltip:SetOwner(self, 'ANCHOR_CURSOR')
 
-	GameTooltip:AddLine(L["Experience"])
-	GameTooltip:AddLine(" ")
+	GameTooltip:AddDoubleLine(L["Experience"], format('%s %d', L["Level"], E.mylevel))
 
-	GameTooltip:AddDoubleLine(L["XP:"], format("%d / %d (%d%%)", curExp, maxExp, curExp / maxExp * 100), 1, 1, 1)
-	GameTooltip:AddDoubleLine(L["Remaining:"], format("%d (%d%% - %d %s)", maxExp - curExp, (maxExp - curExp) / maxExp * 100, 20 * (maxExp - curExp) / maxExp, L["Bars"]), 1, 1, 1)
-
-	if rested then
-		GameTooltip:AddDoubleLine(L["Rested:"], format("+%d (%d%%)", rested, rested / maxExp * 100), 1, 1, 1)
+	if CurrentXP then
+		GameTooltip:AddLine(' ')
+		GameTooltip:AddDoubleLine(L["XP:"], format(' %s / %s (%.2f%%)', E:ShortValue(CurrentXP), E:ShortValue(XPToLevel), PercentXP), 1, 1, 1)
 	end
-
-	if mod.questXPEnabled and mod.db.experience.questXP.tooltip then
-		GameTooltip:AddDoubleLine(L["Quest Log XP:"], mod.questTotalXP, 1, 1, 1)
+	if RemainXP then
+		GameTooltip:AddDoubleLine(L["Remaining:"], format(' %s (%.2f%% - %.2f '..L["Bars"]..')', RemainXP, RemainTotal, RemainBars), 1, 1, 1)
+	end
+	if QuestLogXP > 0 then
+		GameTooltip:AddDoubleLine(L["Quest Log XP:"], format(' %d (%.2f%%)', QuestLogXP, (QuestLogXP / XPToLevel) * 100), 1, 1, 1)
+	end
+	if RestedXP > 0 then
+		GameTooltip:AddDoubleLine(L["Rested:"], format('+%s (%.2f%%)', E:ShortValue(RestedXP), PercentRested), 1, 1, 1)
 	end
 
 	GameTooltip:Show()
 end
 
-function mod.ExperienceBar_OnClick(self, button)
-	if XPRM then -- Warmane exp rates
-		if button == "RightButton" then
-			ToggleDropDownMenu(1, nil, XPRM, "cursor")
-		end
+function DB:ExperienceBar_OnClick(button)
+	if not XPRM then return end
+	if button == "RightButton" then
+		ToggleDropDownMenu(1, nil, XPRM, "cursor") -- Warmane
 	end
 end
-
-function mod:ExperienceBar_UpdateDimensions()
-	self.expBar:Size(self.db.experience.width, self.db.experience.height)
-	self.expBar:SetAlpha(self.db.experience.mouseover and 0 or 1)
-
-	self.expBar.text:FontTemplate(LSM:Fetch("font", self.db.experience.font), self.db.experience.textSize, self.db.experience.fontOutline)
-
-	self.expBar.statusBar:SetOrientation(self.db.experience.orientation)
-	self.expBar.statusBar:SetRotatesTexture(self.db.experience.orientation ~= "HORIZONTAL")
-
-	self.expBar.rested:SetOrientation(self.db.experience.orientation)
-	self.expBar.rested:SetRotatesTexture(self.db.experience.orientation ~= "HORIZONTAL")
-
-	self.expBar.questBar:SetOrientation(self.db.experience.orientation)
-	self.expBar.questBar:SetRotatesTexture(self.db.experience.orientation ~= "HORIZONTAL")
-
-	local color = self.db.experience.questXP.color
-	self.expBar.questBar:SetStatusBarColor(color.r, color.g, color.b, color.a)
-
-	if self.expBar.bubbles then
-		self:UpdateBarBubbles(self.expBar, self.db.experience)
-	elseif self.db.experience.showBubbles then
-		local bubbles = self:CreateBarBubbles(self.expBar)
-		bubbles:SetFrameLevel(5)
-		self:UpdateBarBubbles(self.expBar, self.db.experience)
-	end
+function DB:ExperienceBar_XPGain()
+	DB:ExperienceBar_Update()
+	DB:ExperienceBar_QuestXP()
 end
 
-function mod:ExperienceBar_Toggle()
-	if self.db.experience.enable and (self.playerLevel ~= self.maxExpansionLevel or not self.db.experience.hideAtMaxLevel) then
-		self.playerLevel = UnitLevel("player")
-		self.expDisabled = IsXPUserDisabled()
+function DB:ExperienceBar_Toggle()
+	local bar = DB.StatusBars.Experience
+	bar.db = DB.db.experience
 
-		self.expBar.eventFrame:RegisterEvent("DISABLE_XP_GAIN")
-		self.expBar.eventFrame:RegisterEvent("ENABLE_XP_GAIN")
-
-		if not self.expDisabled then
-			self.expBar.eventFrame:RegisterEvent("PLAYER_LEVEL_UP")
-			self.expBar.eventFrame:RegisterEvent("PLAYER_XP_UPDATE")
-			self.expBar.eventFrame:RegisterEvent("UPDATE_EXHAUSTION")
-			self.expBar.eventFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
-			self.expBar.eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-		end
-
-		self:ExperienceBar_Update()
-		self:ExperienceBar_QuestXPToggle()
-		E:EnableMover(self.expBar.mover:GetName())
+	if bar.db.enable then
+		E:EnableMover(bar.holder.mover.name)
 	else
-		self.expBar.eventFrame:UnregisterEvent("DISABLE_XP_GAIN")
-		self.expBar.eventFrame:UnregisterEvent("ENABLE_XP_GAIN")
+		E:DisableMover(bar.holder.mover.name)
+	end
 
-		if not self.expDisabled then
-			self.expBar.eventFrame:UnregisterEvent("PLAYER_LEVEL_UP")
-			self.expBar.eventFrame:UnregisterEvent("PLAYER_XP_UPDATE")
-			self.expBar.eventFrame:UnregisterEvent("UPDATE_EXHAUSTION")
-			self.expBar.eventFrame:UnregisterEvent("PLAYER_REGEN_DISABLED")
-			self.expBar.eventFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
-		end
+	if bar.db.enable and not bar:ShouldHide() then
+		DB:RegisterEvent('PLAYER_XP_UPDATE', 'ExperienceBar_XPGain')
+		DB:RegisterEvent('UPDATE_EXHAUSTION', 'ExperienceBar_Update')
+		DB:RegisterEvent('QUEST_LOG_UPDATE', 'ExperienceBar_QuestXP')
+		DB:RegisterEvent('ZONE_CHANGED', 'ExperienceBar_QuestXP')
+		DB:RegisterEvent('ZONE_CHANGED_NEW_AREA', 'ExperienceBar_QuestXP')
 
-		self:ExperienceBar_QuestXPToggle()
-		self.expBar:Hide()
-		E:DisableMover(self.expBar.mover:GetName())
+		DB:ExperienceBar_Update()
+	else
+		DB:UnregisterEvent('PLAYER_XP_UPDATE')
+		DB:UnregisterEvent('UPDATE_EXHAUSTION')
+		DB:UnregisterEvent('QUEST_LOG_UPDATE')
+		DB:UnregisterEvent('ZONE_CHANGED')
+		DB:UnregisterEvent('ZONE_CHANGED_NEW_AREA')
 	end
 end
 
-function mod:ExperienceBar_QuestXPToggle(event)
-	if not self.questXPEnabled and not self.expDisabled and self.db.experience.questXP.enable then
-		self.questXPEnabled = true
+function DB:ExperienceBar()
+	local Experience = DB:CreateBar('ElvUI_ExperienceBar', 'Experience', DB.ExperienceBar_Update, DB.ExperienceBar_OnEnter, DB.ExperienceBar_OnClick, {'BOTTOM', E.UIParent, 'BOTTOM', 0, 43})
+	Experience:HookScript("OnMouseUp", DB.ExperienceBar_OnClick) -- Warmane
+	Experience.barTexture:SetDrawLayer('ARTWORK', 4)
+	DB:CreateBarBubbles(Experience)
 
-		self.expBar.eventFrame:RegisterEvent("QUEST_LOG_UPDATE")
-		self.expBar.eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-		self.expBar.eventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-
-		self:ExperienceBar_QuestXPUpdate(event)
-	elseif self.questXPEnabled and (self.expDisabled or not self.db.experience.questXP.enable) then
-		self.questXPEnabled = false
-		self.expBar.eventFrame:UnregisterEvent("QUEST_LOG_UPDATE")
-		self.expBar.eventFrame:UnregisterEvent("PLAYER_ENTERING_WORLD")
-		self.expBar.eventFrame:UnregisterEvent("ZONE_CHANGED_NEW_AREA")
-
-		self.expBar.questBar:Hide()
+	Experience.ShouldHide = function()
+		return DB.db.experience.hideAtMaxLevel and E:XPIsLevelMax()
 	end
-end
 
-function mod:ExperienceBar_Load()
-	self.expBar = self:CreateBar("ElvUI_ExperienceBar", self.ExperienceBar_OnEnter, self.ExperienceBar_OnClick, "LEFT", LeftChatPanel, "RIGHT", -E.Border + E.Spacing*3, 0)
-	self.expBar:RegisterForClicks("RightButtonUp")
-	self.expBar.statusBar:SetFrameLevel(3)
-	self.expBar.statusBar:SetStatusBarColor(0, 0.4, 1, 1)
+	local Rested = CreateFrame('StatusBar', 'ElvUI_ExperienceBar_Rested', Experience.holder)
+	Rested:SetStatusBarTexture(DB.db.customTexture and LSM:Fetch('statusbar', DB.db.statusbar) or E.media.normTex)
+	Rested:EnableMouse(false)
+	Rested:SetInside()
+	Rested:Hide()
+	Rested.barTexture = Rested:GetStatusBarTexture()
+	Rested.barTexture:SetDrawLayer('ARTWORK', 3)
+	Experience.Rested = Rested
 
-	self.expBar.rested = CreateFrame("StatusBar", "$parent_Rested", self.expBar)
-	self.expBar.rested:SetFrameLevel(1)
-	self.expBar.rested:SetInside()
-	self.expBar.rested:SetStatusBarTexture(E.media.normTex)
-	self.expBar.rested:SetStatusBarColor(0.5, 0, 0.5, 0.8)
-	E:RegisterStatusBar(self.expBar.rested)
+	local Quest = CreateFrame('StatusBar', 'ElvUI_ExperienceBar_Quest', Experience.holder)
+	Quest:SetStatusBarTexture(DB.db.customTexture and LSM:Fetch('statusbar', DB.db.statusbar) or E.media.normTex)
+	Quest:EnableMouse(false)
+	Quest:SetInside()
+	Quest:Hide()
+	Quest.barTexture = Quest:GetStatusBarTexture()
+	Quest.barTexture:SetDrawLayer('ARTWORK', 2)
+	Experience.Quest = Quest
 
-	self.expBar.questBar = CreateFrame("StatusBar", "$parent_Quest", self.expBar)
-	self.expBar.questBar:SetFrameLevel(2)
-	self.expBar.questBar:SetInside()
-	self.expBar.questBar:SetStatusBarTexture(E.media.normTex)
-	self.expBar.questBar:Hide()
-	E:RegisterStatusBar(self.expBar.questBar)
+	E:CreateMover(Experience.holder, 'ExperienceBarMover', L["Experience Bar"], nil, nil, nil, nil, nil, 'databars,experience')
 
-	self.expBar.eventFrame = CreateFrame("Frame")
-	self.expBar.eventFrame:Hide()
-	self.expBar.eventFrame:SetScript("OnEvent", function(this, event, arg1)
-		if event == "PLAYER_LEVEL_UP" then
-			self.playerLevel = arg1
-			self.forceUpdateQuestXP = true
-		elseif event == "PLAYER_XP_UPDATE" then
-			self:ExperienceBar_Update(event)
-
-			if self.forceUpdateQuestXP and self.questXPEnabled and self.db.experience.questXP.enable then
-				self.forceUpdateQuestXP = nil
-				self:ExperienceBar_QuestXPUpdate(event)
-			end
-		elseif event == "PLAYER_REGEN_DISABLED" then
-			self.inCombatLockdown = true
-
-			if self.db.experience.hideInCombat then
-				self:ExperienceBar_Update(event)
-			end
-		elseif event == "PLAYER_REGEN_ENABLED" then
-			self.inCombatLockdown = false
-
-			if self.db.experience.hideInCombat then
-				self:ExperienceBar_Update(event)
-			end
-		elseif event == "ENABLE_XP_GAIN" then
-			self.expDisabled = false
-
-			this:RegisterEvent("PLAYER_LEVEL_UP")
-			this:RegisterEvent("PLAYER_XP_UPDATE")
-			this:RegisterEvent("UPDATE_EXHAUSTION")
-			this:RegisterEvent("PLAYER_REGEN_DISABLED")
-			this:RegisterEvent("PLAYER_REGEN_ENABLED")
-
-			self:ExperienceBar_Update(event)
-			self:ExperienceBar_QuestXPToggle(event)
-		elseif event == "DISABLE_XP_GAIN" then
-			self.expDisabled = true
-
-			this:UnregisterEvent("PLAYER_LEVEL_UP")
-			this:UnregisterEvent("PLAYER_XP_UPDATE")
-			this:UnregisterEvent("UPDATE_EXHAUSTION")
-			this:UnregisterEvent("PLAYER_REGEN_DISABLED")
-			this:UnregisterEvent("PLAYER_REGEN_ENABLED")
-
-			self:ExperienceBar_Update(event)
-			self:ExperienceBar_QuestXPToggle(event)
-		elseif event == "QUEST_LOG_UPDATE"
-		or event == "ZONE_CHANGED_NEW_AREA"
-		then
-			self:ExperienceBar_QuestXPUpdate(event)
-		elseif event == "PLAYER_ENTERING_WORLD" then
-			this:UnregisterEvent(event)
-			self:ExperienceBar_QuestXPUpdate(event)
-		end
-	end)
-
-	self:ExperienceBar_UpdateDimensions()
-
-	E:CreateMover(self.expBar, "ExperienceBarMover", L["Experience Bar"], nil, nil, nil, nil, nil, "databars,experience")
-	self:ExperienceBar_Toggle()
+	DB:RegisterEvent('UPDATE_EXPANSION_LEVEL', 'ExperienceBar_Toggle')
+	DB:RegisterEvent('DISABLE_XP_GAIN', 'ExperienceBar_Toggle')
+	DB:RegisterEvent('ENABLE_XP_GAIN', 'ExperienceBar_Toggle')
+	DB:ExperienceBar_Toggle()
 end

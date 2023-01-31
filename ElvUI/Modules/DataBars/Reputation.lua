@@ -1,5 +1,5 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-local mod = E:GetModule("DataBars")
+local E, L, V, P, G = unpack(select(2, ...))
+local DB = E:GetModule("DataBars")
 local LSM = LibStub("LibSharedMedia-3.0")
 
 --Lua functions
@@ -15,130 +15,119 @@ local REPUTATION = REPUTATION
 local STANDING = STANDING
 local UNKNOWN = UNKNOWN
 
-function mod:ReputationBar_Update(event)
-	if not mod.db.reputation.enable then return end
+local function GetValues(curValue, minValue, maxValue)
+	local maximum = maxValue - minValue
+	local current, diff = curValue - minValue, maximum
 
-	local bar = self.repBar
+	if diff == 0 then diff = 1 end -- prevent a division by zero
 
-	local name, standingID, minRep, maxRep, value = GetWatchedFactionInfo()
-
-	if not name or (event == "PLAYER_REGEN_DISABLED" and self.db.reputation.hideInCombat) then
-		E:DisableMover(self.repBar.mover:GetName())
-		bar:Hide()
-	elseif name and (not self.db.reputation.hideInCombat or not self.inCombatLockdown) then
-		E:EnableMover(self.repBar.mover:GetName())
-		bar:Show()
-
-		if self.db.reputation.hideInVehicle then
-			E:RegisterObjectForVehicleLock(bar, E.UIParent)
-		else
-			E:UnregisterObjectForVehicleLock(bar)
-		end
-
-		local textFormat = self.db.reputation.textFormat
-		local standing = _G["FACTION_STANDING_LABEL"..standingID] or UNKNOWN
-		local color = FACTION_BAR_COLORS[standingID] or FACTION_BAR_COLORS[1]
-		local maxMinDiff = max(1, maxRep - minRep)
-
-		bar.statusBar:SetStatusBarColor(color.r, color.g, color.b)
-		bar.statusBar:SetMinMaxValues(minRep, maxRep)
-		bar.statusBar:SetValue(value)
-
-		if textFormat == "PERCENT" then
-			bar.text:SetFormattedText("%s: %d%% [%s]", name, ((value - minRep) / maxMinDiff * 100), standing)
-		elseif textFormat == "CURMAX" then
-			bar.text:SetFormattedText("%s: %s - %s [%s]", name, E:ShortValue(value - minRep), E:ShortValue(maxRep - minRep), standing)
-		elseif textFormat == "CURPERC" then
-			bar.text:SetFormattedText("%s: %s - %d%% [%s]", name, E:ShortValue(value - minRep), ((value - minRep) / maxMinDiff * 100), standing)
-		elseif textFormat == "CUR" then
-			bar.text:SetFormattedText("%s: %s [%s]", name, E:ShortValue(value - minRep), standing)
-		elseif textFormat == "REM" then
-			bar.text:SetFormattedText("%s: %s [%s]", name, E:ShortValue((maxRep - minRep) - (value - minRep)), standing)
-		elseif textFormat == "CURREM" then
-			bar.text:SetFormattedText("%s: %s - %s [%s]", name, E:ShortValue(value - minRep), E:ShortValue((maxRep - minRep) - (value - minRep)), standing)
-		elseif textFormat == "CURPERCREM" then
-			bar.text:SetFormattedText("%s: %s - %d%% (%s) [%s]", name, E:ShortValue(value - minRep), ((value - minRep) / maxMinDiff * 100), E:ShortValue((maxRep - minRep) - (value - minRep)), standing)
-		end
+	if current == maximum then
+		return 1, 1, 100, true
+	else
+		return current, maximum, current / diff * 100
 	end
 end
 
-function mod:ReputationBar_OnEnter()
-	if mod.db.reputation.mouseover then
+function DB:ReputationBar_Update()
+	local bar = DB.StatusBars.Reputation
+	DB:SetVisibility(bar)
+
+	if not bar.db.enable or bar:ShouldHide() then return end
+
+	local displayString, textFormat, label, _ = '', DB.db.reputation.textFormat
+	local name, reaction, minValue, maxValue, curValue = GetWatchedFactionInfo()
+
+	if not label then
+		label = _G['FACTION_STANDING_LABEL'..reaction] or UNKNOWN
+	end
+
+	local customColors = DB.db.colors.useCustomFactionColors
+	local color = customColors and DB.db.colors.factionColors[reaction] or FACTION_BAR_COLORS[reaction]
+	local alpha = (customColors and color.a) or DB.db.colors.reputationAlpha
+
+	bar:SetStatusBarColor(color.r or 1, color.g or 1, color.b or 1, alpha or 1)
+	bar:SetMinMaxValues(minValue, maxValue)
+	bar:SetValue(curValue)
+
+	local current, maximum, percent, capped = GetValues(curValue, minValue, maxValue)
+	if capped and textFormat ~= 'NONE' then -- show only name and standing on exalted
+		displayString = format('%s: [%s]', name, label)
+	elseif textFormat == 'PERCENT' then
+		displayString = format('%s: %d%% [%s]', name, percent, label)
+	elseif textFormat == 'CURMAX' then
+		displayString = format('%s: %s - %s [%s]', name, E:ShortValue(current), E:ShortValue(maximum), label)
+	elseif textFormat == 'CURPERC' then
+		displayString = format('%s: %s - %d%% [%s]', name, E:ShortValue(current), percent, label)
+	elseif textFormat == 'CUR' then
+		displayString = format('%s: %s [%s]', name, E:ShortValue(current), label)
+	elseif textFormat == 'REM' then
+		displayString = format('%s: %s [%s]', name, E:ShortValue(maximum - current), label)
+	elseif textFormat == 'CURREM' then
+		displayString = format('%s: %s - %s [%s]', name, E:ShortValue(current), E:ShortValue(maximum - current), label)
+	elseif textFormat == 'CURPERCREM' then
+		displayString = format('%s: %s - %d%% (%s) [%s]', name, E:ShortValue(current), percent, E:ShortValue(maximum - current), label)
+	end
+
+	bar.text:SetText(displayString)
+end
+
+function DB:ReputationBar_OnEnter()
+	if self.db.mouseover then
 		E:UIFrameFadeIn(self, 0.4, self:GetAlpha(), 1)
 	end
 
-	local name, reaction, minRep, maxRep, value = GetWatchedFactionInfo()
+	local name, reaction, minValue, maxValue, curValue = GetWatchedFactionInfo()
+	local standing = _G['FACTION_STANDING_LABEL'..reaction] or UNKNOWN
+
 	if name then
 		GameTooltip:ClearLines()
 		GameTooltip:SetOwner(self, "ANCHOR_CURSOR", 0, -4)
-
 		GameTooltip:AddLine(name)
 		GameTooltip:AddLine(" ")
 
-		GameTooltip:AddDoubleLine(STANDING..":", _G["FACTION_STANDING_LABEL"..reaction], 1, 1, 1)
-		GameTooltip:AddDoubleLine(REPUTATION..":", format("%d / %d (%d%%)", value - minRep, maxRep - minRep, (value - minRep) / ((maxRep - minRep == 0) and maxRep or (maxRep - minRep)) * 100), 1, 1, 1)
+		GameTooltip:AddDoubleLine(STANDING..':', standing, 1, 1, 1)
+
+		local current, maximum, percent = GetValues(curValue, minValue, maxValue)
+		GameTooltip:AddDoubleLine(REPUTATION..':', format('%d / %d (%d%%)', current, maximum, percent), 1, 1, 1)
 
 		GameTooltip:Show()
 	end
 end
 
-function mod:ReputationBar_OnClick()
+function DB:ReputationBar_OnClick()
 	ToggleCharacter("ReputationFrame")
 end
 
-function mod:ReputationBar_UpdateDimensions()
-	self.repBar:Size(self.db.reputation.width, self.db.reputation.height)
-	self.repBar:SetAlpha(self.db.reputation.mouseover and 0 or 1)
+function DB:ReputationBar_Toggle()
+	local bar = DB.StatusBars.Reputation
+	bar.db = DB.db.reputation
 
-	self.repBar.text:FontTemplate(LSM:Fetch("font", self.db.reputation.font), self.db.reputation.textSize, self.db.reputation.fontOutline)
+	if bar.db.enable then
+		E:EnableMover(bar.holder.mover.name)
 
-	self.repBar.statusBar:SetOrientation(self.db.reputation.orientation)
-	self.repBar.statusBar:SetRotatesTexture(self.db.reputation.orientation ~= "HORIZONTAL")
+		DB:RegisterEvent('UPDATE_FACTION', 'ReputationBar_Update')
+		DB:RegisterEvent('COMBAT_TEXT_UPDATE', 'ReputationBar_Update')
+		DB:RegisterEvent('QUEST_FINISHED', 'ReputationBar_Update')
 
-	if self.repBar.bubbles then
-		self:UpdateBarBubbles(self.repBar, self.db.reputation)
-	elseif self.db.reputation.showBubbles then
-		local bubbles = self:CreateBarBubbles(self.repBar)
-		bubbles:SetFrameLevel(5)
-		self:UpdateBarBubbles(self.repBar, self.db.reputation)
-	end
-end
-
-function mod:ReputationBar_Toggle()
-	if self.db.reputation.enable then
-		self.repBar.eventFrame:RegisterEvent("UPDATE_FACTION")
-		self.repBar.eventFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
-		self.repBar.eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-
-		self:ReputationBar_Update()
-		E:EnableMover(self.repBar.mover:GetName())
+		DB:ReputationBar_Update()
 	else
-		self.repBar.eventFrame:UnregisterEvent("UPDATE_FACTION")
-		self.repBar.eventFrame:UnregisterEvent("PLAYER_REGEN_DISABLED")
-		self.repBar.eventFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
+		E:DisableMover(bar.holder.mover.name)
 
-		self.repBar:Hide()
-		E:DisableMover(self.repBar.mover:GetName())
+		DB:UnregisterEvent('UPDATE_FACTION')
+		DB:UnregisterEvent('COMBAT_TEXT_UPDATE')
+		DB:UnregisterEvent('QUEST_FINISHED')
 	end
 end
 
-function mod:ReputationBar_Load()
-	self.repBar = self:CreateBar("ElvUI_ReputationBar", self.ReputationBar_OnEnter, self.ReputationBar_OnClick, "RIGHT", RightChatPanel, "LEFT", E.Border - E.Spacing*3, 0)
+function DB:ReputationBar()
+	local Reputation = DB:CreateBar('ElvUI_ReputationBar', 'Reputation', DB.ReputationBar_Update, DB.ReputationBar_OnEnter, DB.ReputationBar_OnClick, {'TOPRIGHT', E.UIParent, 'TOPRIGHT', -3, -264})
+	DB:CreateBarBubbles(Reputation)
 
-	self.repBar.eventFrame = CreateFrame("Frame")
-	self.repBar.eventFrame:Hide()
-	self.repBar.eventFrame:SetScript("OnEvent", function(_, event)
-		if event == "PLAYER_REGEN_DISABLED" then
-			self.inCombatLockdown = true
-		elseif event == "PLAYER_REGEN_ENABLED" then
-			self.inCombatLockdown = false
-		end
+	Reputation.ShouldHide = function()
+		return (DB.db.reputation.hideBelowMaxLevel and not E:XPIsLevelMax()) or not GetWatchedFactionInfo()
+	end
 
-		self:ReputationBar_Update(event)
-	end)
+	E:CreateMover(Reputation.holder, 'ReputationBarMover', L["Reputation Bar"], nil, nil, nil, nil, nil, 'databars,reputation')
 
-	self:ReputationBar_UpdateDimensions()
-
-	E:CreateMover(self.repBar, "ReputationBarMover", L["Reputation Bar"], nil, nil, nil, nil, nil, "databars,reputation")
-	self:ReputationBar_Toggle()
+	DB:ReputationBar_Toggle()
 end
