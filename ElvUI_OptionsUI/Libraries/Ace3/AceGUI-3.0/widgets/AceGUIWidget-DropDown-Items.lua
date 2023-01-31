@@ -41,7 +41,7 @@ local ItemBase = {
 	-- NOTE: The ItemBase version is added to each item's version number
 	--       to ensure proper updates on ItemBase changes.
 	--       Use at least 1000er steps.
-	version = 1000,
+	version = 2000,
 	counter = 0,
 }
 
@@ -169,7 +169,7 @@ function ItemBase.Create(type)
 	self.text = text
 
 	local highlight = frame:CreateTexture(nil, "OVERLAY")
-	highlight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
+	highlight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight") -- Interface\\QuestFrame\\UI-QuestTitleHighlight
 	highlight:SetBlendMode("ADD")
 	highlight:SetHeight(14)
 	highlight:ClearAllPoints()
@@ -178,19 +178,19 @@ function ItemBase.Create(type)
 	highlight:Hide()
 	self.highlight = highlight
 
-	local check = frame:CreateTexture("OVERLAY")
+	local check = frame:CreateTexture(nil, "OVERLAY")
 	check:SetWidth(16)
 	check:SetHeight(16)
 	check:SetPoint("LEFT",frame,"LEFT",3,-1)
-	check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+	check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check") -- Interface\\Buttons\\UI-CheckBox-Check
 	check:Hide()
 	self.check = check
 
-	local sub = frame:CreateTexture("OVERLAY")
+	local sub = frame:CreateTexture(nil, "OVERLAY")
 	sub:SetWidth(16)
 	sub:SetHeight(16)
 	sub:SetPoint("RIGHT",frame,"RIGHT",-3,-1)
-	sub:SetTexture("Interface\\ChatFrame\\ChatFrameExpandArrow")
+	sub:SetTexture("Interface\\ChatFrame\\ChatFrameExpandArrow") -- Interface\\ChatFrame\\ChatFrameExpandArrow
 	sub:Hide()
 	self.sub = sub
 
@@ -323,7 +323,7 @@ end
 -- Does not close the pullout on click.
 do
 	local widgetType = "Dropdown-Item-Toggle"
-	local widgetVersion = 3
+	local widgetVersion = 4
 
 	local function UpdateToggle(self)
 		if self.value then
@@ -343,9 +343,9 @@ do
 		if self.disabled then return end
 		self.value = not self.value
 		if self.value then
-			PlaySound("igMainMenuOptionCheckBoxOn")
+			PlaySound(856) -- SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON
 		else
-			PlaySound("igMainMenuOptionCheckBoxOff")
+			PlaySound(857) -- SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF
 		end
 		UpdateToggle(self)
 		self:Fire("OnValueChanged", self.value)
@@ -440,7 +440,7 @@ end
 -- A single line to separate items
 do
 	local widgetType = "Dropdown-Item-Separator"
-	local widgetVersion = 1
+	local widgetVersion = 2
 
 	-- exported, override
 	local function SetDisabled(self, disabled)

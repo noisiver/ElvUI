@@ -1,18 +1,13 @@
-local Type, Version = "MultiLineEditBox", 28
+--[[-----------------------------------------------------------------------------
+MultiLineEditBox Widget (Modified to add Syntax highlighting from FAIAP)
+-------------------------------------------------------------------------------]]
+local Type, Version = "MultiLineEditBox-ElvUI", 31
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
--- Lua APIs
-local pairs = pairs
-
--- WoW APIs
+local _G, pairs = _G, pairs
 local GetCursorInfo, GetSpellInfo, ClearCursor = GetCursorInfo, GetSpellInfo, ClearCursor
 local CreateFrame, UIParent = CreateFrame, UIParent
-local _G = _G
-
--- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
--- List them here for Mikk's FindGlobals script
--- GLOBALS: ACCEPT, ChatFontNormal
 
 --[[-----------------------------------------------------------------------------
 Support functions
@@ -58,7 +53,7 @@ Scripts
 local function OnClick(self)                                                     -- Button
 	self = self.obj
 	self.editBox:ClearFocus()
-	if not self:Fire("OnEnterPressed", self.editBox:GetText()) then
+	if not self:Fire("OnEnterPressed", self.editBox:GetText(true)) then -- ElvUI changed
 		self.button:Disable()
 	end
 end
@@ -128,8 +123,14 @@ end
 local function OnTextChanged(self, userInput)                                    -- EditBox
 	if userInput then
 		self = self.obj
-		self:Fire("OnTextChanged", self.editBox:GetText())
+
+		local value = self.editBox:GetText()
+		self:Fire("OnTextChanged", value)
 		self.button:Enable()
+
+		if self.textChanged then
+			self.textChanged(value)
+		end
 	end
 end
 
@@ -143,6 +144,14 @@ end
 local function OnVerticalScroll(self, offset)                                    -- ScrollFrame
 	local editBox = self.obj.editBox
 	editBox:SetHitRectInsets(0, 0, offset, editBox:GetHeight() - offset - self:GetHeight())
+end
+
+local function OnScrollRangeChanged(self, xrange, yrange)
+	if yrange == 0 then
+		self.obj.editBox:SetHitRectInsets(0, 0, 0, 0)
+	else
+		OnVerticalScroll(self, self:GetVerticalScroll())
+	end
 end
 
 local function OnShowFocus(frame)
@@ -258,7 +267,15 @@ local methods = {
 		return self.editBox:SetCursorPosition(...)
 	end,
 
-
+	-- ElvUI block, this it to support plugins that use FAIAP
+	["SetSyntaxHighlightingEnabled"] = function(self, enabled)
+		if enabled then
+			AceGUI.luaSyntax.enable(self.editBox, nil, 4)
+		else
+			AceGUI.luaSyntax.disable(self.editBox)
+		end
+	end
+	-- End ElvUI block
 }
 
 --[[-----------------------------------------------------------------------------
@@ -283,7 +300,7 @@ local function Constructor()
 	label:SetText(ACCEPT)
 	label:SetHeight(10)
 
-	local button = CreateFrame("Button", ("%s%dButton"):format(Type, widgetNum), frame, "UIPanelButtonTemplate2")
+	local button = CreateFrame("Button", ("%s%dButton"):format(Type, widgetNum), frame, "UIPanelButtonTemplate")
 	button:SetPoint("BOTTOMLEFT", 0, 4)
 	button:SetHeight(22)
 	button:SetWidth(label:GetStringWidth() + 24)
@@ -321,6 +338,7 @@ local function Constructor()
 	scrollFrame:SetScript("OnReceiveDrag", OnReceiveDrag)
 	scrollFrame:SetScript("OnSizeChanged", OnSizeChanged)
 	scrollFrame:HookScript("OnVerticalScroll", OnVerticalScroll)
+	scrollFrame:HookScript("OnScrollRangeChanged", OnScrollRangeChanged)
 
 	local editBox = CreateFrame("EditBox", ("%s%dEdit"):format(Type, widgetNum), scrollFrame)
 	editBox:SetAllPoints()
@@ -339,7 +357,6 @@ local function Constructor()
 	editBox:SetScript("OnTextChanged", OnTextChanged)
 	editBox:SetScript("OnTextSet", OnTextSet)
 	editBox:SetScript("OnEditFocusGained", OnEditFocusGained)
-
 
 	scrollFrame:SetScrollChild(editBox)
 

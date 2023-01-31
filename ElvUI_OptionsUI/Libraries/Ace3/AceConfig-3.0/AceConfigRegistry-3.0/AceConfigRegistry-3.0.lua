@@ -11,7 +11,7 @@
 -- @release $Id$
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 
-local MAJOR, MINOR = "AceConfigRegistry-3.0-ElvUI", 20
+local MAJOR, MINOR = "AceConfigRegistry-3.0-ElvUI", 22
 local AceConfigRegistry = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceConfigRegistry then return end
@@ -55,8 +55,10 @@ local isstring={["string"]=true, _="string"}
 local isstringfunc={["string"]=true,["function"]=true, _="string or funcref"}
 local istable={["table"]=true,   _="table"}
 local ismethodtable={["table"]=true,["string"]=true,["function"]=true,   _="methodname, funcref or table"}
+local optfunc={["nil"]=true,["function"]=true, _="funcref"} -- added by ElvUI for input boxes
 local optstring={["nil"]=true,["string"]=true, _="string"}
 local optstringfunc={["nil"]=true,["string"]=true,["function"]=true, _="string or funcref"}
+local optstringnumberfunc={["nil"]=true,["string"]=true,["number"]=true,["function"]=true, _="string, number or funcref"}
 local optnumber={["nil"]=true,["number"]=true, _="number"}
 local optnumberfunc={["nil"]=true,["number"]=true,["function"]=true,_="number"} -- added by ElvUI for range
 local optmethodfalse={["nil"]=true,["string"]=true,["function"]=true,["boolean"]={[false]=true},  _="methodname, funcref or false"}
@@ -84,7 +86,7 @@ local basekeys={
 		dialogHidden=optmethodbool,
 		dropdownHidden=optmethodbool,
 	cmdHidden=optmethodbool,
-	icon=optstringfunc,
+	icon=optstringnumberfunc,
 	iconCoords=optmethodtable,
 	handler=opttable,
 	get=optmethodfalse,
@@ -113,7 +115,7 @@ local typedkeys={
 		dropdownControl=optstring,
 	},
 	description={
-		image=optstringfunc,
+		image=optstringnumberfunc,
 		imageCoords=optmethodtable,
 		imageHeight=optnumber,
 		imageWidth=optnumber,
@@ -133,7 +135,7 @@ local typedkeys={
 		childGroups=optstring,
 	},
 	execute={
-		image=optstringfunc,
+		image=optstringnumberfunc,
 		imageCoords=optmethodtable,
 		imageHeight=optnumber,
 		imageWidth=optnumber,
@@ -148,10 +150,13 @@ local typedkeys={
 		dialogControl=optstring,
 		dropdownControl=optstring,
 		multiline=optboolnumber,
+		luaSyntax=optbool, --ElvUI
+		disableButton=optbool, --ElvUI
+		textChanged=optfunc, --ElvUI
 	},
 	toggle={
 		tristate=optbool,
-		image=optstringfunc,
+		image=optstringnumberfunc,
 		imageCoords=optmethodtable,
 		control=optstring,
 		dialogControl=optstring,

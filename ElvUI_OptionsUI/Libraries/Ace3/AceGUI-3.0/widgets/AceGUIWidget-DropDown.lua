@@ -4,16 +4,12 @@ local AceGUI = LibStub("AceGUI-3.0")
 -- Lua APIs
 local min, max, floor = math.min, math.max, math.floor
 local select, pairs, ipairs, type, tostring = select, pairs, ipairs, type, tostring
-local tsort, tonumber = table.sort, tonumber
+local tonumber, tsort, error = tonumber, table.sort, error
 
 -- WoW APIs
 local PlaySound = PlaySound
 local UIParent, CreateFrame = UIParent, CreateFrame
 local _G = _G
-
--- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
--- List them here for Mikk's FindGlobals script
--- GLOBALS: CLOSE
 
 local function fixlevels(parent,...)
 	local i = 1
@@ -39,7 +35,7 @@ end
 
 do
 	local widgetType = "Dropdown-Pullout"
-	local widgetVersion = 3
+	local widgetVersion = 5
 
 	--[[ Static data ]]--
 
@@ -193,12 +189,7 @@ do
 
 		local height = 8
 		for i, item in pairs(items) do
-			if i == 1 then
-				item:SetPoint("TOP", itemFrame, "TOP", 0, -2)
-			else
-				item:SetPoint("TOP", items[i-1].frame, "BOTTOM", 0, 1)
-			end
-
+			item:SetPoint("TOP", itemFrame, "TOP", 0, -2 + (i - 1) * -16)
 			item:Show()
 
 			height = height + 16
@@ -356,7 +347,7 @@ end
 
 do
 	local widgetType = "Dropdown"
-	local widgetVersion = 35
+	local widgetVersion = 36
 
 	--[[ Static data ]]--
 
@@ -381,7 +372,6 @@ do
 
 	local function Dropdown_TogglePullout(this)
 		local self = this.obj
-		PlaySound("igMainMenuOptionCheckBoxOn") -- missleading name, but the Blizzard code uses this sound
 		if self.open then
 			self.open = nil
 			self.pullout:Close()
@@ -600,15 +590,9 @@ do
 		end
 	end
 
-	-- these were added by ElvUI
-	local sortStr1, sortStr2 = "%((%d+)%)", "%[(%d+)]"
+	-- added by ElvUI
 	local sortValue = function(a,b)
-		if a and b and (a[2] and b[2]) then
-			local a2 = tonumber(a[2]:match(sortStr1) or a[2]:match(sortStr2))
-			local b2 = tonumber(b[2]:match(sortStr1) or b[2]:match(sortStr2))
-			if a2 and b2 and (a2 ~= b2) then
-				return a2 < b2 -- try to sort by the number inside of brackets if we can
-			end
+		if a and b and a[2] and b[2] then
 			return a[2] < b[2]
 		end
 	end

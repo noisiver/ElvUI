@@ -14,10 +14,6 @@ local GetCursorInfo, ClearCursor, GetSpellInfo = GetCursorInfo, ClearCursor, Get
 local CreateFrame, UIParent = CreateFrame, UIParent
 local _G = _G
 
--- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
--- List them here for Mikk's FindGlobals script
--- GLOBALS: AceGUIEditBoxInsertLink, ChatFontNormal, OKAY
-
 --[[-----------------------------------------------------------------------------
 Support functions
 -------------------------------------------------------------------------------]]
@@ -73,7 +69,7 @@ local function EditBox_OnEnterPressed(frame)
 	local value = frame:GetText()
 	local cancel = self:Fire("OnEnterPressed", value)
 	if not cancel then
-		PlaySound("igMainMenuOptionCheckBoxOn")
+		PlaySound(856) -- SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON
 		HideButton(self)
 	end
 end

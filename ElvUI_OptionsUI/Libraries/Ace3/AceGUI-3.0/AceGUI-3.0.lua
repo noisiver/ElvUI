@@ -66,6 +66,8 @@ local function errorhandler(err)
 	return geterrorhandler()(err)
 end
 
+AceGUI.tooltip = AceGUI.tooltip or CreateFrame("GameTooltip", "AceGUITooltip", UIParent, "GameTooltipTemplate")
+
 local function CreateDispatcher(argCount)
 	local code = [[
 		local xpcall, eh = ...

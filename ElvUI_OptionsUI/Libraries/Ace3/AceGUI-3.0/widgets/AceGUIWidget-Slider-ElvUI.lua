@@ -1,8 +1,8 @@
 --[[-----------------------------------------------------------------------------
-Slider Widget
+Slider Widget (Modified to support min and max fuctions on SetSliderValues)
 Graphical Slider, like, for Range values.
 -------------------------------------------------------------------------------]]
-local Type, Version = "Slider", 20
+local Type, Version = "Slider-ElvUI", 3
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -13,10 +13,6 @@ local tonumber, pairs = tonumber, pairs
 -- WoW APIs
 local PlaySound = PlaySound
 local CreateFrame, UIParent = CreateFrame, UIParent
-
--- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
--- List them here for Mikk's FindGlobals script
--- GLOBALS: GameFontHighlightSmall
 
 --[[-----------------------------------------------------------------------------
 Support functions
@@ -31,13 +27,13 @@ local function UpdateText(self)
 end
 
 local function UpdateLabels(self)
-	local min, max = (self.min or 0), (self.max or 100)
+	local min_value, max_value = (self.min or 0), (self.max or 100)
 	if self.ispercent then
-		self.lowtext:SetFormattedText("%s%%", (min * 100))
-		self.hightext:SetFormattedText("%s%%", (max * 100))
+		self.lowtext:SetFormattedText("%s%%", (min_value * 100))
+		self.hightext:SetFormattedText("%s%%", (max_value * 100))
 	else
-		self.lowtext:SetText(min)
-		self.hightext:SetText(max)
+		self.lowtext:SetText(min_value)
+		self.hightext:SetText(max_value)
 	end
 end
 
@@ -60,6 +56,10 @@ end
 local function Slider_OnValueChanged(frame, newvalue)
 	local self = frame.obj
 	if not frame.setup then
+		if self.step and self.step > 0 then
+			local min_value = self.min or 0
+			newvalue = floor((newvalue - min_value) / self.step + 0.5) * self.step + min_value
+		end
 		if newvalue ~= self.value and not self.disabled then
 			self.value = newvalue
 			self:Fire("OnValueChanged", newvalue)
@@ -103,7 +103,7 @@ local function EditBox_OnEnterPressed(frame)
 	end
 
 	if value then
-		PlaySound("igMainMenuOptionCheckBoxOn")
+		PlaySound(856) -- SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON
 		self.slider:SetValue(value)
 		self:Fire("OnMouseUp", value)
 	end
@@ -171,16 +171,16 @@ local methods = {
 		self.label:SetText(text)
 	end,
 
-	["SetSliderValues"] = function(self, min, max, step)
-		if type(min) == 'function' then min = min() end -- ElvUI
-		if type(max) == 'function' then max = max() end -- ElvUI
+	["SetSliderValues"] = function(self, min_value, max_value, step)
+		if type(min_value) == 'function' then min_value = min_value() end
+		if type(max_value) == 'function' then max_value = max_value() end
 
 		local frame = self.slider
 		frame.setup = true
-		self.min = min
-		self.max = max
+		self.min = min_value
+		self.max = max_value
 		self.step = step
-		frame:SetMinMaxValues(min or 0,max or 100)
+		frame:SetMinMaxValues(min_value or 0, max_value or 100)
 		UpdateLabels(self)
 		frame:SetValueStep(step or 1)
 		if self.value then

@@ -1,7 +1,7 @@
 --[[-----------------------------------------------------------------------------
 ColorPicker Widget
 -------------------------------------------------------------------------------]]
-local Type, Version = "ColorPicker-ElvUI", 25
+local Type, Version = "ColorPicker-ElvUI", 26
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -10,10 +10,6 @@ local pairs = pairs
 
 -- WoW APIs
 local CreateFrame, UIParent = CreateFrame, UIParent
-
--- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
--- List them here for Mikk's FindGlobals script
--- GLOBALS: ColorPickerFrame, OpacitySliderFrame, ColorPPDefault
 
 --[[-----------------------------------------------------------------------------
 Support functions
@@ -155,7 +151,7 @@ local function Constructor()
 	local colorSwatch = frame:CreateTexture(nil, "OVERLAY")
 	colorSwatch:SetWidth(19)
 	colorSwatch:SetHeight(19)
-	colorSwatch:SetTexture("Interface\\ChatFrame\\ChatFrameColorSwatch")
+	colorSwatch:SetTexture("Interface\\ChatFrame\\ChatFrameColorSwatch") -- Interface\\ChatFrame\\ChatFrameColorSwatch
 	colorSwatch:SetPoint("LEFT")
 
 	local texture = frame:CreateTexture(nil, "BACKGROUND")
@@ -170,7 +166,7 @@ local function Constructor()
 	colorSwatch.checkers = checkers
 	checkers:SetWidth(14)
 	checkers:SetHeight(14)
-	checkers:SetTexture("Tileset\\Generic\\Checkers")
+	checkers:SetTexture("Tileset\\Generic\\Checkers") -- Tileset\\Generic\\Checkers
 	checkers:SetTexCoord(.25, 0, 0.5, .25)
 	checkers:SetDesaturated(true)
 	checkers:SetVertexColor(1, 1, 1, 0.75)
@@ -184,10 +180,10 @@ local function Constructor()
 	text:SetPoint("LEFT", colorSwatch, "RIGHT", 2, 0)
 	text:SetPoint("RIGHT")
 
-	--local highlight = frame:CreateTexture(nil, "HIGHLIGHT")
-	--highlight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
-	--highlight:SetBlendMode("ADD")
-	--highlight:SetAllPoints(frame)
+	-- local highlight = frame:CreateTexture(nil, "HIGHLIGHT")
+	-- highlight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight") -- Interface\\QuestFrame\\UI-QuestTitleHighlight
+	-- highlight:SetBlendMode("ADD")
+	-- highlight:SetAllPoints(frame)
 
 	local widget = {
 		colorSwatch = colorSwatch,
