@@ -421,7 +421,7 @@ function TT:AddTargetInfo(tt, unit)
 	end
 
 	if GetNumPartyMembers() > 0 then
-		local isInRaid = GetNumRaidMembers > 1
+		local isInRaid = GetNumRaidMembers() > 1
 		for i = 1, GetNumPartyMembers() do
 			local groupUnit = (isInRaid and 'raid' or 'party')..i
 			if UnitIsUnit(groupUnit..'target', unit) and not UnitIsUnit(groupUnit,'player') then
