@@ -1,27 +1,36 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 
 --Locked Settings, These settings are stored for your character only regardless of profile options.
 
 V.general = {
 	loot = true,
 	lootRoll = true,
-	normTex = "ElvUI Norm",
-	glossTex = "ElvUI Norm",
-	dmgfont = "PT Sans Narrow",
-	namefont = "PT Sans Narrow",
-	chatBubbles = "backdrop",
-	chatBubbleFont = "PT Sans Narrow",
-	chatBubbleFontSize = 14,
-	chatBubbleFontOutline = "NONE",
+	normTex = 'ElvUI Norm',
+	glossTex = 'ElvUI Norm',
+	dmgfont = 'Expressway',
+	namefont = 'Expressway', -- (PT Sans) some dont render for mail room quest
+	chatBubbles = 'backdrop',
+	chatBubbleFont = 'PT Sans Narrow',
+	chatBubbleFontSize = 12,
+	chatBubbleFontOutline = 'NONE',
 	chatBubbleName = false,
 	pixelPerfect = true,
+	replaceNameFont = true,
+	replaceCombatFont = true,
+	replaceCombatText = false,
+	replaceBubbleFont = true,
+	replaceNameplateFont = true,
 	replaceBlizzFonts = true,
+	unifiedBlizzFonts = false,
+	totemTracker = true,
 	minimap = {
 		enable = true,
 		hideCalendar = true,
+		hideTracking = false,
 	},
 	classColorMentionsSpeech = true,
-	raidUtility = true
+	raidUtility = true,
+	worldMap = true,
 }
 
 V.bags = {
@@ -36,10 +45,11 @@ V.nameplates = {
 V.auras = {
 	enable = true,
 	disableBlizzard = true,
-
-	lbf = {
-		enable = false,
-		skin = "Blizzard"
+	buffsHeader = true,
+	debuffsHeader = true,
+	masque = {
+		buffs = false,
+		debuffs = false,
 	}
 }
 
@@ -48,14 +58,9 @@ V.chat = {
 }
 
 V.skins = {
-	ace3 = {
-		enable = true
-	},
+	ace3Enable = true,
 	checkBoxSkin = true,
-	dropdownCheckBoxSkin = false,
-	parchmentRemover = {
-		enable = false,
-	},
+	parchmentRemoverEnable = false,
 	blizzard = {
 		enable = true,
 		achievement = true,
@@ -131,10 +136,11 @@ V.unitframe = {
 
 V.actionbar = {
 	enable = true,
-
-	lbf = {
-		enable = false,
-		skin = "Blizzard",
+	hideCooldownBling = false,
+	masque = {
+		actionbars = false,
+		petBar = false,
+		stanceBar = false,
 	}
 }
 

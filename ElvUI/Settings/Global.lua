@@ -1,26 +1,27 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, L, V, P, G = unpack(select(2, ...))
 
 --Global Settings
 G.general = {
-	UIScale = 0.7111111111111111,
-	version = 6.09,
-	versionCheck = true,
-	locale = "auto",
+	UIScale = 0.64,
+	locale = E:GetLocale(),
 	eyefinity = false,
-	ignoreScalePopup = false,
+	ultrawide = false,
 	smallerWorldMap = true,
+	allowDistributor = false,
+	smallerWorldMapScale = 0.9,
 	fadeMapWhenMoving = true,
-	mapAlphaWhenMoving = 0.35,
-	AceGUI = {
-		width = 1000,
-		height = 720
-	},
+	mapAlphaWhenMoving = 0.2,
+	fadeMapDuration = 0.2,
 	WorldMapCoordinates = {
 		enable = true,
 		position = "BOTTOMLEFT",
 		xOffset = 0,
 		yOffset = 0
-	}
+	},
+	AceGUI = {
+		width = 1024,
+		height = 768
+	},
 }
 
 G.classtimer = {}
@@ -31,6 +32,84 @@ G.chat = {
 
 G.bags = {
 	ignoredItems = {},
+}
+
+G.datatexts = {
+	customPanels = {},
+	customCurrencies = {},
+	settings = {
+		Agility = { Label = '', NoLabel = false },
+		Armor = { Label = '', NoLabel = false },
+		Avoidance = { Label = '', NoLabel = false, decimalLength = 1 },
+		Bags = { textFormat = 'USED_TOTAL', Label = '', NoLabel = false },
+		CallToArms = { Label = '', NoLabel = false },
+		Combat = { TimeFull = true, NoLabel = false },
+		CombatIndicator = { OutOfCombat = '', InCombat = '', OutOfCombatColor = {r = 0, g = 0.8, b = 0}, InCombatColor = {r = 0.8, g = 0, b = 0} },
+		Crit = { Label = '', NoLabel = false, decimalLength = 1 },
+		Currencies = { goldFormat = 'BLIZZARD', goldCoins = true, displayedCurrency = 'BACKPACK', displayStyle = 'ICON', tooltipData = {}, idEnable = {}, headers = true, maxCurrency = false },
+		Durability = { Label = '', NoLabel = false, percThreshold = 30 },
+		DualSpecialization = { NoLabel = false },
+		ElvUI = { Label = '' },
+		Experience = { textFormat = 'CUR' },
+		Friends = {
+			Label = '', NoLabel = false,
+			--status
+			hideAFK = false,
+			hideDND = false,
+			--clients
+			hideWoW = false,
+			hideD3 = false,
+			hideVIPR = false,
+			hideWTCG = false, --Hearthstone
+			hideHero = false, --Heros of the Storm
+			hidePro = false, --Overwatch
+			hideS1 = false,
+			hideS2 = false,
+			hideBSAp = false, --Mobile
+			hideApp = false, --Launcher
+		},
+		Gold = { goldFormat = 'BLIZZARD', goldCoins = true },
+		Guild = { Label = '', NoLabel = false },
+		Haste = { Label = '', NoLabel = false, decimalLength = 1 },
+		Hit = { Label = '', NoLabel = false, decimalLength = 1 },
+		Intellect = { Label = '', NoLabel = false},
+		Location = { showZone = true, showSubZone = true, showContinent = false, color = 'REACTION', customColor = {r = 1, g = 1, b = 1} },
+		Mastery = { Label = '', NoLabel = false, decimalLength = 1 },
+		MovementSpeed = { Label = '', NoLabel = false, decimalLength = 1 },
+		QuickJoin = { Label = '', NoLabel = false },
+		Reputation = { textFormat = 'CUR' },
+		['Talent/Loot Specialization'] = { displayStyle = 'BOTH', iconOnly = false },
+		SpellPower = { school = 0 },
+		Speed = { Label = '', NoLabel = false, decimalLength = 1 },
+		Stamina = { Label = '', NoLabel = false },
+		Strength = { Label = '', NoLabel = false },
+		System = { NoLabel = false, ShowOthers = true, latency = 'WORLD' },
+		Time = { time24 = GetCVar('portal'), localTime = true, flashInvite = true },
+		Versatility = { Label = '', NoLabel = false, decimalLength = 1 },
+	},
+	newPanelInfo = {
+		growth = 'HORIZONTAL',
+		width = 300,
+		height = 22,
+		frameStrata = 'LOW',
+		numPoints = 3,
+		frameLevel = 1,
+		backdrop = true,
+		panelTransparency = false,
+		mouseover = false,
+		border = true,
+		textJustify = 'CENTER',
+		visibility = '[vehichleui] hide;show',
+		tooltipAnchor = 'ANCHOR_TOPLEFT',
+		tooltipXOffset = -17,
+		tooltipYOffset = 4,
+		fonts = {
+			enable = false,
+			font = 'PT Sans Narrow',
+			fontSize = 12,
+			fontOutline = 'OUTLINE',
+		}
+	},
 }
 
 G.nameplates = {}
@@ -191,7 +270,7 @@ G.unitframe = {
 
 G.profileCopy = {
 	--Specific values
-	selected = "Minimalistic",
+	selected = "Default",
 	movers = {},
 	--Modules
 	actionbar = {
@@ -239,7 +318,8 @@ G.profileCopy = {
 		general = true,
 		minimap = true,
 		threat = true,
-		totems = true
+		totems = true,
+		itemLevel = true,
 	},
 	nameplates = {
 		general = true,
@@ -247,6 +327,8 @@ G.profileCopy = {
 		reactions = true,
 		threat = true,
 		units = {
+			PLAYER = true,
+			TARGET = true,
 			FRIENDLY_PLAYER = true,
 			ENEMY_PLAYER = true,
 			FRIENDLY_NPC = true,
