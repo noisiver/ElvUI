@@ -1032,10 +1032,10 @@ end
 
 local function collapseSetNormalTexture_Text(self, texture)
 	if texture then
-		if find(texture, "MinusButton", 1, true) or find(texture, "ZoomOutButton", 1, true) then
+		if strfind(texture, "MinusButton", 1, true) or strfind(texture, "ZoomOutButton", 1, true) then
 			self.collapseText:SetText("-")
 			return
-		elseif find(texture, "PlusButton", 1, true) or find(texture, "ZoomInButton", 1, true) then
+		elseif strfind(texture, "PlusButton", 1, true) or strfind(texture, "ZoomInButton", 1, true) then
 			self.collapseText:SetText("+")
 			return
 		end
@@ -1044,12 +1044,12 @@ local function collapseSetNormalTexture_Text(self, texture)
 end
 local function collapseSetNormalTexture_Texture(self, texture)
 	if texture then
-		if find(texture, "MinusButton", 1, true) or find(texture, "ZoomOutButton", 1, true) then
+		if strfind(texture, "MinusButton", 1, true) or strfind(texture, "ZoomOutButton", 1, true) then
 			self:GetNormalTexture():SetTexture(E.Media.Textures.Minus)
 			self:GetPushedTexture():SetTexture(E.Media.Textures.Minus)
 			self:GetDisabledTexture():SetTexture(E.Media.Textures.Minus)
 			return
-		elseif find(texture, "PlusButton", 1, true) or find(texture, "ZoomInButton", 1, true) then
+		elseif strfind(texture, "PlusButton", 1, true) or strfind(texture, "ZoomInButton", 1, true) then
 			self:GetNormalTexture():SetTexture(E.Media.Textures.Plus)
 			self:GetPushedTexture():SetTexture(E.Media.Textures.Plus)
 			self:GetDisabledTexture():SetTexture(E.Media.Textures.Plus)
@@ -1065,9 +1065,9 @@ function S:HandleCollapseExpandButton(button, defaultState, useFontString, xOffs
 
 	if defaultState == "auto" then
 		local texture = button:GetNormalTexture():GetTexture()
-		if find(texture, "MinusButton", 1, true) or find(texture, "ZoomOutButton", 1, true) then
+		if strfind(texture, "MinusButton", 1, true) or strfind(texture, "ZoomOutButton", 1, true) then
 			defaultState = "-"
-		elseif find(texture, "PlusButton", 1, true) or find(texture, "ZoomInButton", 1, true) then
+		elseif strfind(texture, "PlusButton", 1, true) or strfind(texture, "ZoomInButton", 1, true) then
 			defaultState = "+"
 		end
 	end
