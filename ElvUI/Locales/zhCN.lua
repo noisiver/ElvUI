@@ -1,5 +1,5 @@
 -- Simplified Chinese localization file for zhCN.
-local E = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E = unpack(select(2, ...))
 local L = E.Libs.ACL:NewLocale("ElvUI", "zhCN")
 
 L[" |cff00ff00bound to |r"] = " |cff00ff00绑定到 |r"
@@ -100,7 +100,6 @@ L["Error resetting UnitFrame."] = "重置单位框架出现错误."
 L["Experience Bar"] = "经验条"
 L["Experience"] = "经验/声望条"
 L["Export Now"] = "现在导出"
-L["Farm Mode"] = "farm模式"
 L["Filter download complete from %s, would you like to apply changes now?"] = "过滤器配置下载于 %s, 你是否现在变更?"
 L["Finished"] = "完成"
 L["Fishy Loot"] = "贪婪"
@@ -277,7 +276,6 @@ L["Total CPU:"] = "CPU占用"
 L["Total Memory:"] = "总内存:"
 L["Total: "] = "合计: "
 L["Trigger"] = "触发器"
-L["Type /hellokitty to revert to old settings."] = "输入/hellokitty以撤销到原来的设定"
 L["UI Scale"] = "界面缩放"
 L["Unhittable:"] = "未命中:"
 L["Vehicle Seat Frame"] = "载具座位框"

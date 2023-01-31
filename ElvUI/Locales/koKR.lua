@@ -1,5 +1,5 @@
 -- Korean localization file for koKR.
-local E = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E = unpack(select(2, ...))
 local L = E.Libs.ACL:NewLocale("ElvUI", "koKR")
 
 L[" |cff00ff00bound to |r"] = " 키로 다음의 행동을 실행합니다: |cff2eb7e4"
@@ -100,7 +100,6 @@ L["Error resetting UnitFrame."] = "유닛프레임 초기화 오류"
 L["Experience Bar"] = "경험치 바"
 L["Experience"] = "경험치"
 L["Export Now"] = "지금 내보내기"
-L["Farm Mode"] = true
 L["Filter download complete from %s, would you like to apply changes now?"] = "%s 유저에게서 필터 설정 다운로드가 완료되었습니다. 변경사항을 적용할까요?"
 L["Finished"] = "마침"
 L["Fishy Loot"] = "낚시 전리품"
@@ -277,7 +276,6 @@ L["Total CPU:"] = "전체 CPU 사용량:"
 L["Total Memory:"] = "전체 메모리:"
 L["Total: "] = "합계:"
 L["Trigger"] = "묶음을 펼치고 각 주문에 지정하세요."
-L["Type /hellokitty to revert to old settings."] = "/hellokitty 를 입력해서 예전 세팅으로 돌릴 수 있습니다."
 L["UI Scale"] = true
 L["Unhittable:"] = "100% 방어행동까지"
 L["Vehicle Seat Frame"] = "차량 좌석 프레임"

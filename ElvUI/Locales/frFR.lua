@@ -1,5 +1,5 @@
 -- French localization file for frFR.
-local E = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E = unpack(select(2, ...))
 local L = E.Libs.ACL:NewLocale("ElvUI", "frFR")
 
 L[" |cff00ff00bound to |r"] = "|cff00ff00assigné à |r"
@@ -100,7 +100,6 @@ L["Error resetting UnitFrame."] = true
 L["Experience Bar"] = "Barre d'expérience"
 L["Experience"] = "Expérience"
 L["Export Now"] = "Exporter maintenant"
-L["Farm Mode"] = "Mode farm"
 L["Filter download complete from %s, would you like to apply changes now?"] = "Téléchargement du filtre de %s complet, voulez-vous appliquer les changements maintenant ?"
 L["Finished"] = "Terminé"
 L["Fishy Loot"] = "Butin de pêche"
@@ -277,7 +276,6 @@ L["Total CPU:"] = "Charge du CPU :"
 L["Total Memory:"] = "Mémoire totale :"
 L["Total: "] = "Total : "
 L["Trigger"] = "Déclencheur"
-L["Type /hellokitty to revert to old settings."] = "Tapez /hellokitty pour recharger les anciennes configurations"
 L["UI Scale"] = true
 L["Unhittable:"] = "Intouchable :"
 L["Vehicle Seat Frame"] = "Cadre de siège du véhicule"

@@ -1,5 +1,5 @@
 -- German localization file for deDE.
-local E = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E = unpack(select(2, ...))
 local L = E.Libs.ACL:NewLocale("ElvUI", "deDE")
 
 L[" |cff00ff00bound to |r"] = " |cff00ff00gebunden zu |r"
@@ -100,7 +100,6 @@ L["Error resetting UnitFrame."] = "Fehler beim Zurücksetzen des Einheitenfester
 L["Experience Bar"] = "Erfahrungsleiste"
 L["Experience"] = "Erfahrung"
 L["Export Now"] = "Jetzt exportieren"
-L["Farm Mode"] = true
 L["Filter download complete from %s, would you like to apply changes now?"] = "Filter komplett heruntergeladen von %s, möchtest du die Änderungen nun vornehmen?"
 L["Finished"] = "Abgeschlossen"
 L["Fishy Loot"] = "Faule Beute"
@@ -277,7 +276,6 @@ L["Total CPU:"] = "Gesamt CPU:"
 L["Total Memory:"] = "Gesamte Speichernutzung:"
 L["Total: "] = "Gesamt: "
 L["Trigger"] = "Auslöser"
-L["Type /hellokitty to revert to old settings."] = "Tippe /hellokitty um die alten Einstellungen zu verwenden."
 L["UI Scale"] = true
 L["Unhittable:"] = "Unschlagbar:"
 L["Vehicle Seat Frame"] = "Fahrzeugfenster"

@@ -1,5 +1,5 @@
 -- Traditional Chinese localization file for zhTW.
-local E = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E = unpack(select(2, ...))
 local L = E.Libs.ACL:NewLocale("ElvUI", "zhTW")
 
 L[" |cff00ff00bound to |r"] = " |cff00ff00綁定到 |r"
@@ -100,7 +100,6 @@ L["Error resetting UnitFrame."] = "重置單位框架錯誤"
 L["Experience Bar"] = "經驗條"
 L["Experience"] = "經驗/聲望條"
 L["Export Now"] = "現在導出"
-L["Farm Mode"] = true
 L["Filter download complete from %s, would you like to apply changes now?"] = "過濾器設定下載於 %s, 你是否現在變更?"
 L["Finished"] = "設定完畢"
 L["Fishy Loot"] = "貪婪"
@@ -277,7 +276,6 @@ L["Total CPU:"] = "CPU佔用"
 L["Total Memory:"] = "總記憶體:"
 L["Total: "] = "合計: "
 L["Trigger"] = "觸發器"
-L["Type /hellokitty to revert to old settings."] = "輸入 /hellokitty 來回復舊設定"
 L["UI Scale"] = true
 L["Unhittable:"] = "未命中:"
 L["Vehicle Seat Frame"] = "載具座位框"

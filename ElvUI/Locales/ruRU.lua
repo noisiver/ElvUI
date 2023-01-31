@@ -1,5 +1,5 @@
 -- Russian localization file for ruRU.
-local E = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E = unpack(select(2, ...))
 local L = E.Libs.ACL:NewLocale("ElvUI", "ruRU")
 
 L[" |cff00ff00bound to |r"] = " |cff00ff00назначено для |r"
@@ -100,7 +100,6 @@ L["Error resetting UnitFrame."] = "Ошибка сброса рамки юнит
 L["Experience Bar"] = "Полоса опыта"
 L["Experience"] = "Опыт"
 L["Export Now"] = "Экспортировать"
-L["Farm Mode"] = "Режим фарма"
 L["Filter download complete from %s, would you like to apply changes now?"] = "Завершена загрузка фильтров от %s. Желаете применить изменения сейчас?"
 L["Finished"] = "Завершить"
 L["Fishy Loot"] = "Улов"
@@ -277,7 +276,6 @@ L["Total CPU:"] = "Использование процессора:"
 L["Total Memory:"] = "Всего памяти:"
 L["Total: "] = "Всего: "
 L["Trigger"] = "Триггер"
-L["Type /hellokitty to revert to old settings."] = "Напишите /hellokitty для возврата к предыдущим настройкам."
 L["UI Scale"] = true
 L["Unhittable:"] = "Полная защита от ударов"
 L["Vehicle Seat Frame"] = "Техника"

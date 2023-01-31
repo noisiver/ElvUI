@@ -1,5 +1,5 @@
 -- Portuguese localization file for ptBR.
-local E = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E = unpack(select(2, ...))
 local L = E.Libs.ACL:NewLocale("ElvUI", "ptBR")
 
 L[" |cff00ff00bound to |r"] = " |cff00ff00Ligado a |r"
@@ -100,7 +100,6 @@ L["Error resetting UnitFrame."] = true
 L["Experience Bar"] = "Barra de Experiência"
 L["Experience"] = "Experiência"
 L["Export Now"] = true
-L["Farm Mode"] = true
 L["Filter download complete from %s, would you like to apply changes now?"] = "Baixa de filtros de %s completada, gostaria de aplicar as alterações agora?"
 L["Finished"] = "Terminado"
 L["Fishy Loot"] = "Saque de Peixes"
@@ -278,7 +277,6 @@ L["Total CPU:"] = "CPU Total:"
 L["Total Memory:"] = "Memória Total:"
 L["Total: "] = "Total: "
 L["Trigger"] = "Gatilho"
-L["Type /hellokitty to revert to old settings."] = true
 L["UI Scale"] = true
 L["Unhittable:"] = "Inacertável"
 L["Vehicle Seat Frame"] = "Quadro de Assento de Veículo"

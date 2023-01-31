@@ -1,5 +1,5 @@
 -- Spanish localization file for esES and esMX.
-local E = unpack(select(2, ...)); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E = unpack(select(2, ...))
 local L = E.Libs.ACL:NewLocale("ElvUI", "esMX")
 
 L[" |cff00ff00bound to |r"] = " |cff00ff00ligado(a) a |r"
@@ -100,7 +100,6 @@ L["Error resetting UnitFrame."] = "Error al restablecer UnitFrame."
 L["Experience Bar"] = "Barra de Experiencia"
 L["Experience"] = "Experiencia"
 L["Export Now"] = true
-L["Farm Mode"] = true
 L["Filter download complete from %s, would you like to apply changes now?"] = "Se completó la descarga de los filtros de %s. ¿Quieres aplicar los cambios ahora?"
 L["Finished"] = "Terminado"
 L["Fishy Loot"] = "Botín Sospechoso"
@@ -277,7 +276,6 @@ L["Total CPU:"] = "CPU Total:"
 L["Total Memory:"] = "Memoria Total:"
 L["Total: "] = "Total: "
 L["Trigger"] = "Disparador"
-L["Type /hellokitty to revert to old settings."] = "Escribe /hellokitty para revertir a las opciones antiguas."
 L["UI Scale"] = "Escalado de interfaz"
 L["Unhittable:"] = "Imbatible:"
 L["Vehicle Seat Frame"] = "Marco del Asiento del Vehículo"
