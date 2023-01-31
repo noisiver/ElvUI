@@ -1,711 +1,229 @@
-local E, _, V, P, G = unpack(ElvUI); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-local C, L = unpack(select(2, ...))
-local Misc = E:GetModule("Misc")
-local Layout = E:GetModule("Layout")
-local Totems = E:GetModule("Totems")
-local Blizzard = E:GetModule("Blizzard")
-local Threat = E:GetModule("Threat")
-local AFK = E:GetModule("AFK")
+local E, _, V, P, G = unpack(ElvUI)
+local C, L = unpack(E.Config)
+local Misc = E:GetModule('Misc')
+local Layout = E:GetModule('Layout')
+local TotemTracker = E:GetModule('TotemTracker')
+local Blizzard = E:GetModule('Blizzard')
+local NP = E:GetModule('NamePlates')
+local UF = E:GetModule('UnitFrames')
+local AFK = E:GetModule('AFK')
+local ACH = E.Libs.ACH
 
 local _G = _G
-
+local wipe, next, ceil = wipe, next, ceil
+local IsMouseButtonDown = IsMouseButtonDown
 local FCF_GetNumActiveChatFrames = FCF_GetNumActiveChatFrames
 
+local ChatTabInfo = {}
 local function GetChatWindowInfo()
-	local ChatTabInfo = {}
+	wipe(ChatTabInfo)
 	for i = 1, FCF_GetNumActiveChatFrames() do
-		if i ~= 2 then
-			ChatTabInfo["ChatFrame"..i] = _G["ChatFrame"..i.."Tab"]:GetText()
-		end
+		ChatTabInfo['ChatFrame'..i] = _G['ChatFrame'..i..'Tab']:GetText()
 	end
-
 	return ChatTabInfo
 end
 
-E.Options.args.general = {
-	order = 1,
-	type = "group",
-	name = L["General"],
-	childGroups = "tab",
-	get = function(info) return E.db.general[info[#info]] end,
-	set = function(info, value) E.db.general[info[#info]] = value end,
-	args = {
-		intro = {
-			order = 1,
-			type = "description",
-			name = L["ELVUI_DESC"]
-		},
-		general = {
-			order = 2,
-			type = "group",
-			name = L["General"],
-			args = {
-				generalHeader = {
-					order = 1,
-					type = "header",
-					name = L["General"]
-				},
-				messageRedirect = {
-					order = 2,
-					type = "select",
-					name = L["Chat Output"],
-					desc = L["This selects the Chat Frame to use as the output of ElvUI messages."],
-					values = GetChatWindowInfo()
-				},
-				AutoScale = {
-					order = 3,
-					type = "execute",
-					name = L["Auto Scale"],
-					func = function()
-						E.global.general.UIScale = E:PixelBestSize()
-						E:StaticPopup_Show("UISCALE_CHANGE")
-					end
-				},
-				UIScale = {
-					order = 4,
-					type = "range",
-					name = L["UI_SCALE"],
-					min = 0.1, max = 1.25, step = 0.0000000000000001,
-					softMin = 0.40, softMax = 1.15, bigStep = 0.01,
-					get = function(info) return E.global.general.UIScale end,
-					set = function(info, value)
-						E.global.general.UIScale = value
-						E:StaticPopup_Show("UISCALE_CHANGE")
-					end
-				},
-				ignoreScalePopup = {
-					order = 5,
-					type = "toggle",
-					name = L["Ignore UI Scale Popup"],
-					desc = L["This will prevent the UI Scale Popup from being shown when changing the game window size."],
-					get = function(info) return E.global.general.ignoreScalePopup end,
-					set = function(info, value) E.global.general.ignoreScalePopup = value end
-				},
-				pixelPerfect = {
-					order = 6,
-					type = "toggle",
-					name = L["Thin Border Theme"],
-					desc = L["The Thin Border Theme option will change the overall apperance of your UI. Using Thin Border Theme is a slight performance increase over the traditional layout."],
-					get = function(info) return E.private.general.pixelPerfect end,
-					set = function(info, value) E.private.general.pixelPerfect = value E:StaticPopup_Show("PRIVATE_RL") end
-				},
-				eyefinity = {
-					order = 7,
-					type = "toggle",
-					name = L["Multi-Monitor Support"],
-					desc = L["Attempt to support eyefinity/nvidia surround."],
-					get = function(info) return E.global.general.eyefinity end,
-					set = function(info, value) E.global.general.eyefinity = value E:StaticPopup_Show("GLOBAL_RL") end
-				},
-				taintLog = {
-					order = 8,
-					type = "toggle",
-					name = L["Log Taints"],
-					desc = L["Send ADDON_ACTION_BLOCKED errors to the Lua Error frame. These errors are less important in most cases and will not effect your game performance. Also a lot of these errors cannot be fixed. Please only report these errors if you notice a Defect in gameplay."]
-				},
-				bottomPanel = {
-					order = 9,
-					type = "toggle",
-					name = L["Bottom Panel"],
-					desc = L["Display a panel across the bottom of the screen. This is for cosmetic only."],
-					set = function(info, value) E.db.general.bottomPanel = value Layout:BottomPanelVisibility() end
-				},
-				topPanel = {
-					order = 10,
-					type = "toggle",
-					name = L["Top Panel"],
-					desc = L["Display a panel across the top of the screen. This is for cosmetic only."],
-					set = function(info, value) E.db.general.topPanel = value Layout:TopPanelVisibility() end
-				},
-				afk = {
-					order = 11,
-					type = "toggle",
-					name = L["AFK Mode"],
-					desc = L["When you go AFK display the AFK screen."],
-					set = function(info, value) E.db.general.afk = value AFK:Toggle() end
-				},
-				decimalLength = {
-					order = 12,
-					type = "range",
-					name = L["Decimal Length"],
-					desc = L["Controls the amount of decimals used in values displayed on elements like NamePlates and UnitFrames."],
-					min = 0, max = 4, step = 1,
-					set = function(info, value)
-						E.db.general.decimalLength = value
-						E:BuildPrefixValues()
-						E:StaticPopup_Show("CONFIG_RL")
-					end
-				},
-				numberPrefixStyle = {
-					order = 13,
-					type = "select",
-					name = L["Unit Prefix Style"],
-					desc = L["The unit prefixes you want to use when values are shortened in ElvUI. This is mostly used on UnitFrames."],
-					set = function(info, value)
-						E.db.general.numberPrefixStyle = value
-						E:BuildPrefixValues()
-						E:StaticPopup_Show("CONFIG_RL")
-					end,
-					values = {
-						["CHINESE"] = "Chinese (W, Y)",
-						["ENGLISH"] = "English (K, M, B)",
-						["GERMAN"] = "German (Tsd, Mio, Mrd)",
-						["KOREAN"] = "Korean (천, 만, 억)",
-						["METRIC"] = "Metric (k, M, G)"
-					}
-				},
-				smoothingAmount = {
-					order = 14,
-					type = "range",
-					isPercent = true,
-					name = L["Smoothing Amount"],
-					desc = L["Controls the speed at which smoothed bars will be updated."],
-					min = 0.1, max = 0.8, softMax = 0.75, softMin = 0.25, step = 0.01,
-					set = function(info, value)
-						E.db.general.smoothingAmount = value
-						E:SetSmoothingAmount(value)
-					end
-				},
-				locale = {
-					order = 15,
-					type = "select",
-					name = L["LANGUAGE"],
-					get = function(info) return E.global.general.locale end,
-					set = function(info, value)
-						E.global.general.locale = value
-						E:StaticPopup_Show("CONFIG_RL")
-					end,
-					values = {
-						["deDE"] = "Deutsch",
-						["enUS"] = "English",
-						["esMX"] = "Español",
-						["frFR"] = "Français",
-						["ptBR"] = "Português",
-						["ruRU"] = "Русский",
-						["zhCN"] = "简体中文",
-						["zhTW"] = "正體中文",
-						["koKR"] = "한국어"
-					}
-				}
-			}
-		},
-		media = {
-			order = 3,
-			type = "group",
-			name = L["Media"],
-			get = function(info) return E.db.general[info[#info]] end,
-			set = function(info, value) E.db.general[info[#info]] = value end,
-			args = {
-				header = {
-					order = 1,
-					type = "header",
-					name = L["Media"]
-				},
-				fontGroup = {
-					order = 2,
-					type = "group",
-					name = L["Font"],
-					guiInline = true,
-					args = {
-						font = {
-							order = 1,
-							type = "select", dialogControl = "LSM30_Font",
-							name = L["Default Font"],
-							desc = L["The font that the core of the UI will use."],
-							values = AceGUIWidgetLSMlists.font,
-							set = function(info, value) E.db.general[info[#info]] = value E:UpdateMedia() E:UpdateFontTemplates() end
-						},
-						fontSize = {
-							order = 2,
-							type = "range",
-							name = L["FONT_SIZE"],
-							desc = L["Set the font size for everything in UI. Note: This doesn't effect somethings that have their own seperate options (UnitFrame Font, Datatext Font, ect..)"],
-							min = 4, max = 32, step = 1,
-							set = function(info, value) E.db.general[info[#info]] = value E:UpdateMedia() E:UpdateFontTemplates() end
-						},
-						fontStyle = {
-							order = 3,
-							type = "select",
-							name = L["Font Outline"],
-							values = C.Values.FontFlags,
-							set = function(info, value) E.db.general[info[#info]] = value E:UpdateMedia() E:UpdateFontTemplates() end
-						},
-						applyFontToAll = {
-							order = 4,
-							type = "execute",
-							name = L["Apply Font To All"],
-							desc = L["Applies the font and font size settings throughout the entire user interface. Note: Some font size settings will be skipped due to them having a smaller font size by default."],
-							func = function() E:StaticPopup_Show("APPLY_FONT_WARNING") end
-						},
-						dmgfont = {
-							order = 5,
-							type = "select", dialogControl = "LSM30_Font",
-							name = L["CombatText Font"],
-							desc = L["The font that combat text will use. |cffFF0000WARNING: This requires a game restart or re-log for this change to take effect.|r"],
-							values = AceGUIWidgetLSMlists.font,
-							get = function(info) return E.private.general[info[#info]] end,
-							set = function(info, value) E.private.general[info[#info]] = value E:UpdateMedia() E:UpdateFontTemplates() E:StaticPopup_Show("PRIVATE_RL") end
-						},
-						namefont = {
-							order = 6,
-							type = "select", dialogControl = "LSM30_Font",
-							name = L["Name Font"],
-							desc = L["The font that appears on the text above players heads. |cffFF0000WARNING: This requires a game restart or re-log for this change to take effect.|r"],
-							values = AceGUIWidgetLSMlists.font,
-							get = function(info) return E.private.general[info[#info]] end,
-							set = function(info, value) E.private.general[info[#info]] = value E:UpdateMedia() E:UpdateFontTemplates() E:StaticPopup_Show("PRIVATE_RL") end
-						},
-						replaceBlizzFonts = {
-							order = 7,
-							type = "toggle",
-							name = L["Replace Blizzard Fonts"],
-							desc = L["Replaces the default Blizzard fonts on various panels and frames with the fonts chosen in the Media section of the ElvUI Options. NOTE: Any font that inherits from the fonts ElvUI usually replaces will be affected as well if you disable this. Enabled by default."],
-							get = function(info) return E.private.general[info[#info]] end,
-							set = function(info, value) E.private.general[info[#info]] = value E:StaticPopup_Show("PRIVATE_RL") end
-						}
-					}
-				},
-				textureGroup = {
-					order = 3,
-					type = "group",
-					name = L["Textures"],
-					guiInline = true,
-					get = function(info) return E.private.general[info[#info]] end,
-					args = {
-						normTex = {
-							order = 1,
-							type = "select", dialogControl = "LSM30_Statusbar",
-							name = L["Primary Texture"],
-							desc = L["The texture that will be used mainly for statusbars."],
-							values = AceGUIWidgetLSMlists.statusbar,
-							set = function(info, value)
-								local previousValue = E.private.general[info[#info]]
-								E.private.general[info[#info]] = value
+E.Options.args.general = ACH:Group(L["General"], nil, 1, 'tab', function(info) return E.db.general[info[#info]] end, function(info, value) E.db.general[info[#info]] = value end)
+local General = E.Options.args.general.args
 
-								if E.db.unitframe.statusbar == previousValue then
-									E.db.unitframe.statusbar = value
-									E:UpdateAll(true)
-								else
-									E:UpdateMedia()
-									E:UpdateStatusBars()
-								end
-							end
-						},
-						glossTex = {
-							order = 2,
-							type = "select", dialogControl = "LSM30_Statusbar",
-							name = L["Secondary Texture"],
-							desc = L["This texture will get used on objects like chat windows and dropdown menus."],
-							values = AceGUIWidgetLSMlists.statusbar,
-							set = function(info, value)
-								E.private.general[info[#info]] = value
-								E:UpdateMedia()
-								E:UpdateFrameTemplates()
-							end
-						},
-						applyTextureToAll = {
-							order = 3,
-							type = "execute",
-							name = L["Apply Texture To All"],
-							desc = L["Applies the primary texture to all statusbars."],
-							func = function()
-								local texture = E.private.general.normTex
-								E.db.unitframe.statusbar = texture
-								E.db.nameplates.statusbar = texture
-								E:UpdateAll(true)
-							end
-						}
-					}
-				},
-				colorsGroup = {
-					order = 4,
-					type = "group",
-					name = L["COLORS"],
-					guiInline = true,
-					get = function(info)
-						local t = E.db.general[info[#info]]
-						local d = P.general[info[#info]]
-						return t.r, t.g, t.b, t.a, d.r, d.g, d.b, d.a
-					end,
-					set = function(info, r, g, b, a)
-						local setting = info[#info]
-						local t = E.db.general[setting]
-						t.r, t.g, t.b, t.a = r, g, b, a
-						E:UpdateMedia()
-						if setting == "bordercolor" then
-							E:UpdateBorderColors()
-						elseif setting == "backdropcolor" or setting == "backdropfadecolor" then
-							E:UpdateBackdropColors()
-						end
-					end,
-					args = {
-						bordercolor = {
-							order = 1,
-							type = "color",
-							name = L["Border Color"],
-							desc = L["Main border color of the UI."],
-							hasAlpha = false,
-						},
-						backdropcolor = {
-							order = 2,
-							type = "color",
-							name = L["Backdrop Color"],
-							desc = L["Main backdrop color of the UI."],
-							hasAlpha = false,
-						},
-						backdropfadecolor = {
-							order = 3,
-							type = "color",
-							name = L["Backdrop Faded Color"],
-							desc = L["Backdrop color of transparent frames"],
-							hasAlpha = true,
-						},
-						valuecolor = {
-							order = 4,
-							type = "color",
-							name = L["Value Color"],
-							desc = L["Color some texts use."],
-							hasAlpha = false,
-						},
-						cropIcon = {
-							order = 5,
-							type = "toggle",
-							tristate = true,
-							name = L["Crop Icons"],
-							desc = L["This is for Customized Icons in your Interface/Icons folder."],
-							get = function(info)
-								local value = E.db.general[info[#info]]
-								if value == 2 then return true
-								elseif value == 1 then return nil
-								else return false end
-							end,
-							set = function(info, value)
-								E.db.general[info[#info]] = (value and 2) or (value == nil and 1) or 0
-								E:StaticPopup_Show("PRIVATE_RL")
-							end
-						}
-					}
-				}
-			}
-		},
-		totems = {
-			order = 4,
-			type = "group",
-			name = L["Class Totems"],
-			get = function(info) return E.db.general.totems[info[#info]] end,
-			set = function(info, value) E.db.general.totems[info[#info]] = value Totems:PositionAndSize() end,
-			hidden = function() return E.myclass ~= "SHAMAN" end,
-			args = {
-				header = {
-					order = 1,
-					type = "header",
-					name = TUTORIAL_TITLE47
-				},
-				enable = {
-					order = 2,
-					type = "toggle",
-					name = L["Enable"],
-					set = function(info, value) E.db.general.totems[info[#info]] = value Totems:ToggleEnable() end
-				},
-				size = {
-					order = 3,
-					type = "range",
-					name = L["Button Size"],
-					min = 24, max = 60, step = 1,
-					disabled = function() return not E.db.general.totems.enable end
-				},
-				spacing = {
-					order = 4,
-					type = "range",
-					name = L["Button Spacing"],
-					min = 1, max = 10, step = 1,
-					disabled = function() return not E.db.general.totems.enable end
-				},
-				sortDirection = {
-					order = 5,
-					type = "select",
-					name = L["Sort Direction"],
-					values = {
-						["ASCENDING"] = L["Ascending"],
-						["DESCENDING"] = L["Descending"]
-					},
-					disabled = function() return not E.db.general.totems.enable end
-				},
-				growthDirection = {
-					order = 6,
-					type = "select",
-					name = L["Bar Direction"],
-					values = {
-						["VERTICAL"] = L["Vertical"],
-						["HORIZONTAL"] = L["Horizontal"]
-					},
-					disabled = function() return not E.db.general.totems.enable end
-				}
-			}
-		},
-		chatBubblesGroup = {
-			order = 5,
-			type = "group",
-			name = L["Chat Bubbles"],
-			get = function(info) return E.private.general[info[#info]] end,
-			set = function(info, value) E.private.general[info[#info]] = value E:StaticPopup_Show("PRIVATE_RL") end,
-			args = {
-				header = {
-					order = 1,
-					type = "header",
-					name = L["Chat Bubbles"]
-				},
-				chatBubbles = {
-					order = 2,
-					type = "select",
-					name = L["Chat Bubbles Style"],
-					desc = L["Skin the blizzard chat bubbles."],
-					values = {
-						["backdrop"] = L["Skin Backdrop"],
-						["nobackdrop"] = L["Remove Backdrop"],
-						["backdrop_noborder"] = L["Skin Backdrop (No Borders)"],
-						["disabled"] = L["DISABLE"]
-					}
-				},
-				chatBubbleFont = {
-					order = 3,
-					type = "select",
-					name = L["Font"],
-					dialogControl = "LSM30_Font",
-					values = AceGUIWidgetLSMlists.font,
-					disabled = function() return E.private.general.chatBubbles == "disabled" end
-				},
-				chatBubbleFontSize = {
-					order = 4,
-					type = "range",
-					name = L["FONT_SIZE"],
-					min = 4, max = 32, step = 1,
-					disabled = function() return E.private.general.chatBubbles == "disabled" end
-				},
-				chatBubbleFontOutline = {
-					order = 5,
-					type = "select",
-					name = L["Font Outline"],
-					disabled = function() return E.private.general.chatBubbles == "disabled" end,
-					values = C.Values.FontFlags
-				},
-				chatBubbleName = {
-					order = 6,
-					type = "toggle",
-					name = L["Chat Bubble Names"],
-					desc = L["Display the name of the unit on the chat bubble."],
-					disabled = function() return E.private.general.chatBubbles == "disabled" or E.private.general.chatBubbles == "nobackdrop" end
-				}
-			}
-		},
-		objectiveFrameGroup = {
-			order = 6,
-			type = "group",
-			name = L["Objective Frame"],
-			get = function(info) return E.db.general[info[#info]] end,
-			args = {
-				objectiveFrameHeader = {
-					order = 1,
-					type = "header",
-					name = L["Objective Frame"],
-				},
-				watchFrameAutoHide = {
-					order = 2,
-					type = "toggle",
-					name = L["Auto Hide"],
-					desc = L["Automatically hide the objetive frame during boss or arena fights."],
-					set = function(info, value) E.db.general.watchFrameAutoHide = value; Blizzard:SetObjectiveFrameAutoHide() end,
-				},
-				watchFrameHeight = {
-					order = 3,
-					type = "range",
-					name = L["Objective Frame Height"],
-					desc = L["Height of the objective tracker. Increase size to be able to see more objectives."],
-					min = 400, max = E.screenheight, step = 1,
-					set = function(info, value) E.db.general.watchFrameHeight = value; Blizzard:SetWatchFrameHeight() end,
-				},
-			},
-		},
-		threatGroup = {
-			order = 7,
-			type = "group",
-			name = L["Threat"],
-			get = function(info) return E.db.general.threat[info[#info]] end,
-			args = {
-				threatHeader = {
-					order = 1,
-					type = "header",
-					name = L["Threat"]
-				},
-				enable = {
-					order = 2,
-					type = "toggle",
-					name = L["Enable"],
-					set = function(info, value) E.db.general.threat.enable = value Threat:ToggleEnable()end
-				},
-				position = {
-					order = 3,
-					type = "select",
-					name = L["Position"],
-					desc = L["Adjust the position of the threat bar to either the left or right datatext panels."],
-					values = {
-						["LEFTCHAT"] = L["Left Chat"],
-						["RIGHTCHAT"] = L["Right Chat"]
-					},
-					set = function(info, value) E.db.general.threat.position = value Threat:UpdatePosition() end,
-					disabled = function() return not E.db.general.threat.enable end
-				},
-				spacer = {
-					order = 4,
-					type = "description",
-					name = ""
-				},
-				textSize = {
-					order = 5,
-					type = "range",
-					name = L["FONT_SIZE"],
-					min = 6, max = 22, step = 1,
-					set = function(info, value) E.db.general.threat.textSize = value Threat:UpdatePosition() end,
-					disabled = function() return not E.db.general.threat.enable end
-				},
-				textOutline = {
-					order = 6,
-					type = "select",
-					name = L["Font Outline"],
-					values = C.Values.FontFlags,
-					set = function(info, value) E.db.general.threat.textOutline = value Threat:UpdatePosition() end,
-					disabled = function() return not E.db.general.threat.enable end
-				}
-			}
-		},
-		blizzUIImprovements = {
-			order = 8,
-			type = "group",
-			name = L["BlizzUI Improvements"],
-			get = function(info) return E.db.general[info[#info]] end,
-			set = function(info, value) E.db.general[info[#info]] = value end,
-			args = {
-				header = {
-					order = 1,
-					type = "header",
-					name = L["BlizzUI Improvements"]
-				},
-				loot = {
-					order = 2,
-					type = "toggle",
-					name = L["LOOT"],
-					desc = L["Enable/Disable the loot frame."],
-					get = function(info) return E.private.general[info[#info]] end,
-					set = function(info, value)
-						E.private.general[info[#info]] = value
-						E:StaticPopup_Show("PRIVATE_RL")
-					end
-				},
-				lootRoll = {
-					order = 3,
-					type = "toggle",
-					name = L["Loot Roll"],
-					desc = L["Enable/Disable the loot roll frame."],
-					get = function(info) return E.private.general[info[#info]] end,
-					set = function(info, value)
-						E.private.general[info[#info]] = value
-						E:StaticPopup_Show("PRIVATE_RL")
-					end
-				},
-				hideErrorFrame = {
-					order = 4,
-					type = "toggle",
-					name = L["Hide Error Text"],
-					desc = L["Hides the red error text at the top of the screen while in combat."],
-					set = function(info, value)
-						E.db.general[info[#info]] = value
-						Misc:ToggleErrorHandling()
-					end
-				},
-				enhancedPvpMessages = {
-					order = 5,
-					type = "toggle",
-					name = L["Enhanced PVP Messages"],
-					desc = L["Display battleground messages in the middle of the screen."],
-				},
-				raidUtility = {
-					order = 7,
-					type = "toggle",
-					name = L["RAID_CONTROL"],
-					desc = L["Enables the ElvUI Raid Control panel."],
-					get = function(info) return E.private.general[info[#info]] end,
-					set = function(info, value)
-						E.private.general[info[#info]] = value
-						E:StaticPopup_Show("PRIVATE_RL")
-					end
-				},
-				vehicleSeatIndicatorSize = {
-					order = 8,
-					type = "range",
-					name = L["Vehicle Seat Indicator Size"],
-					min = 64, max = 128, step = 4,
-					set = function(info, value)
-						E.db.general[info[#info]] = value
-						Blizzard:UpdateVehicleFrame()
-					end
-				}
-			}
-		},
-		misc = {
-			order = 9,
-			type = "group",
-			name = L["MISCELLANEOUS"],
-			get = function(info) return E.db.general[info[#info]] end,
-			set = function(info, value) E.db.general[info[#info]] = value end,
-			args = {
-				header = {
-					order = 1,
-					type = "header",
-					name = L["MISCELLANEOUS"]
-				},
-				interruptAnnounce = {
-					order = 2,
-					type = "select",
-					name = L["Announce Interrupts"],
-					desc = L["Announce when you interrupt a spell to the specified chat channel."],
-					values = {
-						["NONE"] = L["NONE"],
-						["SAY"] = L["SAY"],
-						["PARTY"] = L["Party Only"],
-						["RAID"] = L["Party / Raid"],
-						["RAID_ONLY"] = L["Raid Only"],
-						["EMOTE"] = L["EMOTE"]
-					},
-					set = function(info, value)
-						E.db.general[info[#info]] = value
-						Misc:ToggleInterruptAnnounce()
-					end
-				},
-				autoRepair = {
-					order = 3,
-					type = "select",
-					name = L["Auto Repair"],
-					desc = L["Automatically repair using the following method when visiting a merchant."],
-					values = {
-						["NONE"] = L["NONE"],
-						["GUILD"] = L["GUILD"],
-						["PLAYER"] = L["PLAYER"]
-					}
-				},
-				autoAcceptInvite = {
-					order = 4,
-					type = "toggle",
-					name = L["Accept Invites"],
-					desc = L["Automatically accept invites from guild/friends."]
-				},
-				autoRoll = {
-					order = 5,
-					type = "toggle",
-					name = L["Auto Greed/DE"],
-					desc = L["Automatically select greed or disenchant (when available) on green quality items. This will only work if you are the max level."],
-					disabled = function() return not E.private.general.lootRoll end
-				}
-			}
-		}
-	}
-}
+General.general = ACH:Group(L["General"], nil, 1)
+local GenGen = General.general.args
+
+GenGen.loginmessage = ACH:Toggle(L["Login Message"], nil, 1)
+GenGen.taintLog = ACH:Toggle(L["Log Taints"], L["Send ADDON_ACTION_BLOCKED errors to the Lua Error frame. These errors are less important in most cases and will not effect your game performance. Also a lot of these errors cannot be fixed. Please only report these errors if you notice a Defect in gameplay."], 2)
+GenGen.decimalLength = ACH:Range(L["Decimal Length"], L["Controls the amount of decimals used in values displayed on elements like NamePlates and UnitFrames."], 3, { min = 0, max = 4, step = 1 }, nil, nil, function(info, value) E.db.general[info[#info]] = value E:BuildPrefixValues() E:StaggeredUpdateAll() end)
+GenGen.smoothingAmount = ACH:Range(L["Smoothing Amount"], L["Controls the speed at which smoothed bars will be updated."], 4, { isPercent = true, min = 0.2, max = 0.8, softMax = 0.75, softMin = 0.25, step = 0.01 }, nil, nil, function(info, value) E.db.general[info[#info]] = value E:SetSmoothingAmount(value) end)
+
+GenGen.locale = ACH:Select(L["LANGUAGE"], nil, 5, { deDE = 'Deutsch', enUS = 'English', esMX = 'Español', frFR = 'Français', ptBR = 'Português', ruRU = 'Русский', trTR ='Turkce', zhCN = '简体中文', zhTW = '正體中文', koKR = '한국어', itIT = 'Italiano' }, nil, nil, function() return E.global.general.locale end, function(_, value) E.global.general.locale = value E.ShowPopup = true end)
+GenGen.messageRedirect = ACH:Select(L["Chat Output"], L["This selects the Chat Frame to use as the output of ElvUI messages."], 6, function() return GetChatWindowInfo() end)
+GenGen.numberPrefixStyle = ACH:Select(L["Unit Prefix Style"], L["The unit prefixes you want to use when values are shortened in ElvUI. This is mostly used on UnitFrames."], 7, { TCHINESE = '萬, 億', CHINESE = '万, 亿', ENGLISH = 'K, M, B', GERMAN = 'Tsd, Mio, Mrd', KOREAN = '천, 만, 억', METRIC = 'k, M, G' }, nil, nil, nil, function(info, value) E.db.general[info[#info]] = value E:BuildPrefixValues() E:StaggeredUpdateAll() end)
+
+GenGen.monitor = ACH:Group(L["Monitor"], nil, 50, nil, function(info) return E.global.general[info[#info]] end, function(info, value) E.global.general[info[#info]] = value E.ShowPopup = true end)
+GenGen.monitor.inline = true
+GenGen.monitor.args.eyefinity = ACH:Toggle(L["Multi-Monitor Support"], L["Attempt to support eyefinity/nvidia surround."])
+GenGen.monitor.args.ultrawide = ACH:Toggle(L["Ultrawide Support"], L["Attempts to center UI elements in a 16:9 format for ultrawide monitors"])
+
+GenGen.camera = ACH:Group(L["Camera"], nil, 55, nil, nil, nil, nil)
+GenGen.camera.args.lockCameraDistanceMax = ACH:Toggle(L["Lock Distance Max"], nil, 11)
+GenGen.camera.args.cameraDistanceMax = ACH:Range(L["Max Distance"], nil, 12, { min = 1, max = 4, step = 0.1 }, nil, nil, nil, function() return not E.db.general.lockCameraDistanceMax end)
+GenGen.camera.inline = true
+
+GenGen.scaling = ACH:Group(L["UI Scale"], nil, 60)
+GenGen.scaling.inline = true
+GenGen.scaling.args.UIScale = ACH:Range(L["UI Scale"], nil, 1, { min = 0.1, max = 1.25, step = 0.000000000000001, softMin = 0.40, softMax = 1.15, bigStep = 0.01 }, nil, function() return E.global.general.UIScale end, function(_, value) E.global.general.UIScale = value if not IsMouseButtonDown() then E:PixelScaleChanged() E.ShowPopup = true end end)
+GenGen.scaling.args.ScaleSmall = ACH:Execute(L["Small"], nil, 2, function() E.global.general.UIScale = .6 E:PixelScaleChanged() E.ShowPopup = true end, nil, nil, 100)
+GenGen.scaling.args.ScaleMedium = ACH:Execute(L["Medium"], nil, 3, function() E.global.general.UIScale = .7 E:PixelScaleChanged() E.ShowPopup = true end, nil, nil, 100)
+GenGen.scaling.args.ScaleLarge = ACH:Execute(L["Large"], nil, 4, function() E.global.general.UIScale = .8 E:PixelScaleChanged() E.ShowPopup = true end, nil, nil, 100)
+GenGen.scaling.args.ScaleAuto = ACH:Execute(L["Auto Scale"], nil, 5, function() E.global.general.UIScale = E:PixelBestSize() E:PixelScaleChanged() E.ShowPopup = true end, nil, nil, 100)
+
+GenGen.automation = ACH:Group(L["Automation"], nil, 65)
+GenGen.automation.inline = true
+
+GenGen.automation.args.interruptAnnounce = ACH:Select(L["Announce Interrupts"], L["Announce when you interrupt a spell to the specified chat channel."], 1, { NONE = L["None"], SAY = L["Say"], YELL = L["Yell"], PARTY = L["Party Only"], RAID = L["Party / Raid"], RAID_ONLY = L["Raid Only"], EMOTE = L["CHAT_MSG_EMOTE"] }, nil, nil, nil, function(info, value) E.db.general[info[#info]] = value if value == 'NONE' then Misc:UnregisterEvent('COMBAT_LOG_EVENT_UNFILTERED') else Misc:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED') end end)
+GenGen.automation.args.autoAcceptInvite = ACH:Toggle(L["Accept Invites"], L["Automatically accept invites from guild/friends."], 2)
+GenGen.automation.args.autoTrackReputation = ACH:Toggle(L["Auto Track Reputation"], nil, 4)
+GenGen.automation.args.autoRepair = ACH:Select(L["Auto Repair"], L["Automatically repair using the following method when visiting a merchant."], 5, { NONE = L["None"], GUILD = L["Guild"], PLAYER = L["Player"] })
+
+if E.myclass == "SHAMAN" then
+GenGen.totems = ACH:Group(L["Totem Tracker"], nil, 70, nil, function(info) return E.db.general.totems[info[#info]] end, function(info, value) E.db.general.totems[info[#info]] = value TotemTracker:PositionAndSize() end)
+GenGen.totems.args.enable = ACH:Toggle(L["Enable"], nil, 1, nil, nil, nil, function() return E.private.general.totemTracker end, function(_, value) E.private.general.totemTracker = value; E.ShowPopup = true end)
+GenGen.totems.args.size = ACH:Range(L["Button Size"], nil, 2, { min = 24, max = 60, step = 1 })
+GenGen.totems.args.spacing = ACH:Range(L["Button Spacing"], nil, 3, { min = 1, max = 10, step = 1 })
+GenGen.totems.args.sortDirection = ACH:Select(L["Sort Direction"], nil, 4, { ASCENDING = L["Ascending"], DESCENDING = L["Descending"] })
+GenGen.totems.args.growthDirection = ACH:Select(L["Bar Direction"], nil, 5, { VERTICAL = L["Vertical"], HORIZONTAL = L["Horizontal"] })
+GenGen.totems.inline = true
+end
+
+General.media = ACH:Group(L["Media"], nil, 5, nil, function(info) return E.db.general[info[#info]] end, function(info, value) E.db.general[info[#info]] = value end)
+local Media = General.media.args
+
+Media.textureGroup = ACH:Group(L["Textures"], nil, 1, nil, function(info) return E.private.general[info[#info]] end)
+Media.textureGroup.inline = true
+Media.textureGroup.args.normTex = ACH:SharedMediaStatusbar(L["Primary Texture"], L["The texture that will be used mainly for statusbars."], 1, nil, nil, function(info, value) E.private.general[info[#info]] = value E:UpdateMedia() E:UpdateStatusBars() end)
+Media.textureGroup.args.glossTex = ACH:SharedMediaStatusbar(L["Secondary Texture"], L["This texture will get used on objects like chat windows and dropdown menus."], 2, nil, nil, function(info, value) E.private.general[info[#info]] = value E:UpdateMedia() E:UpdateFrameTemplates() end)
+Media.textureGroup.args.applyTextureToAll = ACH:Execute(L["Copy Primary Texture"], L["Replaces the StatusBar texture setting on Unitframes and Nameplates with the primary texture."], 3, function() E.db.unitframe.statusbar, E.db.nameplates.statusbar = E.private.general.normTex, E.private.general.normTex UF:Update_StatusBars() NP:ConfigureAll() end)
+
+Media.colorsGroup = ACH:Group(L["Colors"], nil, 2, nil, function(info) local t, d = E.db.general[info[#info]], P.general[info[#info]] return t.r, t.g, t.b, t.a, d.r, d.g, d.b, d.a end, function(info, r, g, b, a) local setting = info[#info] local t = E.db.general[setting] t.r, t.g, t.b, t.a = r, g, b, a E:UpdateMedia() if setting == 'bordercolor' then E:UpdateBorderColors() elseif setting == 'backdropcolor' or setting == 'backdropfadecolor' then E:UpdateBackdropColors() end end)
+Media.colorsGroup.inline = true
+Media.colorsGroup.args.backdropcolor = ACH:Color(L["Backdrop"], L["Main backdrop color of the UI."], 1, nil, 120)
+Media.colorsGroup.args.backdropfadecolor = ACH:Color(L["Backdrop Faded"], L["Backdrop color of transparent frames"], 2, true)
+Media.colorsGroup.args.valuecolor = ACH:Color(L["Value"], L["Color some texts use."], 3, nil, 120)
+Media.colorsGroup.args.bordercolor = ACH:Color(L["Border"], L["Main border color of the UI."], 5, nil, 100)
+Media.colorsGroup.args.ufBorderColors = ACH:Color(L["Unitframes Border"], nil, 6, nil, 180, function() local t, d = E.db.unitframe.colors.borderColor, P.unitframe.colors.borderColor return t.r, t.g, t.b, t.a, d.r, d.g, d.b, d.a end, function(_, r, g, b, a) local t = E.db.unitframe.colors.borderColor t.r, t.g, t.b, t.a = r, g, b, a E:UpdateMedia() E:UpdateBorderColors() end)
+
+Media.fontHeader = ACH:Header(L["Fonts"], 10)
+
+Media.general = ACH:Group('', nil, 11, nil, nil, function(info, value) E.db.general[info[#info]] = value E:UpdateMedia() E:UpdateFontTemplates() end)
+Media.general.args.font = ACH:SharedMediaFont(L["Default Font"], L["The font that the core of the UI will use."], 1)
+Media.general.args.fontSize = ACH:Range(L["Font Size"], L["Set the font size for everything in UI. Note: This doesn't effect somethings that have their own separate options (UnitFrame Font, Datatext Font, ect..)"], 2, C.Values.FontSize)
+Media.general.args.fontStyle = ACH:FontFlags(L["Font Outline"], nil, 3)
+Media.general.args.applyFontToAll = ACH:Execute(L["Apply Font To All"], L["Applies the font and font size settings throughout the entire user interface. Note: Some font size settings will be skipped due to them having a smaller font size by default."], 4, function() E:StaticPopup_Show('APPLY_FONT_WARNING') end)
+Media.general.inline = true
+
+Media.blizzard = ACH:Group('', nil, 12, nil, function(info) return E.private.general[info[#info]] end, function(info, value) E.private.general[info[#info]] = value E.ShowPopup = true end)
+Media.blizzard.args.replaceBlizzFonts = ACH:Toggle(L["Replace Blizzard Fonts"], L["Replaces the default Blizzard fonts on various panels and frames with the fonts chosen in the Media section of the ElvUI Options. NOTE: Any font that inherits from the fonts ElvUI usually replaces will be affected as well if you disable this. Enabled by default."], 1)
+Media.blizzard.args.unifiedBlizzFonts = ACH:Toggle(L["Unified Font Sizes"], L["This setting mimics the older style of Replace Blizzard Fonts, with a more static unified font sizing."], 2, nil, nil, nil, nil, function(info, value) E.private.general[info[#info]] = value E:UpdateBlizzardFonts() end, function() return not E.private.general.replaceBlizzFonts end)
+Media.blizzard.inline = true
+
+Media.names = ACH:Group('', nil, 13, nil, function(info) return E.private.general[info[#info]] end, function(info, value) E.private.general[info[#info]] = value E.ShowPopup = true end)
+Media.names.args.replaceNameFont = ACH:Toggle(L["Replace Name Font"], nil, 1)
+Media.names.args.namefont = ACH:SharedMediaFont(L["Name Font"], L["The font that appears on the text above players heads. |cffFF3333WARNING: This requires a game restart or re-log for this change to take effect.|r"], 2, nil, nil, nil, function() return not E.private.general.replaceNameFont end)
+Media.names.inline = true
+
+Media.combat = ACH:Group('', nil, 14, nil, function(info) return E.private.general[info[#info]] end, function(info, value) E.private.general[info[#info]] = value E.ShowPopup = true end)
+Media.combat.args.replaceCombatFont = ACH:Toggle(L["Replace Combat Font"], nil, 1)
+Media.combat.args.dmgfont = ACH:SharedMediaFont(L["Combat Font"], L["The font that combat text will use. |cffFF3333WARNING: This requires a game restart or re-log for this change to take effect.|r"], 2, nil, nil, nil, function() return E.eyefinity or E.ultrawide or not E.private.general.replaceCombatFont end)
+Media.combat.args.replaceCombatText = ACH:Toggle(L["Replace Text on Me"], nil, 3)
+Media.combat.inline = true
+
+Media.nameplates = ACH:Group('', nil, 15, nil, function(info) return E.private.general[info[#info]] end, function(info, value) E.private.general[info[#info]] = value E.ShowPopup = true end, function() return not E.private.general.replaceNameplateFont end)
+Media.nameplates.args.replaceNameplateFont = ACH:Toggle(L["Replace Nameplate Fonts"], nil, 1, nil, nil, nil, nil, nil, E.noop)
+Media.nameplates.args.spacer1 = ACH:Spacer(10, 'full')
+Media.nameplates.args.nameplateFont = ACH:SharedMediaFont(L["Normal Font"], L["Replaces the font on Blizzard Nameplates."], 11)
+Media.nameplates.args.nameplateFontSize = ACH:Range(L["Normal Size"], nil, 12, C.Values.FontSize)
+Media.nameplates.args.nameplateFontOutline = ACH:FontFlags(L["Normal Outline"], nil, 13)
+Media.nameplates.args.spacer2 = ACH:Spacer(20, 'full')
+Media.nameplates.args.nameplateLargeFont = ACH:SharedMediaFont(L["Larger Font"], L["Replaces the font on Blizzard Nameplates."], 21)
+Media.nameplates.args.nameplateLargeFontSize = ACH:Range(L["Larger Size"], nil, 22, C.Values.FontSize)
+Media.nameplates.args.nameplateLargeFontOutline = ACH:FontFlags(L["Larger Outline"], nil, 23)
+Media.nameplates.inline = true
+
+General.cosmetic = ACH:Group(L["Cosmetic"], nil, 10)
+local Cosmetic = General.cosmetic.args
+
+Cosmetic.bordersGroup = ACH:Group(L["Borders"], nil, 15)
+Cosmetic.bordersGroup.inline = true
+Cosmetic.bordersGroup.args.uiThinBorders = ACH:Toggle(L["Thin Borders"], L["The Thin Border Theme option will change the overall apperance of your UI. Using Thin Border Theme is a slight performance increase over the traditional layout."], 1, nil, nil, nil, function() return E.private.general.pixelPerfect end, function(_, value) E.private.general.pixelPerfect = value E.ShowPopup = true end)
+Cosmetic.bordersGroup.args.ufThinBorders = ACH:Toggle(L["Unitframe Thin Borders"], L["Use thin borders on certain unitframe elements."], 2, nil, nil, nil, function() return E.db.unitframe.thinBorders end, function(_, value) E.db.unitframe.thinBorders = value E.ShowPopup = true end)
+Cosmetic.bordersGroup.args.npThinBorders = ACH:Toggle(L["Nameplate Thin Borders"], L["Use thin borders on certain nameplate elements."], 3, nil, nil, nil, function() return E.db.nameplates.thinBorders end, function(_, value) E.db.nameplates.thinBorders = value E.ShowPopup = true end)
+Cosmetic.bordersGroup.args.cropIcon = ACH:Toggle(L["Crop Icons"], L["This is for Customized Icons in your Interface/Icons folder."], 4, true, nil, nil, function(info) local value = E.db.general[info[#info]] if value == 2 then return true elseif value == 1 then return nil else return false end end, function(info, value) E.db.general[info[#info]] = (value and 2) or (value == nil and 1) or 0 E.ShowPopup = true end)
+
+Cosmetic.cosmeticBottomPanel = ACH:Group(L["Bottom Panel"], nil, 20)
+Cosmetic.cosmeticBottomPanel.inline = true
+Cosmetic.cosmeticBottomPanel.args.bottomPanel = ACH:Toggle(L["Enable"], L["Display a panel across the bottom of the screen. This is for cosmetic only."], 1, nil, nil, nil, nil, function(info, value) E.db.general[info[#info]] = value Layout:UpdateBottomPanel() end)
+Cosmetic.cosmeticBottomPanel.args.bottomPanelTransparent = ACH:Toggle(L["Transparent"], nil, 2, nil, nil, nil, function() return E.db.general.bottomPanelSettings.transparent end, function(_, value) E.db.general.bottomPanelSettings.transparent = value Layout:UpdateBottomPanel() end, function() return not E.db.general.bottomPanel end)
+Cosmetic.cosmeticBottomPanel.args.bottomPanelWidth = ACH:Range(L["Width"], nil, 3, { min = 0, max = ceil(E.screenWidth), step = 1 }, nil, function() return E.db.general.bottomPanelSettings.width end, function(_, value) E.db.general.bottomPanelSettings.width = value Layout:UpdateBottomPanel() end, function() return not E.db.general.bottomPanel end)
+Cosmetic.cosmeticBottomPanel.args.bottomPanelHeight = ACH:Range(L["Height"], nil, 4, { min = 5, max = 128, step = 1 }, nil, function() return E.db.general.bottomPanelSettings.height end, function(_, value) E.db.general.bottomPanelSettings.height = value Layout:UpdateBottomPanel() end, function() return not E.db.general.bottomPanel end)
+
+Cosmetic.cosmeticTopPanel = ACH:Group(L["Top Panel"], nil, 25)
+Cosmetic.cosmeticTopPanel.inline = true
+Cosmetic.cosmeticTopPanel.args.topPanel = ACH:Toggle(L["Enable"], L["Display a panel across the top of the screen. This is for cosmetic only."], 1, nil, nil, nil, nil, function(info, value) E.db.general[info[#info]] = value Layout:UpdateTopPanel() end)
+Cosmetic.cosmeticTopPanel.args.topPanelTransparent = ACH:Toggle(L["Transparent"], nil, 2, nil, nil, nil, function() return E.db.general.topPanelSettings.transparent end, function(_, value) E.db.general.topPanelSettings.transparent = value Layout:UpdateTopPanel() end, function() return not E.db.general.topPanel end)
+Cosmetic.cosmeticTopPanel.args.topPanelWidth = ACH:Range(L["Width"], nil, 3, { min = 0, max = ceil(E.screenWidth), step = 1 }, nil, function() return E.db.general.topPanelSettings.width end, function(_, value) E.db.general.topPanelSettings.width = value Layout:UpdateTopPanel() end, function() return not E.db.general.topPanel end)
+Cosmetic.cosmeticTopPanel.args.topPanelHeight = ACH:Range(L["Height"], nil, 4, { min = 5, max = 128, step = 1 }, nil, function() return E.db.general.topPanelSettings.height end, function(_, value) E.db.general.topPanelSettings.height = value Layout:UpdateTopPanel() end, function() return not E.db.general.topPanel end)
+
+Cosmetic.afkGroup = ACH:Group(L["AFK Mode"], nil, 30)
+Cosmetic.afkGroup.inline = true
+Cosmetic.afkGroup.args.afk = ACH:Toggle(L["Enable"], L["When you go AFK display the AFK screen."], 1, nil, nil, nil, nil, function(info, value) E.db.general[info[#info]] = value AFK:Toggle() end)
+Cosmetic.afkGroup.args.afkChat = ACH:Toggle(L["Chat"], L["Display messages from Guild and Whisper on AFK screen.\nThis chat can be dragged around (position will be saved)."], 2, nil, nil, nil, nil, function(info, value) E.db.general[info[#info]] = value AFK:Toggle() end)
+Cosmetic.afkGroup.args.afkChatReset = ACH:Execute(L["Reset Chat Position"], nil, 3, function() AFK:ResetChatPosition(true) end)
+
+Cosmetic.chatBubblesGroup = ACH:Group(L["Chat Bubbles"], nil, 35, nil, function(info) return E.private.general[info[#info]] end, function(info, value) E.private.general[info[#info]] = value E.ShowPopup = true end)
+Cosmetic.chatBubblesGroup.inline = true
+Cosmetic.chatBubblesGroup.args.replaceBubbleFont = ACH:Toggle(L["Replace Font"], nil, 1)
+Cosmetic.chatBubblesGroup.args.chatBubbleFont = ACH:SharedMediaFont(L["Font"], nil, 2, nil, nil, nil, function() return not E.private.general.replaceBubbleFont end)
+Cosmetic.chatBubblesGroup.args.chatBubbleFontSize = ACH:Range(L["Font Size"], nil, 3, C.Values.FontSize, nil, nil, nil, function() return not E.private.general.replaceBubbleFont end)
+Cosmetic.chatBubblesGroup.args.chatBubbleFontOutline = ACH:FontFlags(L["Font Outline"], nil, 4, nil, nil, nil, function() return not E.private.general.replaceBubbleFont end)
+Cosmetic.chatBubblesGroup.args.spacer1 = ACH:Spacer(10, 'full')
+-- Cosmetic.chatBubblesGroup.args.warning = ACH:Description(L["|cffFF3333This does not work in Instances or Garrisons!|r"], 11, 'medium')
+Cosmetic.chatBubblesGroup.args.chatBubbles = ACH:Select(L["Chat Bubbles Style"], L["Skin the blizzard chat bubbles."], 12, { backdrop = L["Skin Backdrop"], nobackdrop = L["Remove Backdrop"], backdrop_noborder = L["Skin Backdrop (No Borders)"], disabled = L["Disable"] })
+Cosmetic.chatBubblesGroup.args.chatBubbleName = ACH:Toggle(L["Chat Bubble Names"], L["Display the name of the unit on the chat bubble. This will not work if backdrop is disabled or when you are in an instance."], 13)
+
+General.blizzUIImprovements = ACH:Group(L["BlizzUI Improvements"], nil, 20, 'tab')
+local blizz = General.blizzUIImprovements.args
+
+blizz.general = ACH:Group(L["General"], nil, 1)
+blizz.general.args.hideErrorFrame = ACH:Toggle(L["Hide Error Text"], L["Hides the red error text at the top of the screen while in combat."], 1)
+blizz.general.args.enhancedPvpMessages = ACH:Toggle(L["Enhanced PVP Messages"], L["Display battleground messages in the middle of the screen."], 2)
+blizz.general.args.disableTutorialButtons = ACH:Toggle(L["Disable Tutorial Buttons"], L["Disables the tutorial button found on some frames."], 3, nil, nil, nil, function(info) return E.global.general[info[#info]] end, function(info, value) E.global.general[info[#info]] = value E.ShowPopup = true end)
+blizz.general.args.raidUtility = ACH:Toggle(L["RAID_CONTROL"], L["Enables the ElvUI Raid Control panel."], 4, nil, nil, nil, function(info) return E.private.general[info[#info]] end, function(info, value) E.private.general[info[#info]] = value E.ShowPopup = true end)
+blizz.general.args.voiceOverlay = ACH:Toggle(L["Voice Overlay"], L["Replace Blizzard's Voice Overlay."], 5, nil, nil, nil, function(info) return E.private.general[info[#info]] end, function(info, value) E.private.general[info[#info]] = value E.ShowPopup = true end)
+blizz.general.args.resurrectSound = ACH:Toggle(L["Resurrect Sound"], L["Enable to hear sound if you receive a resurrect."], 6)
+blizz.general.args.loot = ACH:Toggle(L["Loot Frame"], L["Enable/Disable the loot frame."], 7, nil, nil, nil, function(info) return E.private.general[info[#info]] end, function(info, value) E.private.general[info[#info]] = value E.ShowPopup = true end)
+blizz.general.args.hideZoneText = ACH:Toggle(L["Hide Zone Text"], L["Enable/Disable the on-screen zone text when you change zones."], 8, nil, nil, nil, function(info) return E.db.general[info[#info]] end, function(info, value) E.db.general[info[#info]] = value; Misc:ZoneTextToggle() end)
+blizz.general.args.spacer1 = ACH:Spacer(14, 'full')
+blizz.general.args.vehicleSeatIndicatorSize = ACH:Range(L["Vehicle Seat Indicator Size"], nil, 16, { min = 64, max = 128, step = 4 }, nil, nil, function(info, value) E.db.general[info[#info]] = value Blizzard:UpdateVehicleFrame() end, nil)
+blizz.general.args.durabilityScale = ACH:Range(L["Durability Scale"], nil, 17, { min = .5, max = 8, step = .5 }, nil, nil, function(info, value) E.db.general[info[#info]] = value Blizzard:UpdateDurabilityScale() end)
+blizz.general.inline = true
+
+blizz.quest = ACH:Group(L["Quests"], nil, 2)
+blizz.quest.args.questRewardMostValueIcon = ACH:Toggle(L["Mark Quest Reward"], L["Marks the most valuable quest reward with a gold coin."], 1)
+blizz.quest.args.questXPPercent = ACH:Toggle(L["XP Quest Percent"], nil, 2, nil, nil, nil, nil, nil, nil)
+blizz.quest.args.objectiveTracker = ACH:Toggle(L["Objective Frame"], L["Enable"], 1, nil, function() E.ShowPopup = true end, nil, nil, nil, nil)
+blizz.quest.inline = true
+
+blizz.lootRollGroup = ACH:Group(L["Loot Roll"], nil, 3, nil, function(info) return E.db.general.lootRoll[info[#info]] end, function(info, value) E.db.general.lootRoll[info[#info]] = value Misc:UpdateLootRollFrames() end)
+blizz.lootRollGroup.args.lootRoll = ACH:Toggle(L["Enable"], L["Enable/Disable the loot roll frame."], 0, nil, nil, nil, function(info) return E.private.general[info[#info]] end, function(info, value) E.private.general[info[#info]] = value; E.ShowPopup = true end)
+blizz.lootRollGroup.args.qualityName = ACH:Toggle(L["Quality Name"], nil, 1)
+blizz.lootRollGroup.args.qualityItemLevel = ACH:Toggle(L["Quality Itemlevel"], nil, 2)
+blizz.lootRollGroup.args.qualityStatusBar = ACH:Toggle(L["Quality StatusBar"], nil, 3)
+blizz.lootRollGroup.args.qualityStatusBarBackdrop = ACH:Toggle(L["Quality Background"], nil, 4)
+blizz.lootRollGroup.args.width = ACH:Range(L["Width"], nil, 5, { min = 50, max = 1000, step = 1 })
+blizz.lootRollGroup.args.height = ACH:Range(L["Height"], nil, 6, { min = 5, max = 100, step = 1 })
+blizz.lootRollGroup.args.buttonSize = ACH:Range(L["Button Size"], nil, 7, { min = 14, max = 34, step = 1 })
+blizz.lootRollGroup.args.statusBarColor = ACH:Color(L["StatusBar Color"], nil, 10, nil, nil, function(info) local c, d = E.db.general.lootRoll[info[#info]], P.general.lootRoll[info[#info]] return c.r, c.g, c.b, 1, d.r, d.g, d.b, 1 end, function(info, r, g, b) local c = E.db.general.lootRoll[info[#info]] c.r, c.g, c.b = r, g, b end, nil, function() return E.db.general.lootRoll.qualityStatusBar end)
+blizz.lootRollGroup.args.spacing = ACH:Range(L["Spacing"], nil, 11, { min = 0, max = 20, step = 1 }, nil, nil, function(info, value) E.db.general.lootRoll[info[#info]] = value Misc:UpdateLootRollFrames() _G.AlertFrame:UpdateAnchors() end)
+blizz.lootRollGroup.args.style = ACH:Select(L["Style"], nil, 12, { halfbar = 'Half Bar', fullbar = 'Full Bar' })
+blizz.lootRollGroup.args.statusBarTexture = ACH:SharedMediaStatusbar(L["Texture"], L["The texture that will be used mainly for statusbars."], 13)
+blizz.lootRollGroup.args.leftButtons = ACH:Toggle(L["Left Buttons"], nil, 14)
+
+blizz.lootRollGroup.args.fontGroup = ACH:Group(L["Font Group"], nil, 50)
+blizz.lootRollGroup.args.fontGroup.args.nameFont = ACH:SharedMediaFont(L["Font"], nil, 1)
+blizz.lootRollGroup.args.fontGroup.args.nameFontSize = ACH:Range(L["Font Size"], nil, 2, C.Values.FontSize)
+blizz.lootRollGroup.args.fontGroup.args.nameFontOutline = ACH:FontFlags(L["Font Outline"], nil, 3)
+blizz.lootRollGroup.args.fontGroup.inline = true
+
+blizz.itemLevelInfo = ACH:Group(L["Item Level"], nil, 4, nil, function(info) return E.db.general.itemLevel[info[#info]] end, function(info, value) E.db.general.itemLevel[info[#info]] = value Misc:ToggleItemLevelInfo() end, nil)
+blizz.itemLevelInfo.args.displayCharacterInfo = ACH:Toggle(L["Display Character Info"], L["Shows item level of each item, enchants, and gems on the character page."], 1)
+blizz.itemLevelInfo.args.displayInspectInfo = ACH:Toggle(L["Display Inspect Info"], L["Shows item level of each item, enchants, and gems when inspecting another player."], 2)
+
+blizz.itemLevelInfo.args.fontGroup = ACH:Group(L["Font Group"], nil, 50, nil, nil, function(info, value) E.db.general.itemLevel[info[#info]] = value Misc:UpdateInspectPageFonts('Character') Misc:UpdateInspectPageFonts('Inspect') end, function() return not E.db.general.itemLevel.displayCharacterInfo and not E.db.general.itemLevel.displayInspectInfo end)
+blizz.itemLevelInfo.args.fontGroup.args.itemLevelFont = ACH:SharedMediaFont(L["Font"], nil, 4)
+blizz.itemLevelInfo.args.fontGroup.args.itemLevelFontSize = ACH:Range(L["Font Size"], nil, 5, C.Values.FontSize)
+blizz.itemLevelInfo.args.fontGroup.args.itemLevelFontOutline = ACH:FontFlags(L["Font Outline"], nil, 6)
+blizz.itemLevelInfo.args.fontGroup.inline = true
+
+blizz.objectiveFrameGroup = ACH:Group(L["Objective Frame"], nil, 5, nil, function(info) return E.db.general[info[#info]] end, nil, function() return (E:IsAddOnEnabled('!KalielsTracker') or E:IsAddOnEnabled('DugisGuideViewerZ')) end)
+blizz.objectiveFrameGroup.args.objectiveFrameAutoHide = ACH:Toggle(L["Auto Hide"], L["Automatically hide the objective frame during boss or arena fights."], 1, nil, nil, nil, nil, function(info, value) E.db.general[info[#info]] = value Blizzard:SetObjectiveFrameAutoHide() end, nil)
+blizz.objectiveFrameGroup.args.objectiveFrameHeight = ACH:Range(L["Objective Frame Height"], L["Height of the objective tracker. Increase size to be able to see more objectives."], 3, { min = 400, max = ceil(E.screenHeight), step = 1 }, nil, nil, function(info, value) E.db.general[info[#info]] = value Blizzard:SetObjectiveFrameHeight() end, nil)
+blizz.objectiveFrameGroup.args.bonusObjectivePosition = ACH:Select(L["Bonus Reward Position"], L["Position of bonus quest reward frame relative to the objective tracker."], 4, { RIGHT = L["Right"], LEFT = L["Left"], AUTO = L["Automatic"] }, nil, nil, nil, nil, nil)

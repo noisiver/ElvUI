@@ -1,309 +1,82 @@
-local E, _, V, P, G = unpack(ElvUI); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
-local _, L = unpack(select(2, ...))
+local E, _, V, P, G = unpack(ElvUI)
+local C, L = unpack(E.Config)
+local B = E:GetModule('Blizzard')
+local ACH = E.Libs.ACH
 
-E.Options.args.skins = {
-	type = "group",
-	name = L["Skins"],
-	childGroups = "tree",
-	args = {
-		intro = {
-			order = 1,
-			type = "description",
-			name = L["SKINS_DESC"]
-		},
-		blizzardEnable = {
-			order = 2,
-			type = "toggle",
-			name = L["Blizzard"],
-			get = function(info) return E.private.skins.blizzard.enable end,
-			set = function(info, value) E.private.skins.blizzard.enable = value E:StaticPopup_Show("PRIVATE_RL") end
-		},
-		ace3 = {
-			order = 3,
-			type = "toggle",
-			name = "Ace3",
-			get = function(info) return E.private.skins.ace3.enable end,
-			set = function(info, value) E.private.skins.ace3.enable = value E:StaticPopup_Show("PRIVATE_RL") end
-		},
-		checkBoxSkin = {
-			order = 4,
-			type = "toggle",
-			name = L["CheckBox Skin"],
-			get = function(info) return E.private.skins.checkBoxSkin end,
-			set = function(info, value) E.private.skins.checkBoxSkin = value E:StaticPopup_Show("PRIVATE_RL") end,
-			disabled = function() return not E.private.skins.ace3.enable and not E.private.skins.blizzard.enable end
-		},
-		dropdownCheckBoxSkin = {
-			order = 5,
-			type = "toggle",
-			name = L["Dropdown CheckBox Skin"],
-			get = function(info) return E.private.skins.dropdownCheckBoxSkin end,
-			set = function(info, value) E.private.skins.dropdownCheckBoxSkin = value E:StaticPopup_Show("PRIVATE_RL") end,
-			disabled = function() return not E.private.skins.ace3.enable and not E.private.skins.blizzard.enable end
-		},
-		blizzard = {
-			order = 100,
-			type = "group",
-			name = "Blizzard",
-			get = function(info) return E.private.skins.blizzard[info[#info]] end,
-			set = function(info, value) E.private.skins.blizzard[info[#info]] = value E:StaticPopup_Show("CONFIG_RL") end,
-			disabled = function() return not E.private.skins.blizzard.enable end,
-			guiInline = true,
-			args = {
-				achievement = {
-					type = "toggle",
-					name = L["ACHIEVEMENTS"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				alertframes = {
-					type = "toggle",
-					name = L["Alert Frames"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				arena = {
-					type = "toggle",
-					name = L["Arena Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				arenaregistrar = {
-					type = "toggle",
-					name = L["Arena Registrar"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				auctionhouse = {
-					type = "toggle",
-					name = L["AUCTIONS"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				bags = {
-					type = "toggle",
-					name = L["Bags"],
-					desc = L["TOGGLESKIN_DESC"],
-					disabled = function() return E.private.bags.enable end
-				},
-				barber = {
-					type = "toggle",
-					name = L["BARBERSHOP"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				bgmap = {
-					type = "toggle",
-					name = L["BG Map"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				bgscore = {
-					type = "toggle",
-					name = L["BG Score"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				binding = {
-					type = "toggle",
-					name = L["KEY_BINDINGS"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				BlizzardOptions = {
-					type = "toggle",
-					name = L["INTERFACE_OPTIONS"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				calendar = {
-					type = "toggle",
-					name = L["Calendar Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				character = {
-					type = "toggle",
-					name = L["Character Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				debug = {
-					type = "toggle",
-					name = L["Debug Tools"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				dressingroom = {
-					type = "toggle",
-					name = L["DRESSUP_FRAME"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				friends = {
-					type = "toggle",
-					name = L["FRIENDS"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				gbank = {
-					type = "toggle",
-					name = L["GUILD_BANK"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				gossip = {
-					type = "toggle",
-					name = L["Gossip Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				gmchat = {
-					type = "toggle",
-					name = L["GM Chat"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				guildregistrar = {
-					type = "toggle",
-					name = L["Guild Registrar"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				help = {
-					type = "toggle",
-					name = L["Help Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				inspect = {
-					type = "toggle",
-					name = L["INSPECT"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				lfd = {
-					type = "toggle",
-					name = L["LFD Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				lfr = {
-					type = "toggle",
-					name = L["LFR Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				loot = {
-					type = "toggle",
-					name = L["Loot Frames"],
-					desc = L["TOGGLESKIN_DESC"],
-					disabled = function() return E.private.general.loot end
-				},
-				lootRoll = {
-					type = "toggle",
-					name = L["Loot Roll"],
-					desc = L["TOGGLESKIN_DESC"],
-					disabled = function() return E.private.general.lootRoll end
-				},
-				macro = {
-					type = "toggle",
-					name = L["MACROS"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				mail = {
-					type = "toggle",
-					name = L["MAIL_LABEL"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				merchant = {
-					type = "toggle",
-					name = L["MERCHANT"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				misc = {
-					type = "toggle",
-					name = L["Misc Frames"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				mirrorTimers = {
-					type = "toggle",
-					name = L["Mirror Timers"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				petition = {
-					type = "toggle",
-					name = L["Petition Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				pvp = {
-					type = "toggle",
-					name = L["PvP Frames"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				quest = {
-					type = "toggle",
-					name = L["Quest Frames"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				raid = {
-					type = "toggle",
-					name = L["Raid Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				socket = {
-					type = "toggle",
-					name = L["Socket Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				spellbook = {
-					type = "toggle",
-					name = L["SPELLBOOK"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				stable = {
-					type = "toggle",
-					name = L["Stable"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				tabard = {
-					type = "toggle",
-					name = L["Tabard Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				talent = {
-					type = "toggle",
-					name = L["TALENTS"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				taxi = {
-					type = "toggle",
-					name = L["FLIGHT_MAP"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				timemanager = {
-					type = "toggle",
-					name = L["TIMEMANAGER_TITLE"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				tooltip = {
-					type = "toggle",
-					name = L["Tooltip"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				trade = {
-					type = "toggle",
-					name = L["TRADE"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				tradeskill = {
-					type = "toggle",
-					name = L["TRADESKILLS"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				trainer = {
-					type = "toggle",
-					name = L["Trainer Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				tutorial = {
-					type = "toggle",
-					name = L["Tutorial Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				watchframe = {
-					type = "toggle",
-					name = L["Watch Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				worldmap = {
-					type = "toggle",
-					name = L["WORLD_MAP"],
-					desc = L["TOGGLESKIN_DESC"]
-				},
-				WorldStateFrame = {
-					type = "toggle",
-					name = L["World State Frame"],
-					desc = L["TOGGLESKIN_DESC"]
-				}
-			}
-		}
-	}
+local pairs = pairs
+
+local Skins = ACH:Group(L["Skins"], nil, 2, 'tab')
+E.Options.args.skins = Skins
+
+Skins.args.intro = ACH:Description(L["SKINS_DESC"], 0)
+Skins.args.general = ACH:MultiSelect(L["General"], nil, 1, nil, nil, nil, function(_, key) if key == 'blizzardEnable' then return E.private.skins.blizzard.enable else return E.private.skins[key] end end, function(_, key, value) if key == 'blizzardEnable' then E.private.skins.blizzard.enable = value else E.private.skins[key] = value end E.ShowPopup = true end)
+Skins.args.general.sortByValue = true
+Skins.args.general.values = { ace3Enable = 'Ace3', blizzardEnable = L["Blizzard"], checkBoxSkin = L["CheckBox Skin"], parchmentRemoverEnable = L["Parchment Remover"] }
+
+local function ToggleSkins(value)
+	for key in pairs(E.private.skins.blizzard) do
+		if key ~= 'enable' then
+			E.private.skins.blizzard[key] = value
+		end
+	end
+end
+
+Skins.args.disableBlizzardSkins = ACH:Execute(L["Disable Blizzard Skins"], nil, 3, function() ToggleSkins(false); E.ShowPopup = true end)
+Skins.args.enableBlizzardSkins = ACH:Execute(L["Enable Blizzard Skins"], nil, 4, function() ToggleSkins(true); E.ShowPopup = true end)
+Skins.args.blizzard = ACH:MultiSelect(L["Blizzard"], L["TOGGLESKIN_DESC"], -1, nil, nil, nil, function(_, key) return E.private.skins.blizzard[key] end, function(_, key, value) E.private.skins.blizzard[key] = value; E.ShowPopup = true end, function() return not E.private.skins.blizzard.enable end)
+Skins.args.blizzard.sortByValue = true
+Skins.args.blizzard.values = {
+	addonManager = L["AddOn Manager"],
+	auctionhouse = L["AUCTIONS"],
+	bags = L["Bags"],
+	bgmap = L["BG Map"],
+	bgscore = L["BG Score"],
+	binding = L["KEY_BINDINGS"],
+	blizzardOptions = L["INTERFACE_OPTIONS"],
+	channels = L["CHANNELS"],
+	character = L["Character Frame"],
+	communities = L["COMMUNITIES"],
+	debug = L["Debug Tools"],
+	dressingroom = L["DRESSUP_FRAME"],
+	eventLog = L["Event Log"],
+	friends = L["Friends"],
+	gbank = L["Guild Bank"],
+	gossip = L["Gossip Frame"],
+	guild = L["Guild"],
+	guildcontrol = L["Guild Control Frame"],
+	guildregistrar = L["Guild Registrar"],
+	help = L["Help Frame"],
+	inspect = L["Inspect"],
+	lfg = L["LFG_TITLE"],
+	loot = L["Loot Frame"],
+	macro = L["MACROS"],
+	mail = L["Mail Frame"],
+	merchant = L["Merchant Frame"],
+	mirrorTimers = L["Mirror Timers"],
+	misc = L["Misc Frames"],
+	petition = L["Petition Frame"],
+	quest = L["Quest Frames"],
+	questChoice = L["Quest Choice"],
+	raid = L["Raid Frame"],
+	socket = L["Socket Frame"],
+	spellbook = L["SPELLBOOK"],
+	stable = L["Stable"],
+	tabard = L["Tabard Frame"],
+	talent = L["TALENTS"],
+	taxi = L["FLIGHT_MAP"],
+	timemanager = L["TIMEMANAGER_TITLE"],
+	tooltip = L["Tooltip"],
+	trade = L["TRADE"],
+	tradeskill = L["TRADESKILLS"],
+	trainer = L["Trainer Frame"],
+	tutorials = L["Tutorials"],
+	worldmap = L["WORLD_MAP"],
+	arena = L["Arena"],
+	arenaRegistrar = L["Arena Registrar"],
+	battlefield = L["Battlefield"],
+	achievement = L["ACHIEVEMENTS"],
+	alertframes = L["Alert Frames"],
+	barber = L["BARBERSHOP"],
+	calendar = L["Calendar Frame"],
+	pvp = L["PvP Frames"]
 }

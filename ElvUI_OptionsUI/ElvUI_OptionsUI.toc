@@ -1,6 +1,6 @@
 ## Interface: 30300
 ## Author: Elv, Bunny
-## Version: 1.06
+## Version: 1.09
 ## Title: |cff1784d1E|r|cffe5e3e3lvUI|r |cff1784d1O|r|cffe5e3e3ptionsUI|r
 ## Notes: Options for ElvUI.
 ## RequiredDeps: ElvUI
@@ -16,12 +16,14 @@ Bags.lua
 Chat.lua
 Cooldown.lua
 DataTexts.lua
+DataBars.lua
 Filters.lua
-Nameplates.lua
 Skins.lua
 Tooltip.lua
 UnitFrames.lua
-DataBars.lua
+Nameplates.lua
+# StyleFilters.lua
 Maps.lua
 ModuleControl.lua
+Search.lua
 Tags.lua

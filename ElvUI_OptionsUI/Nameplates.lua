@@ -1,4 +1,4 @@
-local E, _, V, P, G = unpack(ElvUI); --Import: Engine, Locales, PrivateDB, ProfileDB, GlobalDB
+local E, _, V, P, G = unpack(ElvUI)
 local C, L = unpack(select(2, ...))
 local NP = E:GetModule("NamePlates")
 local ACD = E.Libs.AceConfigDialog
@@ -3403,9 +3403,10 @@ local function GetUnitSettings(unit, name)
 end
 
 E.Options.args.nameplate = {
+	order = 2,
 	type = "group",
 	name = L["NamePlates"],
-	childGroups = "tree",
+	childGroups = "tab",
 	get = function(info) return E.db.nameplates[info[#info]] end,
 	set = function(info, value) E.db.nameplates[info[#info]] = value NP:ConfigureAll() end,
 	args = {
@@ -3420,115 +3421,6 @@ E.Options.args.nameplate = {
 			order = 2,
 			type = "description",
 			name = L["NAMEPLATE_DESC"]
-		},
-		header = {
-			order = 3,
-			type = "header",
-			name = L["Shortcuts"]
-		},
-		spacer1 = {
-			order = 4,
-			type = "description",
-			name = " "
-		},
-		generalShortcut = {
-			order = 5,
-			type = "execute",
-			name = L["General"],
-			func = function() ACD:SelectGroup("ElvUI", "nameplate", "generalGroup", "general") end,
-			disabled = function() return not E.NamePlates.Initialized end
-		},
-		fontsShortcut = {
-			order = 6,
-			type = "execute",
-			name = L["Fonts"],
-			func = function() ACD:SelectGroup("ElvUI", "nameplate", "generalGroup", "fontGroup") end,
-			disabled = function() return not E.NamePlates.Initialized end
-		},
-		cooldownShortcut = {
-			order = 7,
-			type = "execute",
-			name = L["Cooldowns"],
-			func = function() ACD:SelectGroup("ElvUI", "cooldown", "nameplates") end,
-			disabled = function() return not E.NamePlates.Initialized end
-		},
-		threatShortcut = {
-			order = 8,
-			type = "execute",
-			name = L["Threat"],
-			func = function() ACD:SelectGroup("ElvUI", "nameplate", "generalGroup", "threatGroup") end,
-			disabled = function() return not E.NamePlates.Initialized end
-		},
-		spacer2 = {
-			order = 9,
-			type = "description",
-			name = " "
-		},
-		castBarShortcut = {
-			order = 10,
-			type = "execute",
-			name = L["Cast Bar"],
-			func = function() ACD:SelectGroup("ElvUI", "nameplate", "generalGroup", "castGroup") end,
-			disabled = function() return not E.NamePlates.Initialized end
-		},
-		reactionShortcut = {
-			order = 12,
-			type = "execute",
-			name = L["Reaction Colors"],
-			func = function() ACD:SelectGroup("ElvUI", "nameplate", "generalGroup", "reactions") end,
-			disabled = function() return not E.NamePlates.Initialized end
-		},
-		cutawayHealthShortcut = {
-			order = 13,
-			type = "execute",
-			name = L["Cutaway Bars"],
-			func = function() ACD:SelectGroup("ElvUI", "nameplate", "generalGroup", "cutawayHealth") end,
-			disabled = function() return not E.NamePlates.Initialized end
-		},
-		spacer3 = {
-			order = 14,
-			type = "description",
-			name = " "
-		},
-		friendlyPlayerShortcut = {
-			order = 15,
-			type = "execute",
-			name = L["FRIENDLY_PLAYER"],
-			func = function() ACD:SelectGroup("ElvUI", "nameplate", "friendlyPlayerGroup") end,
-			disabled = function() return not E.NamePlates.Initialized end
-		},
-		friendlyNPCShortcut = {
-			order = 16,
-			type = "execute",
-			name = L["FRIENDLY_NPC"],
-			func = function() ACD:SelectGroup("ElvUI", "nameplate", "friendlyNPCGroup") end,
-			disabled = function() return not E.NamePlates.Initialized end
-		},
-		enemyPlayerShortcut = {
-			order = 17,
-			type = "execute",
-			name = L["ENEMY_PLAYER"],
-			func = function() ACD:SelectGroup("ElvUI", "nameplate", "enemyPlayerGroup") end,
-			disabled = function() return not E.NamePlates.Initialized end
-		},
-		enemyNPCShortcut = {
-			order = 18,
-			type = "execute",
-			name = L["ENEMY_NPC"],
-			func = function() ACD:SelectGroup("ElvUI", "nameplate", "enemyNPCGroup") end,
-			disabled = function() return not E.NamePlates.Initialized end
-		},
-		spacer4 = {
-			order = 19,
-			type = "description",
-			name = " "
-		},
-		filtersShortcut = {
-			order = 20,
-			type = "execute",
-			name = L["Style Filter"],
-			func = function() ACD:SelectGroup("ElvUI", "nameplate", "filters") end,
-			disabled = function() return not E.NamePlates.Initialized end
 		},
 		generalGroup = {
 			order = 21,
