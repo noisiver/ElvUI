@@ -43,7 +43,7 @@ end
 
 function E:UIScale()
 	if InCombatLockdown() then
-		E:RegisterEventForObject('PLAYER_REGEN_ENABLED', E.UIScale, E.UIScale)
+		E:RegisterEventForObject("PLAYER_REGEN_ENABLED", E.UIScale, E.UIScale)
 	else -- E.Initialize
 		UIParent:SetScale(E.global.general.UIScale)
 
@@ -68,8 +68,8 @@ function E:UIScale()
 		E.UIParent:SetSize(width, height)
 		E.UIParent.origHeight = E.UIParent:GetHeight()
 
-		if E:IsEventRegisteredForObject('PLAYER_REGEN_ENABLED', E.UIScale) then
-			E:UnregisterEventForObject('PLAYER_REGEN_ENABLED', E.UIScale, E.UIScale)
+		if E:IsEventRegisteredForObject("PLAYER_REGEN_ENABLED", E.UIScale) then
+			E:UnregisterEventForObject("PLAYER_REGEN_ENABLED", E.UIScale, E.UIScale)
 		end
 	end
 end
@@ -83,7 +83,7 @@ function E:PixelScaleChanged(event)
 		local resolution = GetCVar("gxResolution")
 
 		E.physicalHeight, E.physicalWidth = tonumber(match(resolution, "%d+x(%d+)")), tonumber(match(resolution, "(%d+)x+%d"))
-		E.resolution = format('%dx%d', E.physicalWidth, E.physicalHeight)
+		E.resolution = format("%dx%d", E.physicalWidth, E.physicalHeight)
 		E.perfect = 768 / E.physicalHeight
 	end
 

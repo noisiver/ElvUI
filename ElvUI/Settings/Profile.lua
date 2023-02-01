@@ -1,10 +1,10 @@
 local E, L, V, P, G = unpack(select(2, ...))
 
-local CopyTable = CopyTable -- Our function doesn't exist yet.
+local CopyTable = CopyTable -- Our function doesn"t exist yet.
 local next = next
 
 P.gridSize = 64
-P.layoutSetting = 'tank'
+P.layoutSetting = "tank"
 P.hideTutorial = true
 P.dbConverted = nil
 
@@ -15,13 +15,13 @@ P.general = {
 	taintLog = false,
 	stickyFrames = true,
 	loginmessage = true,
-	interruptAnnounce = 'NONE',
-	autoRepair = 'NONE',
+	interruptAnnounce = "NONE",
+	autoRepair = "NONE",
 	autoTrackReputation = false,
 	autoAcceptInvite = false,
 	topPanel = false,
 	customGlow = {
-		style = 'Pixel Glow',
+		style = "Pixel Glow",
 		color = { r = 0.09, g = 0.52, b = 0.82, a = 0.9 },
 		useColor = false,
 		speed = 0.3,
@@ -44,7 +44,7 @@ P.general = {
 	enhancedPvpMessages = true,
 	objectiveFrameHeight = 480,
 	objectiveFrameAutoHide = true,
-	bonusObjectivePosition = 'LEFT',
+	bonusObjectivePosition = "LEFT",
 	vehicleSeatIndicatorSize = 128,
 	resurrectSound = false,
 	questRewardMostValueIcon = true,
@@ -52,16 +52,16 @@ P.general = {
 	itemLevel = {
 		displayCharacterInfo = true,
 		displayInspectInfo = true,
-		itemLevelFont = 'PT Sans Narrow',
+		itemLevelFont = "PT Sans Narrow",
 		itemLevelFontSize = 12,
-		itemLevelFontOutline = 'OUTLINE',
+		itemLevelFontOutline = "OUTLINE",
 	},
 	durabilityScale = 1,
 	lockCameraDistanceMax = true,
 	cameraDistanceMax = 4,
 	afk = true,
 	afkChat = true,
-	numberPrefixStyle = 'ENGLISH',
+	numberPrefixStyle = "ENGLISH",
 	decimalLength = 1,
 	font = "PT Sans Narrow",
 	fontSize = 12,
@@ -76,13 +76,13 @@ P.general = {
 		scale = 1,
 		clusterDisable = true,
 		clusterBackdrop = true,
-		locationText = 'MOUSEOVER',
+		locationText = "MOUSEOVER",
 		locationFontSize = 14,
-		locationFontOutline = 'OUTLINE',
-		locationFont = 'Expressway',
+		locationFontOutline = "OUTLINE",
+		locationFont = "Expressway",
 		timeFontSize = 14,
-		timeFontOutline = 'OUTLINE',
-		timeFont = 'Expressway',
+		timeFontOutline = "OUTLINE",
+		timeFont = "Expressway",
 		resetZoom = {
 			enable = false,
 			time = 3,
@@ -90,48 +90,48 @@ P.general = {
 		icons = {
 			tracking = {
 				scale = 0.65,
-				position = 'BOTTOMLEFT',
+				position = "BOTTOMLEFT",
 				xOffset = 3,
 				yOffset = 3,
 			},
 			calendar = {
 				scale = 1,
-				position = 'TOPRIGHT',
+				position = "TOPRIGHT",
 				xOffset = 0,
 				yOffset = 0,
 				hide = true,
 			},
 			mail = {
 				scale = 1,
-				texture = 'Mail3',
-				position = 'TOPRIGHT',
+				texture = "Mail3",
+				position = "TOPRIGHT",
 				xOffset = 3,
 				yOffset = 4,
 			},
 			lfgEye = {
 				scale = 1,
-				position = 'BOTTOMRIGHT',
+				position = "BOTTOMRIGHT",
 				xOffset = 3,
 				yOffset = -3
 			},
 			queueStatus = {
 				enable = true,
-				position = 'BOTTOMRIGHT',
+				position = "BOTTOMRIGHT",
 				xOffset = -2,
 				yOffset = 2,
-				font = 'Expressway',
+				font = "Expressway",
 				fontSize = 11,
-				fontOutline = 'OUTLINE',
+				fontOutline = "OUTLINE",
 			},
 			battlefield = {
 				scale = 1.1,
-				position = 'BOTTOMRIGHT',
+				position = "BOTTOMRIGHT",
 				xOffset = 4,
 				yOffset = -4,
 			},
 			difficulty = {
 				scale = 1,
-				position = 'TOPLEFT',
+				position = "TOPLEFT",
 				xOffset = 0,
 				yOffset = 0,
 			}
@@ -142,22 +142,22 @@ P.general = {
 		height = 30,
 		spacing = 4,
 		buttonSize = 20,
-		style = 'halfbar',
-		statusBarTexture = 'ElvUI Norm',
+		style = "halfbar",
+		statusBarTexture = "ElvUI Norm",
 		leftButtons = false,
 		qualityName = false,
 		qualityItemLevel = false,
 		qualityStatusBar = true,
 		qualityStatusBarBackdrop = true,
 		statusBarColor = { r = 0, g = .4, b = 1 },
-		nameFont = 'Expressway',
+		nameFont = "Expressway",
 		nameFontSize = 12,
-		nameFontOutline = 'OUTLINE',
+		nameFontOutline = "OUTLINE",
 	},
 	objectiveTracker = true,
 	totems = { -- totem tracker
-		growthDirection = 'VERTICAL',
-		sortDirection = 'DESCENDING',
+		growthDirection = "VERTICAL",
+		sortDirection = "DESCENDING",
 		size = 40,
 		spacing = 4,
 	},
@@ -166,7 +166,7 @@ P.general = {
 --DataBars
 P.databars = {
 	transparent = true,
-	statusbar = 'ElvUI Norm',
+	statusbar = "ElvUI Norm",
 	customTexture = false,
 	colors = {
 		reputationAlpha = 1,
@@ -188,25 +188,25 @@ P.databars = {
 	}
 }
 
-for _, databar in next, {'experience', 'reputation', 'threat', 'petExperience'} do
+for _, databar in next, {"experience", "reputation", "threat", "petExperience"} do
 	P.databars[databar] = {
 		enable = true,
 		width = 222,
 		height = 10,
-		textFormat = 'NONE',
+		textFormat = "NONE",
 		fontSize = 11,
-		font = 'PT Sans Narrow',
-		fontOutline = 'NONE',
+		font = "PT Sans Narrow",
+		fontOutline = "NONE",
 		xOffset = 0,
 		yOffset = 0,
 		displayText = true,
-		anchorPoint = 'CENTER',
+		anchorPoint = "CENTER",
 		mouseover = false,
 		clickThrough = false,
 		hideInCombat = false,
-		orientation = 'AUTOMATIC',
+		orientation = "AUTOMATIC",
 		showBubbles = false,
-		frameStrata = 'LOW',
+		frameStrata = "LOW",
 		frameLevel = 1
 	}
 end
@@ -226,7 +226,7 @@ P.databars.experience.questCurrentZoneOnly = false
 P.databars.reputation.enable = false
 P.databars.reputation.hideBelowMaxLevel = false
 P.databars.reputation.showReward = true
-P.databars.reputation.rewardPosition = 'LEFT'
+P.databars.reputation.rewardPosition = "LEFT"
 
 P.databars.petExperience.hideAtMaxLevel = true
 P.databars.petExperience.width = 230
@@ -240,8 +240,8 @@ P.bags = {
 	bankSize = 34,
 	bagWidth = 406,
 	bankWidth = 406,
-	currencyFormat = 'ICON_TEXT_ABBR',
-	moneyFormat = 'SMART',
+	currencyFormat = "ICON_TEXT_ABBR",
+	moneyFormat = "SMART",
 	moneyCoins = true,
 	questIcon = true,
 	junkIcon = false,
@@ -252,24 +252,24 @@ P.bags = {
 	ignoredItems = {},
 	itemLevel = true,
 	itemLevelThreshold = 1,
-	itemLevelFont = 'Homespun',
+	itemLevelFont = "Homespun",
 	itemLevelFontSize = 10,
-	itemLevelFontOutline = 'MONOCHROMEOUTLINE',
+	itemLevelFontOutline = "MONOCHROMEOUTLINE",
 	itemLevelCustomColorEnable = false,
 	itemLevelCustomColor = { r = 1, g = 1, b = 1 },
-	itemLevelPosition = 'BOTTOMRIGHT',
+	itemLevelPosition = "BOTTOMRIGHT",
 	itemLevelxOffset = 0,
 	itemLevelyOffset = 2,
 	itemInfo = true,
-	itemInfoFont = 'Homespun',
+	itemInfoFont = "Homespun",
 	itemInfoFontSize = 10,
-	itemInfoFontOutline = 'MONOCHROMEOUTLINE',
+	itemInfoFontOutline = "MONOCHROMEOUTLINE",
 	itemInfoColor = { r = 0, g = .75, b = .98 },
-	countFont = 'Homespun',
+	countFont = "Homespun",
 	countFontSize = 10,
-	countFontOutline = 'MONOCHROMEOUTLINE',
+	countFontOutline = "MONOCHROMEOUTLINE",
 	countFontColor = {r = 1, g = 1, b = 1},
-	countPosition = 'BOTTOMRIGHT',
+	countPosition = "BOTTOMRIGHT",
 	countxOffset = 0,
 	countyOffset = 2,
 	reverseLoot = false,
@@ -279,7 +279,7 @@ P.bags = {
 	disableBankSort = false,
 	showAssignedColor = true,
 	useBlizzardCleanup = false,
-	strata = 'HIGH',
+	strata = "HIGH",
 	qualityColors = true,
 	specialtyColors = true,
 	showBindType = false,
@@ -356,8 +356,8 @@ P.bags = {
 	},
 	shownBags = {},
 	bagBar = {
-		growthDirection = 'VERTICAL',
-		sortDirection = 'ASCENDING',
+		growthDirection = "VERTICAL",
+		sortDirection = "ASCENDING",
 		size = 30,
 		spacing = 4,
 		backdropSpacing = 4,
@@ -365,15 +365,15 @@ P.bags = {
 		mouseover = false,
 		showCount = true,
 		justBackpack = false,
-		visibility = 'show',
-		font = 'PT Sans Narrow',
-		fontOutline = 'OUTLINE',
+		visibility = "show",
+		font = "PT Sans Narrow",
+		fontOutline = "OUTLINE",
 		fontSize = 12,
 	}
 }
 
 for i = -3, 12 do
-	local name = 'bag'..i
+	local name = "bag"..i
 	P.bags.shownBags[name] = true
 
 	if i >= 1 then
@@ -1165,24 +1165,24 @@ P.chat = {
 	scrollDownInterval = 15,
 	fade = true,
 	inactivityTimer = 100,
-	font = 'PT Sans Narrow',
-	fontOutline = 'NONE',
+	font = "PT Sans Narrow",
+	fontOutline = "NONE",
 	fontSize = 10,
 	sticky = true,
 	emotionIcons = true,
-	keywordSound = 'None',
+	keywordSound = "None",
 	noAlertInCombat = false,
 	flashClientIcon = true,
 	chatHistory = true,
 	lfgIcons = true,
 	maxLines = 100,
 	channelAlerts = {
-		GUILD = 'None',
-		OFFICER = 'None',
-		INSTANCE = 'None',
-		PARTY = 'None',
-		RAID = 'None',
-		WHISPER = 'Whisper Alert',
+		GUILD = "None",
+		OFFICER = "None",
+		INSTANCE = "None",
+		PARTY = "None",
+		RAID = "None",
+		WHISPER = "Whisper Alert",
 	},
 	showHistory = {
 		WHISPER = true,
@@ -1197,25 +1197,25 @@ P.chat = {
 	},
 	historySize = 100,
 	editboxHistorySize = 20,
-	tabSelector = 'ARROW1',
+	tabSelector = "ARROW1",
 	tabSelectedTextEnabled = true,
 	tabSelectedTextColor = { r = 1, g = 1, b = 1 },
 	tabSelectorColor = { r = .3, g = 1, b = .3 },
-	timeStampFormat = 'NONE',
-	keywords = 'ElvUI',
+	timeStampFormat = "NONE",
+	keywords = "ElvUI",
 	separateSizes = false,
 	panelWidth = 412,
 	panelHeight = 180,
 	panelWidthRight = 412,
 	panelHeightRight = 180,
-	panelBackdropNameLeft = '',
-	panelBackdropNameRight = '',
-	panelBackdrop = 'SHOWBOTH',
+	panelBackdropNameLeft = "",
+	panelBackdropNameRight = "",
+	panelBackdrop = "SHOWBOTH",
 	panelTabBackdrop = false,
 	panelTabTransparency = false,
-	LeftChatDataPanelAnchor = 'BELOW_CHAT',
-	RightChatDataPanelAnchor = 'BELOW_CHAT',
-	editBoxPosition = 'BELOW_CHAT',
+	LeftChatDataPanelAnchor = "BELOW_CHAT",
+	RightChatDataPanelAnchor = "BELOW_CHAT",
+	editBoxPosition = "BELOW_CHAT",
 	fadeUndockedTabs = false,
 	fadeTabsNoBackdrop = true,
 	fadeChatToggles = true,
@@ -1230,9 +1230,9 @@ P.chat = {
 	numScrollMessages = 3,
 	autoClosePetBattleLog = true,
 	socialQueueMessages = false,
-	tabFont = 'PT Sans Narrow',
+	tabFont = "PT Sans Narrow",
 	tabFontSize = 12,
-	tabFontOutline = 'NONE',
+	tabFontOutline = "NONE",
 	useBTagName = false,
 	panelColor = {r = .06, g = .06, b = .06, a = 0.8},
 	pinVoiceButtons = true,
@@ -1254,18 +1254,18 @@ P.datatexts = {
 			backdrop = true,
 			border = true,
 			panelTransparency = false,
-			'ElvUI',
-			'Durability',
-			'Mail',
+			"ElvUI",
+			"Durability",
+			"Mail",
 		},
 		RightChatDataPanel = {
 			enable = true,
 			backdrop = true,
 			border = true,
 			panelTransparency = false,
-			'System',
-			'Time',
-			'Gold',
+			"System",
+			"Time",
+			"Gold",
 		},
 		MinimapPanel = {
 			enable = true,
@@ -1273,8 +1273,8 @@ P.datatexts = {
 			border = true,
 			panelTransparency = false,
 			numPoints = 2,
-			'Guild',
-			'Friends'
+			"Guild",
+			"Friends"
 		},
 	},
 	battleground = true,
@@ -1311,7 +1311,7 @@ P.datatexts = {
 P.tooltip = {
 	showElvUIUsers = false,
 	cursorAnchor = false,
-	cursorAnchorType = 'ANCHOR_CURSOR',
+	cursorAnchorType = "ANCHOR_CURSOR",
 	cursorAnchorX = 0,
 	cursorAnchorY = 0,
 	inspectDataEnable = true,
@@ -1322,34 +1322,34 @@ P.tooltip = {
 	playerTitles = true,
 	guildRanks = true,
 	itemQuality = false,
-	itemCount = 'BAGS_ONLY',
+	itemCount = "BAGS_ONLY",
 	modifierCount = true,
 	showMount = true,
-	modifierID = 'SHOW',
+	modifierID = "SHOW",
 	role = true,
 	gender = false,
-	font = 'PT Sans Narrow',
-	fontOutline = 'NONE',
+	font = "PT Sans Narrow",
+	fontOutline = "NONE",
 	textFontSize = 12, -- is fontSize (has old name)
-	headerFont = 'PT Sans Narrow',
-	headerFontOutline = 'NONE',
+	headerFont = "PT Sans Narrow",
+	headerFontOutline = "NONE",
 	headerFontSize = 13,
 	smallTextFontSize = 12,
 	colorAlpha = 0.8,
 	fadeOut = true,
 	visibility = {
-		bags = 'SHOW',
-		unitFrames = 'SHOW',
-		actionbars = 'SHOW',
-		combatOverride = 'SHOW',
+		bags = "SHOW",
+		unitFrames = "SHOW",
+		actionbars = "SHOW",
+		combatOverride = "SHOW",
 	},
 	healthBar = {
 		text = true,
 		height = 7,
-		font = 'Homespun',
+		font = "Homespun",
 		fontSize = 10,
-		fontOutline = 'OUTLINE',
-		statusPosition = 'BOTTOM',
+		fontOutline = "OUTLINE",
+		statusPosition = "BOTTOM",
 	},
 	useCustomFactionColors = false,
 	factionColors = {
@@ -4297,9 +4297,9 @@ P.actionbar = {
 	chargeCooldown = false,
 	colorSwipeLOC = { r = 0.25, g = 0, b = 0, a = 0.8 },
 	colorSwipeNormal = { r = 0, g = 0, b = 0, a = 0.8 },
-	hotkeyTextPosition = 'TOPRIGHT',
-	macroTextPosition = 'TOPRIGHT',
-	countTextPosition = 'BOTTOMRIGHT',
+	hotkeyTextPosition = "TOPRIGHT",
+	macroTextPosition = "TOPRIGHT",
+	countTextPosition = "BOTTOMRIGHT",
 	countTextXOffset = 0,
 	countTextYOffset = 2,
 	desaturateOnCooldown = false,
@@ -4307,16 +4307,16 @@ P.actionbar = {
 	equippedItemColor = { r = 0.4, g = 1.0, b = 0.4 },
 	flashAnimation = false,
 	flyoutSize = 32, -- match buttonsize default, blizz default is 28
-	font = 'Homespun',
+	font = "Homespun",
 	fontColor = { r = 1, g = 1, b = 1 },
-	fontOutline = 'MONOCHROMEOUTLINE',
+	fontOutline = "MONOCHROMEOUTLINE",
 	fontSize = 10,
 	globalFadeAlpha = 0,
 	handleOverlay = true,
 	hideCooldownBling = false,
 	lockActionBars = true,
 	keyDown = true,
-	movementModifier = 'SHIFT',
+	movementModifier = "SHIFT",
 	noPowerColor = { r = 0.5, g = 0.5, b = 1 },
 	noRangeColor = { r = 0.8, g = 0.1, b = 0.1 },
 	notUsableColor = { r = 0.4, g = 0.4, b = 0.4 },
@@ -4333,7 +4333,7 @@ P.actionbar = {
 		clickThrough = false,
 		buttons = ACTION_SLOTS,
 		buttonsPerRow = 1,
-		point = 'TOPRIGHT',
+		point = "TOPRIGHT",
 		backdrop = true,
 		heightMult = 1,
 		widthMult = 1,
@@ -4344,16 +4344,16 @@ P.actionbar = {
 		backdropSpacing = 2,
 		alpha = 1,
 		inheritGlobalFade = false,
-		visibility = '[pet,novehicleui,nobonusbar:5] show;hide'
+		visibility = "[pet,novehicleui,nobonusbar:5] show;hide"
 	},
 	stanceBar = {
 		enabled = true,
-		style = 'darkenInactive',
+		style = "darkenInactive",
 		mouseover = false,
 		clickThrough = false,
 		buttonsPerRow = STANCE_SLOTS,
 		buttons = STANCE_SLOTS,
-		point = 'TOPLEFT',
+		point = "TOPLEFT",
 		backdrop = false,
 		heightMult = 1,
 		widthMult = 1,
@@ -4364,21 +4364,21 @@ P.actionbar = {
 		backdropSpacing = 2,
 		alpha = 1,
 		inheritGlobalFade = false,
-		visibility = '[vehicleui] hide; show'
+		visibility = "[vehicleui] hide; show"
 	},
 	totemBar = {
 		enable = true,
 		alpha = 1,
 		spacing = 4,
 		buttonSize = 32,
-		flyoutDirection = 'UP',
+		flyoutDirection = "UP",
 		flyoutSize = 28,
 		flyoutSpacing = 2,
-		font = 'PT Sans Narrow',
-		fontOutline = 'OUTLINE',
+		font = "PT Sans Narrow",
+		fontOutline = "OUTLINE",
 		fontSize = 12,
 		mouseover = false,
-		visibility = '[vehicleui] hide;show'
+		visibility = "[vehicleui] hide;show"
 	},
 	microbar = {
 		enabled = false,
@@ -4386,23 +4386,23 @@ P.actionbar = {
 		buttonsPerRow = 11,
 		buttonSize = 20,
 		keepSizeRatio = false,
-		point = 'TOPLEFT',
+		point = "TOPLEFT",
 		buttonHeight = 28,
 		buttonSpacing = 2,
 		alpha = 1,
-		visibility = '[vehicleui] hide;show',
+		visibility = "[vehicleui] hide;show",
 		backdrop = false,
 		backdropSpacing = 2,
 		heightMult = 1,
 		widthMult = 1,
-		frameStrata = 'LOW',
+		frameStrata = "LOW",
 		frameLevel = 1,
 	},
 	vehicleExitButton = {
 		enable = true,
 		size = 32,
 		level = 1,
-		strata = 'MEDIUM',
+		strata = "MEDIUM",
 	}
 }
 
@@ -4414,8 +4414,8 @@ for i = 1, 10 do
 		keepSizeRatio = true,
 		buttons = 12,
 		buttonsPerRow = 12,
-		point = 'BOTTOMLEFT',
-		visibility = '[vehicleui] hide; show',
+		point = "BOTTOMLEFT",
+		visibility = "[vehicleui] hide; show",
 		backdrop = false,
 		heightMult = 1,
 		widthMult = 1,
@@ -4426,68 +4426,68 @@ for i = 1, 10 do
 		alpha = 1,
 		inheritGlobalFade = false,
 		showGrid = true,
-		flyoutDirection = 'AUTOMATIC',
+		flyoutDirection = "AUTOMATIC",
 		paging = {},
 		countColor = { r = 1, g = 1, b = 1 },
-		countFont = 'Homespun',
-		countFontOutline = 'MONOCHROMEOUTLINE',
+		countFont = "Homespun",
+		countFontOutline = "MONOCHROMEOUTLINE",
 		countFontSize = 10,
 		countFontXOffset = 0,
 		countFontYOffset = 2,
 		counttext = true,
-		countTextPosition = 'BOTTOMRIGHT',
+		countTextPosition = "BOTTOMRIGHT",
 		hotkeyColor = { r = 1, g = 1, b = 1 },
-		hotkeyFont = 'Homespun',
-		hotkeyFontOutline = 'MONOCHROMEOUTLINE',
+		hotkeyFont = "Homespun",
+		hotkeyFontOutline = "MONOCHROMEOUTLINE",
 		hotkeyFontSize = 10,
 		hotkeytext = true,
-		hotkeyTextPosition = 'TOPRIGHT',
+		hotkeyTextPosition = "TOPRIGHT",
 		hotkeyTextXOffset = 0,
 		hotkeyTextYOffset = -3,
 		macroColor = { r = 1, g = 1, b = 1 },
 		macrotext = false,
-		macroFont = 'Homespun',
-		macroFontOutline = 'MONOCHROMEOUTLINE',
+		macroFont = "Homespun",
+		macroFontOutline = "MONOCHROMEOUTLINE",
 		macroFontSize = 10,
-		macroTextPosition = 'TOPRIGHT',
+		macroTextPosition = "TOPRIGHT",
 		macroTextXOffset = 0,
 		macroTextYOffset = -3,
 		useCountColor = false,
 		useHotkeyColor = false,
 		useMacroColor = false,
-		frameStrata = 'LOW',
+		frameStrata = "LOW",
 		frameLevel = 1,
 	}
 
-	P.actionbar['bar'..i] = bar
+	P.actionbar["bar"..i] = bar
 end
 
-for _, bar in next, {'barPet', 'stanceBar', 'vehicleExitButton'} do
+for _, bar in next, {"barPet", "stanceBar", "vehicleExitButton"} do
 	local db = P.actionbar[bar]
-	db.frameStrata = 'LOW'
+	db.frameStrata = "LOW"
 	db.frameLevel = 1
 
-	if bar == 'barPet' then
+	if bar == "barPet" then
 		db.countColor = { r = 1, g = 1, b = 1 }
-		db.countFont = 'Homespun'
-		db.countFontOutline = 'MONOCHROMEOUTLINE'
+		db.countFont = "Homespun"
+		db.countFontOutline = "MONOCHROMEOUTLINE"
 		db.countFontSize = 10
 		db.countFontXOffset = 0
 		db.countFontYOffset = 2
 		db.counttext = true
-		db.countTextPosition = 'BOTTOMRIGHT'
+		db.countTextPosition = "BOTTOMRIGHT"
 		db.useCountColor = false
 	end
 end
 
 P.actionbar.bar1.enabled = true
-P.actionbar.bar1.visibility = ''
+P.actionbar.bar1.visibility = ""
 
-P.actionbar.bar1.paging.ROGUE = '[bonusbar:1] 7; [bonusbar:2] 8;'
-P.actionbar.bar1.paging.WARLOCK = '[form:1] 7;'
-P.actionbar.bar1.paging.DRUID = '[bonusbar:1,nostealth] 7; [bonusbar:1,stealth] 8; [bonusbar:2] 10; [bonusbar:3] 9; [bonusbar:4] 10;'
-P.actionbar.bar1.paging.PRIEST = '[bonusbar:1] 7;'
-P.actionbar.bar1.paging.WARRIOR = '[bonusbar:1] 7; [bonusbar:2] 8; [bonusbar:3] 9;'
+P.actionbar.bar1.paging.ROGUE = "[bonusbar:1] 7; [bonusbar:2] 8;"
+P.actionbar.bar1.paging.WARLOCK = "[form:1] 7;"
+P.actionbar.bar1.paging.DRUID = "[bonusbar:1,nostealth] 7; [bonusbar:1,stealth] 8; [bonusbar:2] 10; [bonusbar:3] 9; [bonusbar:4] 10;"
+P.actionbar.bar1.paging.PRIEST = "[bonusbar:1] 7;"
+P.actionbar.bar1.paging.WARRIOR = "[bonusbar:1] 7; [bonusbar:2] 8; [bonusbar:3] 9;"
 
 P.actionbar.bar3.enabled = true
 P.actionbar.bar3.buttons = 6
@@ -4495,7 +4495,7 @@ P.actionbar.bar3.buttonsPerRow = 6
 
 P.actionbar.bar4.enabled = true
 P.actionbar.bar4.buttonsPerRow = 1
-P.actionbar.bar4.point = 'TOPRIGHT'
+P.actionbar.bar4.point = "TOPRIGHT"
 P.actionbar.bar4.backdrop = true
 
 P.actionbar.bar5.enabled = true
@@ -4531,13 +4531,13 @@ do -- cooldown stuff
 	P.nameplates.cooldown.override = true
 	P.unitframe.cooldown.override = true
 
-	-- auras doesn't have a reverse option
+	-- auras doesn"t have a reverse option
 	P.actionbar.cooldown.reverse = false
 	P.nameplates.cooldown.reverse = false
 	P.unitframe.cooldown.reverse = false
 	P.bags.cooldown.reverse = false
 
-	-- auras don't have override font settings
+	-- auras don"t have override font settings
 	P.auras.cooldown.fonts = nil
 
 	-- we gonna need this on by default :3
@@ -4559,12 +4559,12 @@ E.LayoutMoverPositions = {
 		ElvUF_FocusMover = "BOTTOM,ElvUIParent,BOTTOM,341,59",
 		ElvUF_PartyMover = "BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,4,269",
 		ElvUF_PetMover = "BOTTOM,ElvUIParent,BOTTOM,-340,99",
-		ElvUF_PlayerCastbarMover = 'BOTTOM,ElvUIParent,BOTTOM,-1,95',
+		ElvUF_PlayerCastbarMover = "BOTTOM,ElvUIParent,BOTTOM,-1,95",
 		ElvUF_PlayerMover = "BOTTOM,ElvUIParent,BOTTOM,-340,138",
 		ElvUF_Raid40Mover = "TOPLEFT,ElvUIParent,BOTTOMLEFT,4,482",
 		ElvUF_RaidMover = "BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,4,269",
 		ElvUF_RaidpetMover = "TOPLEFT,ElvUIParent,BOTTOMLEFT,4,737",
-		ElvUF_TargetCastbarMover = 'BOTTOM,ElvUIParent,BOTTOM,-1,243',
+		ElvUF_TargetCastbarMover = "BOTTOM,ElvUIParent,BOTTOM,-1,243",
 		ElvUF_TargetMover = "BOTTOM,ElvUIParent,BOTTOM,341,138",
 		ElvUF_TargetTargetMover = "BOTTOM,ElvUIParent,BOTTOM,341,99",
 		ExperienceBarMover = "BOTTOM,ElvUIParent,BOTTOM,0,43",
@@ -4580,13 +4580,13 @@ E.LayoutMoverPositions = {
 		VehicleSeatMover = "TOPLEFT,ElvUIParent,TOPLEFT,4,-4"
 	},
 	dpsCaster = {
-		ElvUF_PlayerCastbarMover = 'BOTTOM,ElvUIParent,BOTTOM,0,243',
-		ElvUF_TargetCastbarMover = 'BOTTOM,ElvUIParent,BOTTOM,0,97',
+		ElvUF_PlayerCastbarMover = "BOTTOM,ElvUIParent,BOTTOM,0,243",
+		ElvUF_TargetCastbarMover = "BOTTOM,ElvUIParent,BOTTOM,0,97",
 	},
 	healer = {
 		ElvUF_PlayerCastbarMover = "BOTTOM,ElvUIParent,BOTTOM,0,243",
 		ElvUF_TargetCastbarMover = "BOTTOM,ElvUIParent,BOTTOM,0,97",
 		ElvUF_RaidMover = "BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,202,373",
-		LootFrameMover = 'TOPLEFT,ElvUIParent,TOPLEFT,250,-104',
+		LootFrameMover = "TOPLEFT,ElvUIParent,TOPLEFT,250,-104",
 	}
 }

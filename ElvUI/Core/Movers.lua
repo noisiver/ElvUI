@@ -35,13 +35,13 @@ local function GetPoint(obj)
 	local point, anchor, secondaryPoint, x, y = obj:GetPoint()
 	if not anchor then anchor = UIParent end
 
-	return format('%s,%s,%s,%d,%d', point, anchor:GetName(), secondaryPoint, x and E:Round(x) or 0, y and E:Round(y) or 0)
+	return format("%s,%s,%s,%d,%d", point, anchor:GetName(), secondaryPoint, x and E:Round(x) or 0, y and E:Round(y) or 0)
 end
 
 local function GetSettingPoints(name)
 	local db = E.db.movers and E.db.movers[name]
 	if db then
-		local delim = (find(db, '\031') and '\031') or ','
+		local delim = (find(db, "\031") and "\031") or ","
 		return split(delim, db)
 	end
 end
@@ -63,7 +63,7 @@ function E:SetMoverPoints(name, parent)
 
 	local point1, relativeTo1, relativePoint1, xOffset1, yOffset1 = unpack(holder.parentPoint)
 	local point2, relativeTo2, relativePoint2, xOffset2, yOffset2 = GetSettingPoints(name)
-	if not _G[relativeTo2] then -- fallback to the parents original point (on create) if the setting doesn't exist
+	if not _G[relativeTo2] then -- fallback to the parents original point (on create) if the setting doesn"t exist
 		point2, relativeTo2, relativePoint2, xOffset2, yOffset2 = point1, relativeTo1, relativePoint1, xOffset1, yOffset1
 	end
 
@@ -84,7 +84,7 @@ coordFrame:SetScript("OnUpdate", UpdateCoords)
 coordFrame:Hide()
 
 local function HandlePostDrag(self, event)
-	if self.postdrag and type(self.postdrag) == 'function' then
+	if self.postdrag and type(self.postdrag) == "function" then
 		self.postdrag(self, E:GetScreenQuadrant(self))
 	end
 
@@ -144,7 +144,7 @@ local function OnEnter(self)
 	E.AssignFrameToNudge(self)
 
 	coordFrame.child = self
-	coordFrame:GetScript('OnUpdate')(coordFrame)
+	coordFrame:GetScript("OnUpdate")(coordFrame)
 
 	self.text:SetTextColor(1, 1, 1)
 end
@@ -163,7 +163,7 @@ local function OnLeave(self)
 end
 
 local function OnMouseUp(_, button)
-	if button == 'LeftButton' and not isDragging then
+	if button == "LeftButton" and not isDragging then
 		if not ElvUIMoverNudgeWindow:IsShown() then
 			ElvUIMoverNudgeWindow:Show()
 		else
@@ -175,7 +175,7 @@ end
 local function OnMouseDown(self, button)
 	if isDragging then
 		OnDragStop(self)
-	elseif button == 'RightButton' then
+	elseif button == "RightButton" then
 		if IsControlKeyDown() and self.textString then
 			E:ResetMovers(self.textString) --Allow resetting of anchor by Ctrl+RightClick
 		elseif IsShiftKeyDown() then
@@ -221,22 +221,22 @@ local function UpdateMover(name, parent, textString, overlay, snapOffset, postdr
 
 	if overlay == nil then overlay = true end
 
-	local f = CreateFrame('Button', name, UIParent)
+	local f = CreateFrame("Button", name, UIParent)
 	f:SetClampedToScreen(true)
-	f:RegisterForDrag('LeftButton', 'RightButton')
+	f:RegisterForDrag("LeftButton", "RightButton")
 	f:SetFrameLevel(parent:GetFrameLevel() + 1)
-	f:SetFrameStrata(overlay and 'DIALOG' or 'BACKGROUND')
+	f:SetFrameStrata(overlay and "DIALOG" or "BACKGROUND")
 	f:EnableMouseWheel(true)
 	f:SetMovable(true)
-	f:SetTemplate('Transparent', nil, nil, true)
+	f:SetTemplate("Transparent", nil, nil, true)
 	f:SetSize(parent:GetSize())
 	f:Hide()
 
-	local fs = f:CreateFontString(nil, 'OVERLAY')
+	local fs = f:CreateFontString(nil, "OVERLAY")
 	fs:FontTemplate()
-	fs:SetPoint('CENTER')
+	fs:SetPoint("CENTER")
 	fs:SetText(textString or name)
-	fs:SetJustifyH('CENTER')
+	fs:SetJustifyH("CENTER")
 	fs:SetTextColor(unpack(E.media.rgbvaluecolor))
 	f:SetFontString(fs)
 
@@ -256,23 +256,23 @@ local function UpdateMover(name, parent, textString, overlay, snapOffset, postdr
 	E.snapBars[#E.snapBars+1] = f
 
 	if not ignoreSizeChanged then
-		hooksecurefunc(parent, 'SetSize', SizeChanged)
-		hooksecurefunc(parent, 'SetWidth', WidthChanged)
-		hooksecurefunc(parent, 'SetHeight', HeightChanged)
+		hooksecurefunc(parent, "SetSize", SizeChanged)
+		hooksecurefunc(parent, "SetWidth", WidthChanged)
+		hooksecurefunc(parent, "SetHeight", HeightChanged)
 	end
 
 	E:SetMoverPoints(name, parent)
 
-	f:SetScript('OnDragStart', OnDragStart)
-	f:SetScript('OnDragStop', OnDragStop)
-	f:SetScript('OnEnter', OnEnter)
-	f:SetScript('OnLeave', OnLeave)
-	f:SetScript('OnMouseDown', OnMouseDown)
-	f:SetScript('OnMouseUp', OnMouseUp)
-	f:SetScript('OnMouseWheel', OnMouseWheel)
-	f:SetScript('OnShow', OnShow)
-	f:SetScript('OnEvent', HandlePostDrag)
-	f:RegisterEvent('PLAYER_ENTERING_WORLD')
+	f:SetScript("OnDragStart", OnDragStart)
+	f:SetScript("OnDragStop", OnDragStop)
+	f:SetScript("OnEnter", OnEnter)
+	f:SetScript("OnLeave", OnLeave)
+	f:SetScript("OnMouseDown", OnMouseDown)
+	f:SetScript("OnMouseUp", OnMouseUp)
+	f:SetScript("OnMouseWheel", OnMouseWheel)
+	f:SetScript("OnShow", OnShow)
+	f:SetScript("OnEvent", HandlePostDrag)
+	f:RegisterEvent("PLAYER_ENTERING_WORLD")
 end
 
 function E:CalculateMoverPoints(mover, nudgeX, nudgeY)
@@ -280,19 +280,19 @@ function E:CalculateMoverPoints(mover, nudgeX, nudgeY)
 	local width = UIParent:GetRight()
 	local x, y = mover:GetCenter()
 
-	local point, nudgePoint, nudgeInversePoint = 'BOTTOM', 'BOTTOM', 'TOP'
+	local point, nudgePoint, nudgeInversePoint = "BOTTOM", "BOTTOM", "TOP"
 	if y >= centerY then -- TOP: 1080p = 540
-		point, nudgePoint, nudgeInversePoint = 'TOP', 'TOP', 'BOTTOM'
+		point, nudgePoint, nudgeInversePoint = "TOP", "TOP", "BOTTOM"
 		y = -(UIParent:GetTop() - mover:GetTop())
 	else
 		y = mover:GetBottom()
 	end
 
 	if x >= (width * 2 / 3) then -- RIGHT: 1080p = 1280
-		point, nudgePoint, nudgeInversePoint = point..'RIGHT', 'RIGHT', 'LEFT'
+		point, nudgePoint, nudgeInversePoint = point.."RIGHT", "RIGHT", "LEFT"
 		x = mover:GetRight() - width
 	elseif x <= (width / 3) then -- LEFT: 1080p = 640
-		point, nudgePoint, nudgeInversePoint = point..'LEFT', 'LEFT', 'RIGHT'
+		point, nudgePoint, nudgeInversePoint = point.."LEFT", "LEFT", "RIGHT"
 		x = mover:GetLeft()
 	else
 		x = x - centerX
@@ -350,7 +350,7 @@ function E:CreateMover(parent, name, textString, overlay, snapoffset, postdrag, 
 		holder.types = {}
 
 		if types then
-			for _, x in ipairs({split(',', types)}) do
+			for _, x in ipairs({split(",", types)}) do
 				holder.types[x] = true
 			end
 		else
@@ -390,7 +390,7 @@ function E:DisableMover(name)
 
 	local holder = self.CreatedMovers[name]
 	if not holder then
-		error(format('mover %s doesnt exist', name or 'nil'))
+		error(format("mover %s doesnt exist", name or "nil"))
 	end
 
 	self.DisabledMovers[name] = {}
@@ -410,7 +410,7 @@ function E:EnableMover(name)
 
 	local holder = self.DisabledMovers[name]
 	if not holder then
-		error(format('mover %s doesnt exist', name or 'nil'))
+		error(format("mover %s doesnt exist", name or "nil"))
 	end
 
 	self.CreatedMovers[name] = {}
@@ -426,12 +426,12 @@ function E:EnableMover(name)
 end
 
 function E:ResetMovers(arg)
-	local all = not arg or arg == ''
+	local all = not arg or arg == ""
 	if all then self.db.movers = nil end
 
 	for name, holder in pairs(E.CreatedMovers) do
 		if all or (holder.mover and holder.mover.textString == arg) then
-			local point, anchor, secondaryPoint, x, y = split(',', holder.point)
+			local point, anchor, secondaryPoint, x, y = split(",", holder.point)
 
 			local frame = holder.mover
 			if point then

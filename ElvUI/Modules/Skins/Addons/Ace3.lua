@@ -1,5 +1,5 @@
 local E, _, V, P, G = unpack(select(2, ...))
-local S = E:GetModule('Skins')
+local S = E:GetModule("Skins")
 
 local next = next
 local gsub = gsub
@@ -27,7 +27,7 @@ end
 
 function S:Ace3_SkinDropdown()
 	if self and self.obj then
-		local pullout = self.obj.dropdown -- Don't ask questions.. Just FUCKING ACCEPT IT
+		local pullout = self.obj.dropdown -- Don"t ask questions.. Just FUCKING ACCEPT IT
 		if pullout then
 			if pullout.frame then
 				pullout.frame:SetTemplate(nil, true)
@@ -62,7 +62,7 @@ function S:Ace3_EditBoxSetPoint(a, b, c, d, e)
 end
 
 function S:Ace3_CheckBoxSetType(type)
-	if type == 'radio' then
+	if type == "radio" then
 		self.checkbg:SetSize(20, 20)
 	end
 end
@@ -94,30 +94,30 @@ end
 
 function S:Ace3_SkinTab(tab)
 	tab:StripTextures()
-	tab.text:Point('LEFT', 14, -1)
+	tab.text:Point("LEFT", 14, -1)
 
 	tab:CreateBackdrop(nil, true, true)
-	tab.backdrop:Point('TOPLEFT', 10, -3)
-	tab.backdrop:Point('BOTTOMRIGHT', -10, 0)
+	tab.backdrop:Point("TOPLEFT", 10, -3)
+	tab.backdrop:Point("BOTTOMRIGHT", -10, 0)
 
-	hooksecurefunc(tab, 'SetSelected', S.Ace3_TabSetSelected)
+	hooksecurefunc(tab, "SetSelected", S.Ace3_TabSetSelected)
 end
 
 local nextPrevColor = {r = 1, g = .8, b = 0}
 function S:Ace3_RegisterAsWidget(widget)
 	local TYPE = widget.type
-	if TYPE == 'MultiLineEditBox' or TYPE == 'MultiLineEditBox-ElvUI' then
+	if TYPE == "MultiLineEditBox" or TYPE == "MultiLineEditBox-ElvUI" then
 		local frame = widget.frame
 		S:HandleButton(widget.button)
 		S:HandleScrollBar(widget.scrollBar)
 
 		widget.scrollBG:SetTemplate()
-		widget.scrollBG:Point('TOPRIGHT', widget.scrollBar, 'TOPLEFT', -2, 19)
-		widget.scrollBG:Point('BOTTOMLEFT', widget.button, 'TOPLEFT')
+		widget.scrollBG:Point("TOPRIGHT", widget.scrollBar, "TOPLEFT", -2, 19)
+		widget.scrollBG:Point("BOTTOMLEFT", widget.button, "TOPLEFT")
 
-		widget.scrollBar:Point('RIGHT', frame, 'RIGHT', 0 -4)
-		widget.scrollFrame:Point('BOTTOMRIGHT', widget.scrollBG, 'BOTTOMRIGHT', -4, 8)
-	elseif TYPE == 'CheckBox' then
+		widget.scrollBar:Point("RIGHT", frame, "RIGHT", 0 -4)
+		widget.scrollFrame:Point("BOTTOMRIGHT", widget.scrollBG, "BOTTOMRIGHT", -4, 8)
+	elseif TYPE == "CheckBox" then
 		local check = widget.check
 		local checkbg = widget.checkbg
 		local highlight = widget.highlight
@@ -193,64 +193,64 @@ function S:Ace3_RegisterAsWidget(widget)
 		else
 			check:SetOutside(widget.checkbg.backdrop, 3, 3)
 		end
-	elseif TYPE == 'Dropdown' or TYPE == 'LQDropdown' then
+	elseif TYPE == "Dropdown" or TYPE == "LQDropdown" then
 		local frame = widget.dropdown
 		local button = widget.button
 		local text = widget.text
 
 		frame:StripTextures()
 		frame:CreateBackdrop()
-		frame.backdrop:Point('TOPLEFT', 15, -2)
-		frame.backdrop:Point('BOTTOMRIGHT', -21, 0)
+		frame.backdrop:Point("TOPLEFT", 15, -2)
+		frame.backdrop:Point("BOTTOMRIGHT", -21, 0)
 
 		S:HandleNextPrevButton(button, nil, nextPrevColor)
 
 		widget.label:ClearAllPoints()
-		widget.label:Point('BOTTOMLEFT', frame.backdrop, 'TOPLEFT', 2, 0)
+		widget.label:Point("BOTTOMLEFT", frame.backdrop, "TOPLEFT", 2, 0)
 
 		button:ClearAllPoints()
-		button:Point('TOPLEFT', frame.backdrop, 'TOPRIGHT', -22, -2)
-		button:Point('BOTTOMRIGHT', frame.backdrop, 'BOTTOMRIGHT', -2, 2)
+		button:Point("TOPLEFT", frame.backdrop, "TOPRIGHT", -22, -2)
+		button:Point("BOTTOMRIGHT", frame.backdrop, "BOTTOMRIGHT", -2, 2)
 
 		text:ClearAllPoints()
-		text:SetJustifyH('RIGHT')
-		text:Point('RIGHT', button, 'LEFT', -3, 0)
-		text:Point('LEFT', frame.backdrop, 'LEFT', 2, 0)
+		text:SetJustifyH("RIGHT")
+		text:Point("RIGHT", button, "LEFT", -3, 0)
+		text:Point("LEFT", frame.backdrop, "LEFT", 2, 0)
 
 		button:SetParent(frame.backdrop)
 		text:SetParent(frame.backdrop)
-	elseif TYPE == 'LSM30_Font' or TYPE == 'LSM30_Sound' or TYPE == 'LSM30_Border' or TYPE == 'LSM30_Background' or TYPE == 'LSM30_Statusbar' then
+	elseif TYPE == "LSM30_Font" or TYPE == "LSM30_Sound" or TYPE == "LSM30_Border" or TYPE == "LSM30_Background" or TYPE == "LSM30_Statusbar" then
 		local frame = widget.frame
 		local button = frame.dropButton
 		local text = frame.text
 
 		frame:StripTextures()
 		frame:CreateBackdrop(nil, nil, nil, nil, nil, nil, nil, nil, true)
-		frame.backdrop:Point('TOPLEFT', 0, -21)
-		frame.backdrop:Point('BOTTOMRIGHT', -4, -1)
+		frame.backdrop:Point("TOPLEFT", 0, -21)
+		frame.backdrop:Point("BOTTOMRIGHT", -4, -1)
 
 		frame.label:ClearAllPoints()
-		frame.label:Point('BOTTOMLEFT', frame.backdrop, 'TOPLEFT', 2, 0)
+		frame.label:Point("BOTTOMLEFT", frame.backdrop, "TOPLEFT", 2, 0)
 
 		frame.text:ClearAllPoints()
-		frame.text:Point('RIGHT', button, 'LEFT', -2, 0)
-		frame.text:Point('LEFT', frame.backdrop, 'LEFT', 2, 0)
+		frame.text:Point("RIGHT", button, "LEFT", -2, 0)
+		frame.text:Point("LEFT", frame.backdrop, "LEFT", 2, 0)
 
 		button:ClearAllPoints()
-		button:Point('TOPLEFT', frame.backdrop, 'TOPRIGHT', -22, -2)
-		button:Point('BOTTOMRIGHT', frame.backdrop, 'BOTTOMRIGHT', -2, 2)
+		button:Point("TOPLEFT", frame.backdrop, "TOPRIGHT", -22, -2)
+		button:Point("BOTTOMRIGHT", frame.backdrop, "BOTTOMRIGHT", -2, 2)
 
-		if TYPE == 'LSM30_Sound' then
+		if TYPE == "LSM30_Sound" then
 			widget.soundbutton:SetParent(frame.backdrop)
 			widget.soundbutton:ClearAllPoints()
-			widget.soundbutton:Point('LEFT', frame.backdrop, 'LEFT', 2, 0)
+			widget.soundbutton:Point("LEFT", frame.backdrop, "LEFT", 2, 0)
 
 			S:HandleNextPrevButton(button, nil, nextPrevColor)
-		elseif TYPE == 'LSM30_Statusbar' then
+		elseif TYPE == "LSM30_Statusbar" then
 			widget.bar:SetParent(frame.backdrop)
 			widget.bar:ClearAllPoints()
-			widget.bar:Point('TOPLEFT', frame.backdrop, 'TOPLEFT', 1, -1)
-			widget.bar:Point('BOTTOMRIGHT', frame.backdrop, 'BOTTOMRIGHT', -1, 1)
+			widget.bar:Point("TOPLEFT", frame.backdrop, "TOPLEFT", 1, -1)
+			widget.bar:Point("BOTTOMRIGHT", frame.backdrop, "BOTTOMRIGHT", -1, 1)
 
 			S:HandleNextPrevButton(button, nil, nextPrevColor, true)
 		else
@@ -259,24 +259,24 @@ function S:Ace3_RegisterAsWidget(widget)
 
 		button:SetParent(frame.backdrop)
 		text:SetParent(frame.backdrop)
-		button:HookScript('OnClick', S.Ace3_SkinDropdown)
-	elseif TYPE == 'EditBox' then
+		button:HookScript("OnClick", S.Ace3_SkinDropdown)
+	elseif TYPE == "EditBox" then
 		local frame = widget.editbox
 		local button = widget.button
 		S:HandleEditBox(frame)
 		S:HandleButton(button)
 
-		button:Point('RIGHT', frame.backdrop, 'RIGHT', -2, 0)
+		button:Point("RIGHT", frame.backdrop, "RIGHT", -2, 0)
 
-		hooksecurefunc(frame, 'SetTextInsets', S.Ace3_EditBoxSetTextInsets)
-		hooksecurefunc(frame, 'SetPoint', S.Ace3_EditBoxSetPoint)
+		hooksecurefunc(frame, "SetTextInsets", S.Ace3_EditBoxSetTextInsets)
+		hooksecurefunc(frame, "SetPoint", S.Ace3_EditBoxSetPoint)
 
-		frame.backdrop:Point('TOPLEFT', 0, -2)
-		frame.backdrop:Point('BOTTOMRIGHT', -1, 1)
-	elseif TYPE == 'Button' or TYPE == 'Button-ElvUI' then
+		frame.backdrop:Point("TOPLEFT", 0, -2)
+		frame.backdrop:Point("BOTTOMRIGHT", -1, 1)
+	elseif TYPE == "Button" or TYPE == "Button-ElvUI" then
 		local frame = widget.frame
 		S:HandleButton(frame, true)
-	elseif TYPE == 'Slider' or TYPE == 'Slider-ElvUI' then
+	elseif TYPE == "Slider" or TYPE == "Slider-ElvUI" then
 		local frame = widget.slider
 		local editbox = widget.editbox
 		local lowtext = widget.lowtext
@@ -286,10 +286,10 @@ function S:Ace3_RegisterAsWidget(widget)
 
 		editbox:SetTemplate()
 		editbox:Height(15)
-		editbox:Point('TOP', frame, 'BOTTOM', 0, -1)
+		editbox:Point("TOP", frame, "BOTTOM", 0, -1)
 
-		lowtext:Point('TOPLEFT', frame, 'BOTTOMLEFT', 2, -2)
-		hightext:Point('TOPRIGHT', frame, 'BOTTOMRIGHT', -2, -2)
+		lowtext:Point("TOPLEFT", frame, "BOTTOMLEFT", 2, -2)
+		hightext:Point("TOPRIGHT", frame, "BOTTOMRIGHT", -2, -2)
 
 		hooksecurefunc(widget, "SetDisabled", function(w, disabled)
 			local thumbTex = w.slider:GetThumbTexture()
@@ -299,24 +299,24 @@ function S:Ace3_RegisterAsWidget(widget)
 				thumbTex:SetVertexColor(1, 0.82, 0, 0.8)
 			end
 		end)
-	elseif TYPE == 'Keybinding' then
+	elseif TYPE == "Keybinding" then
 		local button = widget.button
 		local msgframe = widget.msgframe
 
 		S:HandleButton(button, true)
 
 		msgframe:StripTextures()
-		msgframe:SetTemplate('Transparent')
+		msgframe:SetTemplate("Transparent")
 		msgframe.msg:ClearAllPoints()
-		msgframe.msg:Point('CENTER')
-	elseif TYPE == 'ColorPicker' or TYPE == 'ColorPicker-ElvUI' then
+		msgframe.msg:Point("CENTER")
+	elseif TYPE == "ColorPicker" or TYPE == "ColorPicker-ElvUI" then
 		local frame = widget.frame
 		local colorSwatch = widget.colorSwatch
 
 		frame:CreateBackdrop()
 		frame.backdrop:Size(24, 16)
 		frame.backdrop:ClearAllPoints()
-		frame.backdrop:Point('LEFT', frame, 'LEFT', 4, 0)
+		frame.backdrop:Point("LEFT", frame, "LEFT", 4, 0)
 
 		colorSwatch:SetTexture(E.Media.Textures.White8x8)
 		colorSwatch:ClearAllPoints()
@@ -332,9 +332,9 @@ function S:Ace3_RegisterAsWidget(widget)
 			colorSwatch.checkers:SetParent(frame.backdrop)
 			colorSwatch.checkers:SetInside(frame.backdrop)
 		end
-	elseif TYPE == 'Icon' then
+	elseif TYPE == "Icon" then
 		widget.frame:StripTextures()
-	elseif TYPE == 'Dropdown-Pullout' then
+	elseif TYPE == "Dropdown-Pullout" then
 		local pullout = widget
 		pullout.frame:SetTemplate(nil, true)
 
@@ -359,14 +359,14 @@ function S:Ace3_RefreshTree(scrollToSelection)
 	if not self.tree then return end
 
 	self.border:ClearAllPoints()
-	if self.userdata and self.userdata.option and self.userdata.option.childGroups == 'ElvUI_HiddenTree' then
-		self.border:Point('TOPLEFT', self.treeframe, 'TOPRIGHT', 1, 13)
-		self.border:Point('BOTTOMRIGHT', self.frame, 'BOTTOMRIGHT', 6, 0)
+	if self.userdata and self.userdata.option and self.userdata.option.childGroups == "ElvUI_HiddenTree" then
+		self.border:Point("TOPLEFT", self.treeframe, "TOPRIGHT", 1, 13)
+		self.border:Point("BOTTOMRIGHT", self.frame, "BOTTOMRIGHT", 6, 0)
 		self.treeframe:Hide()
 		return
 	else
-		self.border:Point('TOPLEFT', self.treeframe, 'TOPRIGHT')
-		self.border:Point('BOTTOMRIGHT', self.frame)
+		self.border:Point("TOPLEFT", self.treeframe, "TOPRIGHT")
+		self.border:Point("BOTTOMRIGHT", self.frame)
 		self.treeframe:Show()
 	end
 
@@ -400,36 +400,36 @@ end
 
 function S:Ace3_RegisterAsContainer(widget)
 	local TYPE = widget.type
-	if TYPE == 'ScrollFrame' then
+	if TYPE == "ScrollFrame" then
 		S:HandleScrollBar(widget.scrollbar)
-	elseif TYPE == 'InlineGroup' or TYPE == 'TreeGroup' or TYPE == 'TabGroup' or TYPE == 'Frame' or TYPE == 'DropdownGroup' or TYPE == 'Window' then
+	elseif TYPE == "InlineGroup" or TYPE == "TreeGroup" or TYPE == "TabGroup" or TYPE == "Frame" or TYPE == "DropdownGroup" or TYPE == "Window" then
 		local frame = widget.content:GetParent()
-		if TYPE == 'Frame' then
+		if TYPE == "Frame" then
 			frame:StripTextures()
 			for _, child in next, { frame:GetChildren() } do
-				if child:IsObjectType('Button') and child:GetText() then
+				if child:IsObjectType("Button") and child:GetText() then
 					S:HandleButton(child)
 				else
 					child:StripTextures()
 				end
 			end
-		elseif TYPE == 'Window' then
+		elseif TYPE == "Window" then
 			frame:StripTextures()
 			S:HandleCloseButton(frame.obj.closebutton)
 		end
 
-		frame:SetTemplate('Transparent')
+		frame:SetTemplate("Transparent")
 
-		if TYPE == 'InlineGroup' then -- 'Window' is another type
+		if TYPE == "InlineGroup" then -- "Window" is another type
 			frame.callbackBackdropColor = S.Ace3_BackdropColor
 			S.Ace3_BackdropColor(frame)
 		end
 
 		if widget.treeframe then
-			widget.treeframe:SetTemplate('Transparent')
+			widget.treeframe:SetTemplate("Transparent")
 		end
 
-		if TYPE == 'TabGroup' then
+		if TYPE == "TabGroup" then
 			if not widget.old_CreateTab then
 				widget.old_CreateTab = widget.CreateTab
 				widget.CreateTab = S.Ace3_CreateTab
@@ -445,23 +445,23 @@ function S:Ace3_RegisterAsContainer(widget)
 		if widget.scrollbar then
 			S:HandleScrollBar(widget.scrollbar)
 		end
-	elseif TYPE == 'SimpleGroup' then
+	elseif TYPE == "SimpleGroup" then
 		local content = widget.content
 
 		local frame = content:GetParent()
-		frame:SetTemplate('Transparent')
+		frame:SetTemplate("Transparent")
 		frame.callbackBackdropColor = S.Ace3_BackdropColor
 		S.Ace3_BackdropColor(frame)
 
 		content:ClearAllPoints()
-		content:SetPoint('TOPLEFT', 6, 2)
-		content:SetPoint('BOTTOMRIGHT', -6, 2)
+		content:SetPoint("TOPLEFT", 6, 2)
+		content:SetPoint("BOTTOMRIGHT", -6, 2)
 	end
 
 	if widget.sizer_se then
 		for _, Region in next, { widget.sizer_se:GetRegions() } do
-			if Region:IsObjectType('Texture') then
-				Region:SetTexture('Interface\\Tooltips\\UI-Tooltip-Border') -- Interface\Tooltips\UI-Tooltip-Border
+			if Region:IsObjectType("Texture") then
+				Region:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border") -- Interface\Tooltips\UI-Tooltip-Border
 			end
 		end
 	end
@@ -469,13 +469,13 @@ end
 
 function S:Ace3_StyleTooltip()
 	if E.private.skins.blizzard.enable and E.private.skins.blizzard.tooltip then
-		self:SetTemplate('Transparent')
+		self:SetTemplate("Transparent")
 	end
 end
 
 function S:Ace3_StylePopup()
 	if E.private.skins.ace3Enable then
-		self:SetTemplate('Transparent', nil, true)
+		self:SetTemplate("Transparent", nil, true)
 		self:GetChildren():StripTextures()
 
 		S:HandleButton(self.accept, true)
@@ -503,21 +503,21 @@ function S:Ace3_SkinTooltip(lib, minor) -- lib: AceConfigDialog or AceGUI
 	else
 		S.Ace3_StyleTooltip(lib.tooltip)
 
-		if lib.popup and not S:IsHooked(lib.popup, 'OnShow') then -- StaticPopup
-			S:SecureHookScript(lib.popup, 'OnShow', S.Ace3_StylePopup)
+		if lib.popup and not S:IsHooked(lib.popup, "OnShow") then -- StaticPopup
+			S:SecureHookScript(lib.popup, "OnShow", S.Ace3_StylePopup)
 		end
 	end
 end
 
 function S:Ace3_MetaIndex(k, v)
-	if k == 'tooltip' then
+	if k == "tooltip" then
 		rawset(self, k, v)
 
 		S.Ace3_StyleTooltip(v)
-	elseif k == 'popup' then
+	elseif k == "popup" then
 		rawset(self, k, v)
-		S:SecureHookScript(v, 'OnShow', S.Ace3_StylePopup)
-	elseif k == 'RegisterAsContainer' then
+		S:SecureHookScript(v, "OnShow", S.Ace3_StylePopup)
+	elseif k == "RegisterAsContainer" then
 		rawset(self, k, function(s, w, ...)
 			if E.private.skins.ace3Enable then
 				S.Ace3_RegisterAsContainer(s, w, ...)
@@ -530,7 +530,7 @@ function S:Ace3_MetaIndex(k, v)
 
 			return v(s, w, ...)
 		end)
-	elseif k == 'RegisterAsWidget' then
+	elseif k == "RegisterAsWidget" then
 		rawset(self, k, function(...)
 			if E.private.skins.ace3Enable then
 				S.Ace3_RegisterAsWidget(...)
@@ -546,9 +546,9 @@ function S:Ace3_ColorizeEnable(L)
 	S.Ace3_L = L
 
 	-- Special Enable Coloring
-	S.Ace3_EnableMatch = '^|?c?[Ff]?[Ff]?%x?%x?%x?%x?%x?%x?' .. E:EscapeString(S.Ace3_L.Enable) .. '|?r?$'
-	S.Ace3_EnableOff = format('|cffff3333%s|r', S.Ace3_L.Enable)
-	S.Ace3_EnableOn = format('|cff33ff33%s|r', S.Ace3_L.Enable)
+	S.Ace3_EnableMatch = "^|?c?[Ff]?[Ff]?%x?%x?%x?%x?%x?%x?" .. E:EscapeString(S.Ace3_L.Enable) .. "|?r?$"
+	S.Ace3_EnableOff = format("|cffff3333%s|r", S.Ace3_L.Enable)
+	S.Ace3_EnableOn = format("|cff33ff33%s|r", S.Ace3_L.Enable)
 end
 
 local lastMinor = 0
@@ -579,12 +579,12 @@ end
 
 do -- Early Skin Loading
 	local Libraries = {
-		['AceGUI'] = true,
-		['AceConfigDialog'] = true,
-		['AceConfigDialog-3.0-ElvUI'] = true,
-		['LibUIDropDownMenu'] = true,
-		['LibUIDropDownMenuQuestie'] = true,
-		['NoTaint_UIDropDownMenu'] = true,
+		["AceGUI"] = true,
+		["AceConfigDialog"] = true,
+		["AceConfigDialog-3.0-ElvUI"] = true,
+		["LibUIDropDownMenu"] = true,
+		["LibUIDropDownMenuQuestie"] = true,
+		["NoTaint_UIDropDownMenu"] = true,
 	}
 
 	S.EarlyAceWidgets = {}
@@ -592,27 +592,27 @@ do -- Early Skin Loading
 	S.EarlyDropdowns = {}
 
 	local LibStub = LibStub
-	local numEnding = '%-[%d%.]+$'
+	local numEnding = "%-[%d%.]+$"
 	function S:LibStub_NewLib(major)
 		local early = not E.initialized
-		local n = gsub(major, numEnding, '')
+		local n = gsub(major, numEnding, "")
 		if Libraries[n] then
-			if n == 'AceGUI' then
+			if n == "AceGUI" then
 				S:HookAce3(LibStub.libs[major], LibStub.minors[major], early)
 				if early then
 					tinsert(S.EarlyAceTooltips, major)
 				else
 					S:Ace3_SkinTooltip(LibStub.libs[major])
 				end
-			elseif n == 'AceConfigDialog' or n == 'AceConfigDialog-3.0-ElvUI' then
+			elseif n == "AceConfigDialog" or n == "AceConfigDialog-3.0-ElvUI" then
 				if early then
 					tinsert(S.EarlyAceTooltips, major)
 				else
 					S:Ace3_SkinTooltip(LibStub.libs[major], LibStub.minors[major])
 				end
 			else
-				local prefix = (n == 'NoTaint_UIDropDownMenu' and 'Lib') or (n == 'LibUIDropDownMenuQuestie' and 'LQuestie') or (major == 'LibUIDropDownMenu-4.0' and 'L4' or major == 'LibUIDropDownMenu-3.0' and 'L3')
-				if prefix and not S[prefix..'_UIDropDownMenuSkinned'] then
+				local prefix = (n == "NoTaint_UIDropDownMenu" and "Lib") or (n == "LibUIDropDownMenuQuestie" and "LQuestie") or (major == "LibUIDropDownMenu-4.0" and "L4" or major == "LibUIDropDownMenu-3.0" and "L3")
+				if prefix and not S[prefix.."_UIDropDownMenuSkinned"] then
 					if early then
 						tinsert(S.EarlyDropdowns, prefix)
 					else
@@ -638,15 +638,15 @@ do -- Early Skin Loading
 	end
 
 	for n in next, LibStub.libs do
-		if n == 'AceGUI-3.0' then
+		if n == "AceGUI-3.0" then
 			for _, x in ipairs({UIParent:GetChildren()}) do
 				if x and x.obj then earlyWidget(x.obj) end
 			end
 		end
-		if Libraries[gsub(n, numEnding, '')] then
+		if Libraries[gsub(n, numEnding, "")] then
 			S:LibStub_NewLib(n)
 		end
 	end
 
-	hooksecurefunc(LibStub, 'NewLibrary', S.LibStub_NewLib)
+	hooksecurefunc(LibStub, "NewLibrary", S.LibStub_NewLib)
 end

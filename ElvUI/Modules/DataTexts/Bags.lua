@@ -1,5 +1,5 @@
 local E, L, V, P, G = unpack(ElvUI)
-local DT = E:GetModule('DataTexts')
+local DT = E:GetModule("DataTexts")
 
 local format = format
 local strjoin = strjoin
@@ -17,12 +17,12 @@ local MAX_WATCHED_TOKENS = MAX_WATCHED_TOKENS or 3
 local NUM_BAG_SLOTS = NUM_BAG_SLOTS -- add the profession bag
 local CURRENCY = CURRENCY
 
-local displayString, lastPanel = ''
-local iconString = '|T%s:14:14:0:0:64:64:4:60:4:60|t  %s'
+local displayString, lastPanel = ""
+local iconString = "|T%s:14:14:0:0:64:64:4:60:4:60|t  %s"
 local BAG_TYPES = {
-	[0x0001] = 'Quiver',
-	[0x0002] = 'Ammo Pouch',
-	[0x0004] = 'Soul Bag',
+	[0x0001] = "Quiver",
+	[0x0002] = "Ammo Pouch",
+	[0x0004] = "Soul Bag",
 }
 
 local function OnEvent(self)
@@ -37,11 +37,11 @@ local function OnEvent(self)
 	end
 
 	local textFormat = E.global.datatexts.settings.Bags.textFormat
-	if textFormat == 'FREE' then
+	if textFormat == "FREE" then
 		self.text:SetFormattedText(displayString, free)
-	elseif textFormat == 'USED' then
+	elseif textFormat == "USED" then
 		self.text:SetFormattedText(displayString, total - free)
-	elseif textFormat == 'FREE_TOTAL' then
+	elseif textFormat == "FREE_TOTAL" then
 		self.text:SetFormattedText(displayString, free, total)
 	else
 		self.text:SetFormattedText(displayString, total - free, total)
@@ -71,11 +71,11 @@ local function OnEnter()
 
 			if i > 0 then
 				local id = ContainerIDToInventoryID(i)
-				r, g, b = GetItemQualityColor(GetInventoryItemQuality('player', id) or 1)
-				icon = GetInventoryItemTexture('player', id)
+				r, g, b = GetItemQualityColor(GetInventoryItemQuality("player", id) or 1)
+				icon = GetInventoryItemTexture("player", id)
 			end
 
-			DT.tooltip:AddDoubleLine(format(iconString, icon or E.Media.Textures.Backpack, bagName), format('%d / %d', usedSlots, numSlots), r or 1, g or 1, b or 1, r2, g2, b2)
+			DT.tooltip:AddDoubleLine(format(iconString, icon or E.Media.Textures.Backpack, bagName), format("%d / %d", usedSlots, numSlots), r or 1, g or 1, b or 1, r2, g2, b2)
 		end
 	end
 
@@ -84,9 +84,9 @@ local function OnEnter()
 		if not name then break end
 
 		if i == 1 then
-			DT.tooltip:AddLine(' ')
+			DT.tooltip:AddLine(" ")
 			DT.tooltip:AddLine(CURRENCY)
-			DT.tooltip:AddLine(' ')
+			DT.tooltip:AddLine(" ")
 		end
 
 		if info.quantity then
@@ -99,13 +99,13 @@ end
 
 local function ValueColorUpdate(hex)
 	local textFormat = E.global.datatexts.settings.Bags.textFormat
-	local noLabel = E.global.datatexts.settings.Bags.NoLabel and ''
-	local labelString = noLabel or (E.global.datatexts.settings.Bags.Label ~= '' and E.global.datatexts.settings.Bags.Label) or strjoin('', L["Bags"], ': ')
+	local noLabel = E.global.datatexts.settings.Bags.NoLabel and ""
+	local labelString = noLabel or (E.global.datatexts.settings.Bags.Label ~= "" and E.global.datatexts.settings.Bags.Label) or strjoin("", L["Bags"], ": ")
 
-	displayString = strjoin('', labelString, hex, (textFormat == 'FREE' or textFormat == 'USED') and '%d|r' or '%d/%d|r')
+	displayString = strjoin("", labelString, hex, (textFormat == "FREE" or textFormat == "USED") and "%d|r" or "%d/%d|r")
 
 	if lastPanel then OnEvent(lastPanel) end
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext('Bags', nil, {'BAG_UPDATE'}, OnEvent, nil, OnClick, OnEnter, nil, L["Bags"], nil, ValueColorUpdate)
+DT:RegisterDatatext("Bags", nil, {"BAG_UPDATE"}, OnEvent, nil, OnClick, OnEnter, nil, L["Bags"], nil, ValueColorUpdate)

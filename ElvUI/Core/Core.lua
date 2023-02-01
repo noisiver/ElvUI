@@ -1,5 +1,5 @@
 local ElvUI = select(2, ...)
-ElvUI[2] = ElvUI[1].Libs.ACL:GetLocale("ElvUI", ElvUI[1]:GetLocale()) -- Locale doesn't exist yet, make it exist.
+ElvUI[2] = ElvUI[1].Libs.ACL:GetLocale("ElvUI", ElvUI[1]:GetLocale()) -- Locale doesn"t exist yet, make it exist.
 local E, L, V, P, G = unpack(ElvUI)
 local LCS = E.Libs.LCS
 
@@ -70,7 +70,7 @@ E.screenWidth, E.screenHeight = GetScreenWidth(), GetScreenHeight()
 E.perfect = 768 / E.physicalHeight
 E.NewSign = [[|TInterface\OptionsFrame\UI-OptionsFrame-NewFeatureIcon:14:14|t]]
 E.TexturePath = [[Interface\AddOns\ElvUI\Media\Textures\]] -- for plugins?
-E.ClearTexture = '' -- used to clear: Set (Normal, Disabled, Checked, Pushed, Highlight) Texture
+E.ClearTexture = "" -- used to clear: Set (Normal, Disabled, Checked, Pushed, Highlight) Texture
 E.UserList = {}
 
 
@@ -98,27 +98,27 @@ E.ModuleCallbacks = {["CallPriority"] = {}}
 E.InitialModuleCallbacks = {["CallPriority"] = {}}
 
 E.InversePoints = {
-	BOTTOM = 'TOP',
-	BOTTOMLEFT = 'TOPLEFT',
-	BOTTOMRIGHT = 'TOPRIGHT',
-	CENTER = 'CENTER',
-	LEFT = 'RIGHT',
-	RIGHT = 'LEFT',
-	TOP = 'BOTTOM',
-	TOPLEFT = 'BOTTOMLEFT',
-	TOPRIGHT = 'BOTTOMRIGHT'
+	BOTTOM = "TOP",
+	BOTTOMLEFT = "TOPLEFT",
+	BOTTOMRIGHT = "TOPRIGHT",
+	CENTER = "CENTER",
+	LEFT = "RIGHT",
+	RIGHT = "LEFT",
+	TOP = "BOTTOM",
+	TOPLEFT = "BOTTOMLEFT",
+	TOPRIGHT = "BOTTOMRIGHT"
 }
 
 E.InverseAnchors = {
-	BOTTOM = 'TOP',
-	BOTTOMLEFT = 'TOPRIGHT',
-	BOTTOMRIGHT = 'TOPLEFT',
-	CENTER = 'CENTER',
-	LEFT = 'RIGHT',
-	RIGHT = 'LEFT',
-	TOP = 'BOTTOM',
-	TOPLEFT = 'BOTTOMRIGHT',
-	TOPRIGHT = 'BOTTOMLEFT'
+	BOTTOM = "TOP",
+	BOTTOMLEFT = "TOPRIGHT",
+	BOTTOMRIGHT = "TOPLEFT",
+	CENTER = "CENTER",
+	LEFT = "RIGHT",
+	RIGHT = "LEFT",
+	TOP = "BOTTOM",
+	TOPLEFT = "BOTTOMRIGHT",
+	TOPRIGHT = "BOTTOMLEFT"
 }
 
 E.HealingClasses = {
@@ -131,12 +131,12 @@ E.HealingClasses = {
 -- E.DispelFilter = E.Libs.Dispel:GetMyDispelTypes()
 
 E.BadDispels = {
-	[34914]		= 'Vampiric Touch',		-- horrifies
-	[47843]	= 'Unstable Affliction'	-- silences
+	[34914]		= "Vampiric Touch",		-- horrifies
+	[47843]	= "Unstable Affliction"	-- silences
 }
 
 --Workaround for people wanting to use white and it reverting to their class color.
-E.PriestColors = { r = 0.99, g = 0.99, b = 0.99, colorStr = 'fffcfcfc' }
+E.PriestColors = { r = 0.99, g = 0.99, b = 0.99, colorStr = "fffcfcfc" }
 
 E.DispelClasses = {
 	PRIEST = {Magic = true, Disease = true},
@@ -147,15 +147,15 @@ E.DispelClasses = {
 }
 
 --This frame everything in ElvUI should be anchored to for Eyefinity support.
-E.UIParent = CreateFrame('Frame', 'ElvUIParent', UIParent)
+E.UIParent = CreateFrame("Frame", "ElvUIParent", UIParent)
 E.UIParent:SetFrameLevel(UIParent:GetFrameLevel())
 E.UIParent:SetSize(E.screenWidth, E.screenHeight)
-E.UIParent:SetPoint('BOTTOM')
+E.UIParent:SetPoint("BOTTOM")
 E.UIParent.origHeight = E.UIParent:GetHeight()
 E.snapBars[#E.snapBars + 1] = E.UIParent
 
-E.HiddenFrame = CreateFrame('Frame', nil, UIParent)
-E.HiddenFrame:SetPoint('BOTTOM')
+E.HiddenFrame = CreateFrame("Frame", nil, UIParent)
+E.HiddenFrame:SetPoint("BOTTOM")
 E.HiddenFrame:SetSize(1,1)
 E.HiddenFrame:Hide()
 
@@ -197,7 +197,7 @@ function E:ColorizedName(name, arg2)
 end
 
 function E:Print(...)
-	(E.db and _G[E.db.general.messageRedirect] or DEFAULT_CHAT_FRAME):AddMessage(strjoin('', E.media.hexvaluecolor or '|cff00b3ff', 'ElvUI:|r ', ...)) -- I put DEFAULT_CHAT_FRAME as a fail safe.
+	(E.db and _G[E.db.general.messageRedirect] or DEFAULT_CHAT_FRAME):AddMessage(strjoin("", E.media.hexvaluecolor or "|cff00b3ff", "ElvUI:|r ", ...)) -- I put DEFAULT_CHAT_FRAME as a fail safe.
 end
 
 function E:GrabColorPickerValues(r, g, b)
@@ -221,7 +221,7 @@ function E:GrabColorPickerValues(r, g, b)
 	return r, g, b
 end
 
---Basically check if another class border is being used on a class that doesn't match. And then return true if a match is found.
+--Basically check if another class border is being used on a class that doesn"t match. And then return true if a match is found.
 function E:CheckClassColor(r, g, b)
 	r, g, b = E:GrabColorPickerValues(r, g, b)
 
@@ -249,10 +249,10 @@ end
 
 function E:SetColorTable(t, data)
 	if not data.r or not data.g or not data.b then
-		error('SetColorTable: Could not unpack color values.')
+		error("SetColorTable: Could not unpack color values.")
 	end
 
-	if t and (type(t) == 'table') then
+	if t and (type(t) == "table") then
 		local r, g, b, a = E:UpdateColorTable(data)
 
 		t.r, t.g, t.b, t.a = r, g, b, a
@@ -273,7 +273,7 @@ end
 
 function E:UpdateColorTable(data)
 	if not data.r or not data.g or not data.b then
-		error('UpdateColorTable: Could not unpack color values.')
+		error("UpdateColorTable: Could not unpack color values.")
 	end
 
 	E:VerifyColorTable(data)
@@ -283,7 +283,7 @@ end
 
 function E:GetColorTable(data)
 	if not data.r or not data.g or not data.b then
-		error('GetColorTable: Could not unpack color values.')
+		error("GetColorTable: Could not unpack color values.")
 	end
 
 	E:VerifyColorTable(data)
@@ -295,14 +295,14 @@ end
 function E:UpdateMedia(mediaType)
 	if not E.db.general or not E.private.general then return end
 
-	E.media.normFont = LSM:Fetch('font', E.db.general.font)
-	E.media.combatFont = LSM:Fetch('font', E.private.general.dmgfont)
-	E.media.blankTex = LSM:Fetch('background', 'ElvUI Blank')
-	E.media.normTex = LSM:Fetch('statusbar', E.private.general.normTex)
-	E.media.glossTex = LSM:Fetch('statusbar', E.private.general.glossTex)
+	E.media.normFont = LSM:Fetch("font", E.db.general.font)
+	E.media.combatFont = LSM:Fetch("font", E.private.general.dmgfont)
+	E.media.blankTex = LSM:Fetch("background", "ElvUI Blank")
+	E.media.normTex = LSM:Fetch("statusbar", E.private.general.normTex)
+	E.media.glossTex = LSM:Fetch("statusbar", E.private.general.glossTex)
 
 	if mediaType then -- callback from SharedMedia: LSM.Register
-		if mediaType == 'font' then
+		if mediaType == "font" then
 			E:UpdateBlizzardFonts()
 		end
 
@@ -421,7 +421,7 @@ function E:UpdateBorderColors()
 	local r, g, b = unpack(E.media.bordercolor)
 	for frame in pairs(E.frames) do
 		if frame and frame.template then
-			if not (frame.ignoreUpdates or frame.forcedBorderColors) and (frame.template == 'Default' or frame.template == 'Transparent') then
+			if not (frame.ignoreUpdates or frame.forcedBorderColors) and (frame.template == "Default" or frame.template == "Transparent") then
 				frame:SetBackdropBorderColor(r, g, b)
 			end
 		else
@@ -432,7 +432,7 @@ function E:UpdateBorderColors()
 	local r2, g2, b2 = unpack(E.media.unitframeBorderColor)
 	for frame in pairs(E.unitFrameElements) do
 		if frame and frame.template then
-			if not (frame.ignoreUpdates or frame.forcedBorderColors) and (frame.template == 'Default' or frame.template == 'Transparent') then
+			if not (frame.ignoreUpdates or frame.forcedBorderColors) and (frame.template == "Default" or frame.template == "Transparent") then
 				frame:SetBackdropBorderColor(r2, g2, b2)
 			end
 		else
@@ -450,9 +450,9 @@ function E:UpdateBackdropColors()
 			if not frame.ignoreUpdates then
 				if frame.callbackBackdropColor then
 					frame:callbackBackdropColor()
-				elseif frame.template == 'Default' then
+				elseif frame.template == "Default" then
 					frame:SetBackdropColor(r, g, b)
-				elseif frame.template == 'Transparent' then
+				elseif frame.template == "Transparent" then
 					frame:SetBackdropColor(r2, g2, b2, frame.customBackdropAlpha or a2)
 				end
 			end
@@ -466,9 +466,9 @@ function E:UpdateBackdropColors()
 			if not frame.ignoreUpdates then
 				if frame.callbackBackdropColor then
 					frame:callbackBackdropColor()
-				elseif frame.template == 'Default' then
+				elseif frame.template == "Default" then
 					frame:SetBackdropColor(r, g, b)
-				elseif frame.template == 'Transparent' then
+				elseif frame.template == "Transparent" then
 					frame:SetBackdropColor(r2, g2, b2, frame.customBackdropAlpha or a2)
 				end
 			end
@@ -498,9 +498,9 @@ end
 
 function E:UpdateStatusBars()
 	for statusBar in pairs(E.statusBars) do
-		if statusBar and statusBar:IsObjectType('StatusBar') then
+		if statusBar and statusBar:IsObjectType("StatusBar") then
 			statusBar:SetStatusBarTexture(E.media.normTex)
-		elseif statusBar and statusBar:IsObjectType('Texture') then
+		elseif statusBar and statusBar:IsObjectType("Texture") then
 			statusBar:SetTexture(E.media.normTex)
 		end
 	end
@@ -585,12 +585,12 @@ do
 			info = {
 				enabled = function()
 					local db = E.private.general.minimap.enable and LeaPlusDB
-					return db and db.MinimapMod == 'On'
+					return db and db.MinimapMod == "On"
 				end,
 				accept = function() E.private.general.minimap.enable = false; ReloadUI() end,
-				name = 'ElvUI Minimap',
+				name = "ElvUI Minimap",
 			},
-			'Leatrix_Plus'
+			"Leatrix_Plus"
 		},
 	}
 
@@ -616,13 +616,13 @@ do
 end
 
 function E:CopyTable(current, default)
-	if type(current) ~= 'table' then
+	if type(current) ~= "table" then
 		current = {}
 	end
 
-	if type(default) == 'table' then
+	if type(default) == "table" then
 		for option, value in pairs(default) do
-			current[option] = (type(value) == 'table' and E:CopyTable(current[option], value)) or value
+			current[option] = (type(value) == "table" and E:CopyTable(current[option], value)) or value
 		end
 	end
 
@@ -630,13 +630,13 @@ function E:CopyTable(current, default)
 end
 
 function E:RemoveEmptySubTables(tbl)
-	if type(tbl) ~= 'table' then
-		E:Print('Bad argument #1 to \'RemoveEmptySubTables\' (table expected)')
+	if type(tbl) ~= "table" then
+		E:Print("Bad argument #1 to \"RemoveEmptySubTables\" (table expected)")
 		return
 	end
 
 	for k, v in pairs(tbl) do
-		if type(v) == 'table' then
+		if type(v) == "table" then
 			if next(v) == nil then
 				tbl[k] = nil
 			else
@@ -652,24 +652,24 @@ end
 --param generatedKeys : table defined in `Distributor.lua` to allow user generated tables to be exported (customTexts, customCurrencies, etc).
 --return : a copy of cleanTable with duplicate key/value pairs removed
 function E:RemoveTableDuplicates(cleanTable, checkTable, generatedKeys)
-	if type(cleanTable) ~= 'table' then
-		E:Print('Bad argument #1 to \'RemoveTableDuplicates\' (table expected)')
+	if type(cleanTable) ~= "table" then
+		E:Print("Bad argument #1 to \"RemoveTableDuplicates\" (table expected)")
 		return
 	end
-	if type(checkTable) ~= 'table' then
-		E:Print('Bad argument #2 to \'RemoveTableDuplicates\' (table expected)')
+	if type(checkTable) ~= "table" then
+		E:Print("Bad argument #2 to \"RemoveTableDuplicates\" (table expected)")
 		return
 	end
 
 	local rtdCleaned = {}
-	local keyed = type(generatedKeys) == 'table'
+	local keyed = type(generatedKeys) == "table"
 	for option, value in pairs(cleanTable) do
 		local default, genTable, genOption = checkTable[option]
 		if keyed then genTable = generatedKeys[option] else genOption = generatedKeys end
 
-		-- we only want to add settings which are existing in the default table, unless it's allowed by generatedKeys
+		-- we only want to add settings which are existing in the default table, unless it"s allowed by generatedKeys
 		if default ~= nil or (genTable or genOption ~= nil) then
-			if type(value) == 'table' and type(default) == 'table' then
+			if type(value) == "table" and type(default) == "table" then
 				if genOption ~= nil then
 					rtdCleaned[option] = E:RemoveTableDuplicates(value, default, genOption)
 				else
@@ -693,18 +693,18 @@ end
 --param blacklistTable : table you want to check against.
 --return : a copy of cleanTable with blacklisted key/value pairs removed
 function E:FilterTableFromBlacklist(cleanTable, blacklistTable)
-	if type(cleanTable) ~= 'table' then
-		E:Print('Bad argument #1 to \'FilterTableFromBlacklist\' (table expected)')
+	if type(cleanTable) ~= "table" then
+		E:Print("Bad argument #1 to \"FilterTableFromBlacklist\" (table expected)")
 		return
 	end
-	if type(blacklistTable) ~= 'table' then
-		E:Print('Bad argument #2 to \'FilterTableFromBlacklist\' (table expected)')
+	if type(blacklistTable) ~= "table" then
+		E:Print("Bad argument #2 to \"FilterTableFromBlacklist\" (table expected)")
 		return
 	end
 
 	local tfbCleaned = {}
 	for option, value in pairs(cleanTable) do
-		if type(value) == 'table' and blacklistTable[option] and type(blacklistTable[option]) == 'table' then
+		if type(value) == "table" and blacklistTable[option] and type(blacklistTable[option]) == "table" then
 			tfbCleaned[option] = E:FilterTableFromBlacklist(value, blacklistTable[option])
 		else
 			-- Filter out blacklisted keys
@@ -724,9 +724,9 @@ local function keySort(a, b)
 	local A, B = type(a), type(b)
 
 	if A == B then
-		if A == 'number' or A == 'string' then
+		if A == "number" or A == "string" then
 			return a < b
-		elseif A == 'boolean' then
+		elseif A == "boolean" then
 			return (a and 1 or 0) > (b and 1 or 0)
 		end
 	end
@@ -744,20 +744,20 @@ do	--The code in this function is from WeakAuras, credit goes to Mirrored and th
 		for _, i in ipairs(tkeys) do
 			local v = tbl[i]
 
-			ret = ret..strrep('    ', level)..'['
-			if type(i) == 'string' then ret = ret..'"'..i..'"' else ret = ret..i end
-			ret = ret..'] = '
+			ret = ret..strrep("    ", level).."["
+			if type(i) == "string" then ret = ret..'"'..i..'"' else ret = ret..i end
+			ret = ret.."] = "
 
-			if type(v) == 'number' then
-				ret = ret..v..',\n'
-			elseif type(v) == 'string' then
+			if type(v) == "number" then
+				ret = ret..v..",\n"
+			elseif type(v) == "string" then
 				ret = ret..'"'..v:gsub('\\', '\\\\'):gsub('\n', '\\n'):gsub('"', '\\"'):gsub('\124', '\124\124')..'",\n'
-			elseif type(v) == 'boolean' then
-				if v then ret = ret..'true,\n' else ret = ret..'false,\n' end
-			elseif type(v) == 'table' then
-				ret = ret..'{\n'
+			elseif type(v) == "boolean" then
+				if v then ret = ret.."true,\n" else ret = ret.."false,\n" end
+			elseif type(v) == "table" then
+				ret = ret.."{\n"
 				ret = recurse(v, level + 1, ret)
-				ret = ret..strrep('    ', level)..'},\n'
+				ret = ret..strrep("    ", level).."},\n"
 			else
 				ret = ret..'"'..tostring(v)..'",\n'
 			end
@@ -767,14 +767,14 @@ do	--The code in this function is from WeakAuras, credit goes to Mirrored and th
 	end
 
 	function E:TableToLuaString(inTable)
-		if type(inTable) ~= 'table' then
-			E:Print('Invalid argument #1 to E:TableToLuaString (table expected)')
+		if type(inTable) ~= "table" then
+			E:Print("Invalid argument #1 to E:TableToLuaString (table expected)")
 			return
 		end
 
-		local ret = '{\n'
+		local ret = "{\n"
 		if inTable then ret = recurse(inTable, 1, ret) end
-		ret = ret..'}'
+		ret = ret.."}"
 
 		return ret
 	end
@@ -783,19 +783,19 @@ end
 do	--The code in this function is from WeakAuras, credit goes to Mirrored and the WeakAuras Team
 	--Code slightly modified by Simpy, sorting from @sighol
 	local lineStructureTable, profileFormat = {}, {
-		profile = 'E.db',
-		private = 'E.private',
-		global = 'E.global',
-		filters = 'E.global',
-		styleFilters = 'E.global'
+		profile = "E.db",
+		private = "E.private",
+		global = "E.global",
+		filters = "E.global",
+		styleFilters = "E.global"
 	}
 
 	local function buildLineStructure(str) -- str is profileText
 		for _, v in ipairs(lineStructureTable) do
-			if type(v) == 'string' then
+			if type(v) == "string" then
 				str = str..'["'..v..'"]'
 			else
-				str = str..'['..v..']'
+				str = str.."["..v.."]"
 			end
 		end
 
@@ -816,35 +816,35 @@ do	--The code in this function is from WeakAuras, credit goes to Mirrored and th
 				ret = ret..lineStructure
 			end
 
-			ret = ret..'['
+			ret = ret.."["
 
-			if type(k) == 'string' then
+			if type(k) == "string" then
 				ret = ret..'"'..k..'"'
 			else
 				ret = ret..k
 			end
 
-			if type(v) == 'table' then
+			if type(v) == "table" then
 				tinsert(lineStructureTable, k)
 				sameLine = true
-				ret = ret..']'
+				ret = ret.."]"
 				ret = recurse(v, ret, profileText)
 			else
 				sameLine = false
-				ret = ret..'] = '
+				ret = ret.."] = "
 
-				if type(v) == 'number' then
-					ret = ret..v..'\n'
-				elseif type(v) == 'string' then
-					ret = ret..'"'..v:gsub('\\', '\\\\'):gsub('\n', '\\n'):gsub('"', '\\"'):gsub('\124', '\124\124')..'"\n'
-				elseif type(v) == 'boolean' then
+				if type(v) == "number" then
+					ret = ret..v.."\n"
+				elseif type(v) == "string" then
+					ret = ret..'"'..v:gsub("\\", "\\\\"):gsub("\n", "\\n"):gsub('"', '\\"'):gsub("\124", "\124\124")..'"\n'
+				elseif type(v) == "boolean" then
 					if v then
-						ret = ret..'true\n'
+						ret = ret.."true\n"
 					else
-						ret = ret..'false\n'
+						ret = ret.."false\n"
 					end
 				else
-					ret = ret..'"'..tostring(v)..'"\n'
+					ret = ret.."'"..tostring(v).."'\n"
 				end
 			end
 		end
@@ -860,7 +860,7 @@ do	--The code in this function is from WeakAuras, credit goes to Mirrored and th
 
 		wipe(lineStructureTable)
 
-		local ret = ''
+		local ret = ""
 		if inTable and profileType then
 			sameLine = false
 			ret = recurse(inTable, ret, profileText)
@@ -870,10 +870,10 @@ do	--The code in this function is from WeakAuras, credit goes to Mirrored and th
 	end
 end
 
-do	--Split string by multi-character delimiter (the strsplit / string.split function provided by WoW doesn't allow multi-character delimiter)
+do	--Split string by multi-character delimiter (the strsplit / string.split function provided by WoW doesn"t allow multi-character delimiter)
 	local splitTable = {}
 	function E:SplitString(str, delim)
-		assert(type (delim) == 'string' and strlen(delim) > 0, 'bad delimiter')
+		assert(type (delim) == "string" and strlen(delim) > 0, "bad delimiter")
 
 		local start = 1
 		wipe(splitTable) -- results table
@@ -918,18 +918,18 @@ do
 	local function SendRecieve(_, event, prefix, message, _, sender)
 		if event == "CHAT_MSG_ADDON" then
 			if sender == PLAYER_NAME then return end
-			if prefix == 'ELVUI_VERSIONCHK' then
+			if prefix == "ELVUI_VERSIONCHK" then
 				local ver, msg, inCombat = E.version, tonumber(message), InCombatLockdown()
 
 				E.UserList[E:StripMyRealm(sender)] = msg
 
-				if msg and (msg > ver) and not E.recievedOutOfDateMessage then -- you're outdated D:
+				if msg and (msg > ver) and not E.recievedOutOfDateMessage then -- you"re outdated D:
 					E:Print(L["ElvUI is out of date. You can download the newest version from www.tukui.org. Get premium membership and have ElvUI automatically updated with the Tukui Client!"])
 
 					if msg and ((msg - ver) >= 0.05) and not inCombat then
-						E.PopupDialogs.ELVUI_UPDATE_AVAILABLE.text = L["ElvUI is five or more revisions out of date. You can download the newest version from www.tukui.org. Get premium membership and have ElvUI automatically updated with the Tukui Client!"]..format('|n|nSender %s : Version %s', sender, msg)
+						E.PopupDialogs.ELVUI_UPDATE_AVAILABLE.text = L["ElvUI is five or more revisions out of date. You can download the newest version from www.tukui.org. Get premium membership and have ElvUI automatically updated with the Tukui Client!"]..format("|n|nSender %s : Version %s", sender, msg)
 
-						E:StaticPopup_Show('ELVUI_UPDATE_AVAILABLE')
+						E:StaticPopup_Show("ELVUI_UPDATE_AVAILABLE")
 					end
 
 					E.recievedOutOfDateMessage = true
@@ -971,7 +971,7 @@ function E:UpdateStart(skipCallback, skipUpdateDB)
 	E:UpdateUnitFrames()
 
 	if not skipCallback then
-		E.callbacks:Fire('StaggeredUpdate')
+		E.callbacks:Fire("StaggeredUpdate")
 	end
 end
 
@@ -1248,7 +1248,7 @@ do
 
 			if E.db.movers then
 				local bar2mover, bar3mover, bar5mover, bar6mover = E.db.movers.ElvAB_2, E.db.movers.ElvAB_3, E.db.movers.ElvAB_5, E.db.movers.ElvAB_6
-				if bar6mover == 'BOTTOM,ElvUI_Bar2,TOP,0,2' then bar6mover = ActionBars.barDefaults.bar2.position end
+				if bar6mover == "BOTTOM,ElvUI_Bar2,TOP,0,2" then bar6mover = ActionBars.barDefaults.bar2.position end
 				E.db.movers.ElvAB_2, E.db.movers.ElvAB_3, E.db.movers.ElvAB_5, E.db.movers.ElvAB_6 = bar6mover, bar5mover, bar2mover, bar3mover
 			end
 
@@ -1280,7 +1280,7 @@ end
 
 function E:UpdateMoverPositions()
 	--The mover is positioned before it is resized, which causes issues for unitframes
-	--Allow movers to be 'pushed' outside the screen, when they are resized they should be back in the screen area.
+	--Allow movers to be "pushed" outside the screen, when they are resized they should be back in the screen area.
 	--We set movers to be clamped again at the bottom of this function.
 	E:SetMoversClampedToScreen(false)
 	E:SetMoversPositions()
@@ -1302,7 +1302,7 @@ function E:UpdateMediaItems(skipCallback)
 	E:UpdateStatusBars()
 
 	if not skipCallback then
-		E.callbacks:Fire('StaggeredUpdate')
+		E.callbacks:Fire("StaggeredUpdate")
 	end
 end
 
@@ -1313,7 +1313,7 @@ function E:UpdateLayout(skipCallback)
 	Layout:SetDataPanelStyle()
 
 	if not skipCallback then
-		E.callbacks:Fire('StaggeredUpdate')
+		E.callbacks:Fire("StaggeredUpdate")
 	end
 end
 
@@ -1324,12 +1324,12 @@ function E:UpdateActionBars(skipCallback)
 	ActionBars:UpdatePetCooldownSettings()
 	ActionBars:ToggleDesaturation()
 
-	if E.myclass == 'SHAMAN' then
+	if E.myclass == "SHAMAN" then
 		ActionBars:UpdateTotemBindings()
 	end
 
 	if not skipCallback then
-		E.callbacks:Fire('StaggeredUpdate')
+		E.callbacks:Fire("StaggeredUpdate")
 	end
 end
 
@@ -1338,7 +1338,7 @@ function E:UpdateNamePlates(skipCallback)
 	NamePlates:StyleFilterInitialize()
 
 	if not skipCallback then
-		E.callbacks:Fire('StaggeredUpdate')
+		E.callbacks:Fire("StaggeredUpdate")
 	end
 end
 
@@ -1357,7 +1357,7 @@ function E:UpdateBags(skipCallback)
 	Bags:UpdateCountDisplay()
 
 	if not skipCallback then
-		E.callbacks:Fire('StaggeredUpdate')
+		E.callbacks:Fire("StaggeredUpdate")
 	end
 end
 
@@ -1366,7 +1366,7 @@ function E:UpdateChat(skipCallback)
 	Chat:UpdateEditboxAnchors()
 
 	if not skipCallback then
-		E.callbacks:Fire('StaggeredUpdate')
+		E.callbacks:Fire("StaggeredUpdate")
 	end
 end
 
@@ -1375,7 +1375,7 @@ function E:UpdateDataBars(skipCallback)
 	DataBars:UpdateAll()
 
 	if not skipCallback then
-		E.callbacks:Fire('StaggeredUpdate')
+		E.callbacks:Fire("StaggeredUpdate")
 	end
 end
 
@@ -1383,7 +1383,7 @@ function E:UpdateDataTexts(skipCallback)
 	DataTexts:LoadDataTexts()
 
 	if not skipCallback then
-		E.callbacks:Fire('StaggeredUpdate')
+		E.callbacks:Fire("StaggeredUpdate")
 	end
 end
 
@@ -1391,7 +1391,7 @@ function E:UpdateMinimap(skipCallback)
 	Minimap:UpdateSettings()
 
 	if not skipCallback then
-		E.callbacks:Fire('StaggeredUpdate')
+		E.callbacks:Fire("StaggeredUpdate")
 	end
 end
 
@@ -1400,7 +1400,7 @@ function E:UpdateAuras(skipCallback)
 	if Auras.DebuffFrame then Auras:UpdateHeader(Auras.DebuffFrame) end
 
 	if not skipCallback then
-		E.callbacks:Fire('StaggeredUpdate')
+		E.callbacks:Fire("StaggeredUpdate")
 	end
 end
 
@@ -1410,12 +1410,12 @@ function E:UpdateMisc(skipCallback)
 	ActionBars:PositionAndSizeTotemBar()
 
 	if not skipCallback then
-		E.callbacks:Fire('StaggeredUpdate')
+		E.callbacks:Fire("StaggeredUpdate")
 	end
 end
 
 function E:UpdateEnd()
-	E:UpdateCooldownSettings('all')
+	E:UpdateCooldownSettings("all")
 
 	if E.RefreshGUI then
 		E:RefreshGUI()
@@ -1424,7 +1424,7 @@ function E:UpdateEnd()
 	E:SetMoversClampedToScreen(true) -- Go back to using clamp after resizing has taken place.
 
 	if E.staggerUpdateRunning then
-		--We're doing a staggered update, but plugins expect the old UpdateAll to be called
+		--We"re doing a staggered update, but plugins expect the old UpdateAll to be called
 		--So call it, but skip updates inside it
 		E:UpdateAll(false)
 	elseif not E.private.install_complete then
@@ -1443,14 +1443,14 @@ do
 		if nextUpdate then
 			tremove(staggerTable, 1)
 
-			if nextUpdate == 'UpdateNamePlates' or nextUpdate == 'UpdateBags' then
+			if nextUpdate == "UpdateNamePlates" or nextUpdate == "UpdateBags" then
 				nextDelay = 0.05
 			end
 
 			E:Delay(nextDelay or staggerDelay, E[nextUpdate])
 		end
 	end
-	E:RegisterCallback('StaggeredUpdate', CallStaggeredUpdate)
+	E:RegisterCallback("StaggeredUpdate", CallStaggeredUpdate)
 
 	function E:StaggeredUpdateAll(event)
 		if not E.initialized then
@@ -1458,33 +1458,33 @@ do
 			return
 		end
 
-		if (not event or event == 'OnProfileChanged' or event == 'OnProfileCopied') and not E.staggerUpdateRunning then
-			tinsert(staggerTable, 'UpdateLayout')
+		if (not event or event == "OnProfileChanged" or event == "OnProfileCopied") and not E.staggerUpdateRunning then
+			tinsert(staggerTable, "UpdateLayout")
 			if ActionBars.Initialized then
-				tinsert(staggerTable, 'UpdateActionBars')
+				tinsert(staggerTable, "UpdateActionBars")
 			end
 			if NamePlates.Initialized then
-				tinsert(staggerTable, 'UpdateNamePlates')
+				tinsert(staggerTable, "UpdateNamePlates")
 			end
 			if Bags.Initialized then
-				tinsert(staggerTable, 'UpdateBags')
+				tinsert(staggerTable, "UpdateBags")
 			end
 			if Chat.Initialized then
-				tinsert(staggerTable, 'UpdateChat')
+				tinsert(staggerTable, "UpdateChat")
 			end
 			if Tooltip.Initialized then
-				tinsert(staggerTable, 'UpdateTooltip')
+				tinsert(staggerTable, "UpdateTooltip")
 			end
-			tinsert(staggerTable, 'UpdateDataBars')
-			tinsert(staggerTable, 'UpdateDataTexts')
+			tinsert(staggerTable, "UpdateDataBars")
+			tinsert(staggerTable, "UpdateDataTexts")
 			if Minimap.Initialized then
-				tinsert(staggerTable, 'UpdateMinimap')
+				tinsert(staggerTable, "UpdateMinimap")
 			end
 			if Auras.BuffFrame or Auras.DebuffFrame then
-				tinsert(staggerTable, 'UpdateAuras')
+				tinsert(staggerTable, "UpdateAuras")
 			end
-			tinsert(staggerTable, 'UpdateMisc')
-			tinsert(staggerTable, 'UpdateEnd')
+			tinsert(staggerTable, "UpdateMisc")
+			tinsert(staggerTable, "UpdateEnd")
 
 			--Stagger updates
 			E.staggerUpdateRunning = true
@@ -1577,7 +1577,7 @@ do
 	-- @param func The function you want executed for this object.
 	function E:RegisterEventForObject(event, object, func)
 		if not (event and object and func) then
-			E:Print('Error. Usage: RegisterEventForObject(event, object, func)')
+			E:Print("Error. Usage: RegisterEventForObject(event, object, func)")
 			return
 		end
 
@@ -1603,7 +1603,7 @@ do
 	-- @param func The function you want unregistered for the object.
 	function E:UnregisterEventForObject(event, object, func)
 		if not (event and object and func) then
-			E:Print('Error. Usage: UnregisterEventForObject(event, object, func)')
+			E:Print("Error. Usage: UnregisterEventForObject(event, object, func)")
 			return
 		end
 
@@ -1630,7 +1630,7 @@ do
 
 	function E:UnregisterAllEventsForObject(object, func)
 		if not (object and func) then
-			E:Print('Error. Usage: UnregisterAllEventsForObject(object, func)')
+			E:Print("Error. Usage: UnregisterAllEventsForObject(object, func)")
 			return
 		end
 
@@ -1736,9 +1736,9 @@ function E:DBConversions()
 end
 
 function E:ConvertActionBarKeybinds()
-	for oldcmd, newcmd in pairs({ ELVUIBAR6BUTTON = 'ELVUIBAR2BUTTON', EXTRABAR7BUTTON = 'ELVUIBAR7BUTTON', EXTRABAR8BUTTON = 'ELVUIBAR8BUTTON', EXTRABAR9BUTTON = 'ELVUIBAR9BUTTON', EXTRABAR10BUTTON = 'ELVUIBAR10BUTTON' }) do
+	for oldcmd, newcmd in pairs({ ELVUIBAR6BUTTON = "ELVUIBAR2BUTTON", EXTRABAR7BUTTON = "ELVUIBAR7BUTTON", EXTRABAR8BUTTON = "ELVUIBAR8BUTTON", EXTRABAR9BUTTON = "ELVUIBAR9BUTTON", EXTRABAR10BUTTON = "ELVUIBAR10BUTTON" }) do
 		for i = 1, 12 do
-			local oldkey, newkey = format('%s%d', oldcmd, i), format('%s%d', newcmd, i)
+			local oldkey, newkey = format("%s%d", oldcmd, i), format("%s%d", newcmd, i)
 			for _, key in next, { GetBindingKey(oldkey) } do
 				SetBinding(key, newkey)
 			end
@@ -1810,16 +1810,16 @@ function E:Initialize()
 	twipe(E.private)
 
 
-	E.myguid = UnitGUID('player')
+	E.myguid = UnitGUID("player")
 
-	E.data = E.Libs.AceDB:New('ElvDB', E.DF, true)
-	E.data.RegisterCallback(E, 'OnProfileChanged', 'StaggeredUpdateAll')
-	E.data.RegisterCallback(E, 'OnProfileCopied', 'StaggeredUpdateAll')
-	E.data.RegisterCallback(E, 'OnProfileReset', 'OnProfileReset')
-	E.charSettings = E.Libs.AceDB:New('ElvPrivateDB', E.privateVars)
-	E.charSettings.RegisterCallback(E, 'OnProfileChanged', ReloadUI)
-	E.charSettings.RegisterCallback(E, 'OnProfileCopied', ReloadUI)
-	E.charSettings.RegisterCallback(E, 'OnProfileReset', 'OnPrivateProfileReset')
+	E.data = E.Libs.AceDB:New("ElvDB", E.DF, true)
+	E.data.RegisterCallback(E, "OnProfileChanged", "StaggeredUpdateAll")
+	E.data.RegisterCallback(E, "OnProfileCopied", "StaggeredUpdateAll")
+	E.data.RegisterCallback(E, "OnProfileReset", "OnProfileReset")
+	E.charSettings = E.Libs.AceDB:New("ElvPrivateDB", E.privateVars)
+	E.charSettings.RegisterCallback(E, "OnProfileChanged", ReloadUI)
+	E.charSettings.RegisterCallback(E, "OnProfileCopied", ReloadUI)
+	E.charSettings.RegisterCallback(E, "OnProfileReset", "OnPrivateProfileReset")
 	E.private = E.charSettings.profile
 	E.global = E.data.global
 	E.db = E.data.profile
@@ -1837,7 +1837,7 @@ function E:Initialize()
 	E:RefreshModulesDB()
 	E:LoadMovers()
 	E:UpdateMedia()
-	E:UpdateCooldownSettings('all')
+	E:UpdateCooldownSettings("all")
 	E:Contruct_StaticPopups()
 
 	E.Libs.DualSpec:EnhanceDatabase(E.data, "ElvUI")
@@ -1858,7 +1858,7 @@ function E:Initialize()
 
 	if E.db.general.loginmessage then
 		local msg = format(L["LOGIN_MSG"], E.version)
-		if Chat.Initialized then msg = select(2, Chat:FindURL('CHAT_MSG_DUMMY', msg)) end
+		if Chat.Initialized then msg = select(2, Chat:FindURL("CHAT_MSG_DUMMY", msg)) end
 		print(msg)
 		print(L["LOGIN_MSG_HELP"])
 	end

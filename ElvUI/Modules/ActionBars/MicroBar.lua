@@ -23,7 +23,7 @@ AB.MICRO_BUTTONS = {
 	"HelpMicroButton"
 }
 
-local microBar = CreateFrame('Frame', 'ElvUI_MicroBar', E.UIParent)
+local microBar = CreateFrame("Frame", "ElvUI_MicroBar", E.UIParent)
 microBar:SetSize(100, 100)
 
 local function onLeaveBar()
@@ -35,7 +35,7 @@ local function onUpdate(self, elapsed)
 	if watcher > 0.1 then
 		if not self:IsMouseOver() then
 			self.IsMouseOvered = nil
-			self:SetScript('OnUpdate', nil)
+			self:SetScript("OnUpdate", nil)
 			onLeaveBar()
 		end
 		watcher = 0
@@ -47,7 +47,7 @@ end
 local function onEnter(button)
 	if AB.db.microbar.mouseover and not microBar.IsMouseOvered then
 		microBar.IsMouseOvered = true
-		microBar:SetScript('OnUpdate', onUpdate)
+		microBar:SetScript("OnUpdate", onUpdate)
 		E:UIFrameFadeIn(microBar, 0.2, microBar:GetAlpha(), AB.db.microbar.alpha)
 	end
 
@@ -57,7 +57,7 @@ local function onEnter(button)
 
 	-- bag keybind support from actionbar module
 	if E.private.actionbar.enable then
-		AB:BindUpdate(button, 'MICRO')
+		AB:BindUpdate(button, "MICRO")
 	end
 end
 
@@ -68,7 +68,7 @@ local function onLeave(button)
 end
 
 function AB:HandleMicroButton(button)
-	assert(button, 'Invalid micro button name.')
+	assert(button, "Invalid micro button name.")
 
 	local pushed = button:GetPushedTexture()
 	local normal = button:GetNormalTexture()
@@ -77,8 +77,8 @@ function AB:HandleMicroButton(button)
 	button:SetTemplate()
 	button:SetParent(microBar)
 	button:GetHighlightTexture():Kill()
-	button:HookScript('OnEnter', onEnter)
-	button:HookScript('OnLeave', onLeave)
+	button:HookScript("OnEnter", onEnter)
+	button:HookScript("OnLeave", onLeave)
 	button:SetHitRectInsets(0, 0, 0, 0)
 
 	if button.Flash then
@@ -110,27 +110,27 @@ end
 function AB:UpdateMicroBarVisibility()
 	if InCombatLockdown() then
 		AB.NeedsUpdateMicroBarVisibility = true
-		AB:RegisterEvent('PLAYER_REGEN_ENABLED')
+		AB:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
 
-	local visibility = gsub(AB.db.microbar.visibility, '[\n\r]', '')
-	RegisterStateDriver(microBar.visibility, 'visibility', (AB.db.microbar.enabled and visibility) or 'hide')
+	local visibility = gsub(AB.db.microbar.visibility, "[\n\r]", "")
+	RegisterStateDriver(microBar.visibility, "visibility", (AB.db.microbar.enabled and visibility) or "hide")
 end
 
 local commandKeys = {
-	CharacterMicroButton = 'TOGGLECHARACTER0',
-	SpellbookMicroButton = 'TOGGLESPELLBOOK',
-	TalentMicroButton = 'TOGGLETALENTS',
-	AchievementMicroButton = 'TOGGLEACHIEVEMENT',
-	QuestLogMicroButton = 'TOGGLEQUESTLOG',
-	GuildMicroButton = 'TOGGLEGUILDTAB',
-	LFDMicroButton = 'TOGGLEGROUPFINDER',
-	MainMenuMicroButton = 'TOGGLEGAMEMENU',
+	CharacterMicroButton = "TOGGLECHARACTER0",
+	SpellbookMicroButton = "TOGGLESPELLBOOK",
+	TalentMicroButton = "TOGGLETALENTS",
+	AchievementMicroButton = "TOGGLEACHIEVEMENT",
+	QuestLogMicroButton = "TOGGLEQUESTLOG",
+	GuildMicroButton = "TOGGLEGUILDTAB",
+	LFDMicroButton = "TOGGLEGROUPFINDER",
+	MainMenuMicroButton = "TOGGLEGAMEMENU",
 
 	-- tbc specific
-	SocialsMicroButton = 'TOGGLESOCIAL',
-	WorldMapMicroButton = 'TOGGLEWORLDMAP',
+	SocialsMicroButton = "TOGGLESOCIAL",
+	WorldMapMicroButton = "TOGGLEWORLDMAP",
 	HelpMicroButton = nil, -- special
 }
 
@@ -209,13 +209,13 @@ function AB:UpdateMicroButtons()
 end
 
 function AB:SetupMicroBar()
-	microBar:CreateBackdrop(AB.db.transparent and 'Transparent', nil, nil, nil, nil, nil, nil, nil, 0)
-	microBar:Point('TOPLEFT', E.UIParent, 'TOPLEFT', 4, -48)
+	microBar:CreateBackdrop(AB.db.transparent and "Transparent", nil, nil, nil, nil, nil, nil, nil, 0)
+	microBar:Point("TOPLEFT", E.UIParent, "TOPLEFT", 4, -48)
 	microBar:EnableMouse(false)
 
-	microBar.visibility = CreateFrame('Frame', nil, E.UIParent, 'SecureHandlerStateTemplate')
-	microBar.visibility:SetScript('OnShow', function() microBar:Show() end)
-	microBar.visibility:SetScript('OnHide', function() microBar:Hide() end)
+	microBar.visibility = CreateFrame("Frame", nil, E.UIParent, "SecureHandlerStateTemplate")
+	microBar.visibility:SetScript("OnShow", function() microBar:Show() end)
+	microBar.visibility:SetScript("OnHide", function() microBar:Hide() end)
 
 	for _, x in next, AB.MICRO_BUTTONS do
 		AB:HandleMicroButton(_G[x])
@@ -223,15 +223,15 @@ function AB:SetupMicroBar()
 
 	MicroButtonPortrait:SetInside(CharacterMicroButton)
 
-	-- With this method we might don't taint anything. Instead of using :Kill()
+	-- With this method we might don"t taint anything. Instead of using :Kill()
 	local MenuPerformanceBar = MainMenuBarPerformanceBar
 	if MenuPerformanceBar then
 		MenuPerformanceBar:SetAlpha(0)
 		MenuPerformanceBar:Kill()
 	end
 
-	AB:SecureHook('UpdateMicroButtons')
-	-- AB:SecureHook('UpdateMicroButtonsParent')
+	AB:SecureHook("UpdateMicroButtons")
+	-- AB:SecureHook("UpdateMicroButtonsParent")
 	-- UpdateMicroButtonsParent(microBar)
 
 	PVPMicroButtonTexture:SetAllPoints()
@@ -243,5 +243,5 @@ function AB:SetupMicroBar()
 		PVPMicroButtonTexture:SetTexCoord(0.100, 0.475, 0.070, 0.940)
 	end
 
-	E:CreateMover(microBar, 'MicrobarMover', L["Micro Bar"], nil, nil, nil, 'ALL,ACTIONBARS', nil, 'actionbar,microbar')
+	E:CreateMover(microBar, "MicrobarMover", L["Micro Bar"], nil, nil, nil, "ALL,ACTIONBARS", nil, "actionbar,microbar")
 end

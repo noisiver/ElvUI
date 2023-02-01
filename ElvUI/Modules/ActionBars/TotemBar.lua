@@ -1,5 +1,5 @@
 local E, L, V, P, G = unpack(select(2, ...))
-local AB = E:GetModule('ActionBars')
+local AB = E:GetModule("ActionBars")
 local LSM = E.Libs.LSM
 
 local _G = _G
@@ -11,8 +11,8 @@ local InCombatLockdown = InCombatLockdown
 local RegisterStateDriver = RegisterStateDriver
 local hooksecurefunc = hooksecurefunc
 
-local bar = CreateFrame('Frame', 'ElvUI_TotemBar', E.UIParent, 'SecureHandlerStateTemplate')
-bar:SetFrameStrata('LOW')
+local bar = CreateFrame("Frame", "ElvUI_TotemBar", E.UIParent, "SecureHandlerStateTemplate")
+bar:SetFrameStrata("LOW")
 
 local SLOT_BORDER_COLORS = {
 	summon				= {r = 0, g = 0, b = 0},
@@ -30,21 +30,21 @@ local SLOT_EMPTY_TCOORDS = {
 }
 
 function AB:MultiCastFlyoutFrameOpenButton_Show(button, which, parent)
-	local color = which == 'page' and SLOT_BORDER_COLORS.summon or SLOT_BORDER_COLORS[parent:GetID()]
+	local color = which == "page" and SLOT_BORDER_COLORS.summon or SLOT_BORDER_COLORS[parent:GetID()]
 	button:SetBackdropBorderColor(color.r, color.g, color.b)
 
 	button:ClearAllPoints()
-	if AB.db.totemBar.flyoutDirection == 'UP' then
-		button:Point('BOTTOM', parent, 'TOP')
+	if AB.db.totemBar.flyoutDirection == "UP" then
+		button:Point("BOTTOM", parent, "TOP")
 	else
-		button:Point('TOP', parent, 'BOTTOM')
+		button:Point("TOP", parent, "BOTTOM")
 	end
 end
 
 function AB:MultiCastActionButton_Update(button)
 	if InCombatLockdown() then
 		AB.NeedsPositionAndSizeTotemBar = true
-		AB:RegisterEvent('PLAYER_REGEN_ENABLED')
+		AB:RegisterEvent("PLAYER_REGEN_ENABLED")
 	else
 		button:ClearAllPoints()
 		button:SetAllPoints(button.slotButton)
@@ -83,7 +83,7 @@ function AB:MultiCastFlyoutFrame_ToggleFlyout(frame, which, parent)
 	frame.top:SetTexture(nil)
 	frame.middle:SetTexture(nil)
 
-	local color = which == 'page' and SLOT_BORDER_COLORS.summon or SLOT_BORDER_COLORS[parent:GetID()]
+	local color = which == "page" and SLOT_BORDER_COLORS.summon or SLOT_BORDER_COLORS[parent:GetID()]
 	local numButtons = 0
 	local totalHeight = 0
 
@@ -92,12 +92,12 @@ function AB:MultiCastFlyoutFrame_ToggleFlyout(frame, which, parent)
 			button:SetTemplate()
 			button:StyleButton()
 
-			button.icon:SetDrawLayer('ARTWORK')
+			button.icon:SetDrawLayer("ARTWORK")
 			button.icon:SetInside(button)
 
 			-- these only need mouseover script, dont need the bind key script
-			AB:HookScript(button, 'OnEnter', 'TotemBar_OnEnter')
-			AB:HookScript(button, 'OnLeave', 'TotemBar_OnLeave')
+			AB:HookScript(button, "OnEnter", "TotemBar_OnEnter")
+			AB:HookScript(button, "OnLeave", "TotemBar_OnLeave")
 
 			bar.buttons[button] = true
 
@@ -112,10 +112,10 @@ function AB:MultiCastFlyoutFrame_ToggleFlyout(frame, which, parent)
 			button:ClearAllPoints()
 
 			local anchor = i == 1 and parent or frame.buttons[i - 1]
-			if AB.db.totemBar.flyoutDirection == 'UP' then
-				button:Point('BOTTOM', anchor, 'TOP', 0, AB.db.totemBar.flyoutSpacing)
+			if AB.db.totemBar.flyoutDirection == "UP" then
+				button:Point("BOTTOM", anchor, "TOP", 0, AB.db.totemBar.flyoutSpacing)
 			else
-				button:Point('TOP', anchor, 'BOTTOM', 0, -AB.db.totemBar.flyoutSpacing)
+				button:Point("TOP", anchor, "BOTTOM", 0, -AB.db.totemBar.flyoutSpacing)
 			end
 
 			button.icon:SetTexCoord(unpack(E.TexCoords))
@@ -124,7 +124,7 @@ function AB:MultiCastFlyoutFrame_ToggleFlyout(frame, which, parent)
 		end
 	end
 
-	if which == 'slot' then
+	if which == "slot" then
 		local tCoords = SLOT_EMPTY_TCOORDS[parent:GetID()]
 		frame.buttons[1].icon:SetTexCoord(tCoords.left, tCoords.right, tCoords.top, tCoords.bottom)
 	end
@@ -135,12 +135,12 @@ function AB:MultiCastFlyoutFrame_ToggleFlyout(frame, which, parent)
 
 	frame:ClearAllPoints()
 	closeButton:ClearAllPoints()
-	if AB.db.totemBar.flyoutDirection == 'UP' then
-		frame:Point('BOTTOM', parent, 'TOP')
-		closeButton:Point('TOP', frame, 'TOP')
+	if AB.db.totemBar.flyoutDirection == "UP" then
+		frame:Point("BOTTOM", parent, "TOP")
+		closeButton:Point("TOP", frame, "TOP")
 	else
-		frame:Point('TOP', parent, 'BOTTOM')
-		closeButton:Point('BOTTOM', frame, 'BOTTOM')
+		frame:Point("TOP", parent, "BOTTOM")
+		closeButton:Point("BOTTOM", frame, "BOTTOM")
 	end
 
 	frame:Height(totalHeight + closeButton:GetHeight())
@@ -170,7 +170,7 @@ end
 function AB:PositionAndSizeTotemBar()
 	if InCombatLockdown() then
 		AB.NeedsPositionAndSizeTotemBar = true
-		AB:RegisterEvent('PLAYER_REGEN_ENABLED')
+		AB:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
 
@@ -187,33 +187,33 @@ function AB:PositionAndSizeTotemBar()
 
 	local _, barFrameAnchor = barFrame:GetPoint()
 	if barFrameAnchor ~= bar then
-		barFrame:SetPoint('TOP', bar)
-		barFrame:SetPoint('BOTTOMLEFT', bar)
-		barFrame:SetPoint('BOTTOM', barFrameAnchor)
+		barFrame:SetPoint("TOP", bar)
+		barFrame:SetPoint("BOTTOMLEFT", bar)
+		barFrame:SetPoint("BOTTOM", barFrameAnchor)
 	end -- this is Simpy voodoo, dont change it
 
 	bar.mouseover = AB.db.totemBar.mouseover
 	bar:SetAlpha(bar.mouseover and 0 or AB.db.totemBar.alpha)
 
-	local visibility = gsub(AB.db.totemBar.visibility, '[\n\r]', '')
-	RegisterStateDriver(bar, 'visibility', visibility)
+	local visibility = gsub(AB.db.totemBar.visibility, "[\n\r]", "")
+	RegisterStateDriver(bar, "visibility", visibility)
 
 	local summonButton = MultiCastSummonSpellButton
 	summonButton:ClearAllPoints()
-	summonButton:Point('BOTTOMLEFT')
+	summonButton:Point("BOTTOMLEFT")
 	summonButton:Size(size)
 
 	for i = 1, numActiveSlots do
-		local button = _G['MultiCastSlotButton'..i]
-		local lastButton = _G['MultiCastSlotButton'..i - 1]
+		local button = _G["MultiCastSlotButton"..i]
+		local lastButton = _G["MultiCastSlotButton"..i - 1]
 
 		button:Size(size)
 		button:ClearAllPoints()
 
 		if i == 1 then
-			button:Point('LEFT', summonButton, 'RIGHT', buttonSpacing, 0)
+			button:Point("LEFT", summonButton, "RIGHT", buttonSpacing, 0)
 		else
-			button:Point('LEFT', lastButton, 'RIGHT', buttonSpacing, 0)
+			button:Point("LEFT", lastButton, "RIGHT", buttonSpacing, 0)
 		end
 	end
 
@@ -225,7 +225,7 @@ function AB:PositionAndSizeTotemBar()
 end
 
 function AB:UpdateTotemBindings()
-	local font = LSM:Fetch('font', AB.db.totemBar.font)
+	local font = LSM:Fetch("font", AB.db.totemBar.font)
 	local size, outline = AB.db.totemBar.fontSize, AB.db.totemBar.fontOutline
 
 	MultiCastSummonSpellButtonHotKey:FontTemplate(font, size, outline)
@@ -249,9 +249,9 @@ end
 function AB:MultiCastRecallSpellButton_Update(button)
 	if InCombatLockdown() then
 		AB.NeedsRecallButtonUpdate = true
-		AB:RegisterEvent('PLAYER_REGEN_ENABLED')
+		AB:RegisterEvent("PLAYER_REGEN_ENABLED")
 	else
-		if not button then button = MultiCastRecallSpellButton end -- if we call it with no button, assume it's this one
+		if not button then button = MultiCastRecallSpellButton end -- if we call it with no button, assume it"s this one
 		if button and button:GetID() then
 			if self.hooks.MultiCastRecallSpellButton_Update then
 				self.hooks.MultiCastRecallSpellButton_Update(button)
@@ -266,20 +266,20 @@ function AB:CreateTotemBar()
 	AB.TotemBar = bar -- Initialized
 
 	bar:Size(200, 30)
-	bar:Point('BOTTOM', E.UIParent, 0, 250)
+	bar:Point("BOTTOM", E.UIParent, 0, 250)
 	bar.buttons = {}
 
 	local barFrame = MultiCastActionBarFrame
-	barFrame:SetScript('OnUpdate', nil)
-	barFrame:SetScript('OnShow', nil)
-	barFrame:SetScript('OnHide', nil)
+	barFrame:SetScript("OnUpdate", nil)
+	barFrame:SetScript("OnShow", nil)
+	barFrame:SetScript("OnHide", nil)
 	barFrame:SetParent(bar)
 
 	local closeButton = MultiCastFlyoutFrameCloseButton
 	closeButton:SetTemplate()
 	closeButton:StyleButton()
 	closeButton.normalTexture:ClearAllPoints()
-	closeButton.normalTexture:SetPoint('CENTER')
+	closeButton.normalTexture:SetPoint("CENTER")
 	closeButton.normalTexture:SetSize(16, 16)
 	closeButton.normalTexture:SetTexture(E.Media.Textures.ArrowUp)
 	closeButton.normalTexture:SetTexCoord(0, 1, 0, 1)
@@ -291,7 +291,7 @@ function AB:CreateTotemBar()
 	openButton:SetTemplate()
 	openButton:StyleButton()
 	openButton.normalTexture:ClearAllPoints()
-	openButton.normalTexture:SetPoint('CENTER')
+	openButton.normalTexture:SetPoint("CENTER")
 	openButton.normalTexture:SetSize(16, 16)
 	openButton.normalTexture:SetTexture(E.Media.Textures.ArrowUp)
 	openButton.normalTexture:SetTexCoord(0, 1, 0, 1)
@@ -299,13 +299,13 @@ function AB:CreateTotemBar()
 	bar.buttons[openButton] = true
 
 	for i = 1, 4 do
-		local button = _G['MultiCastSlotButton'..i]
+		local button = _G["MultiCastSlotButton"..i]
 
 		button:SetTemplate()
 		button:StyleButton()
 
 		button.background:SetTexCoord(unpack(E.TexCoords))
-		button.background:SetDrawLayer('ARTWORK')
+		button.background:SetDrawLayer("ARTWORK")
 		button.background:SetInside(button)
 
 		button.overlay:Hide()
@@ -313,17 +313,17 @@ function AB:CreateTotemBar()
 		bar.buttons[button] = true
 	end
 
-	local isShaman = E.myclass == 'SHAMAN'
+	local isShaman = E.myclass == "SHAMAN"
 	for i = 1, 12 do
-		local button = _G['MultiCastActionButton'..i]
+		local button = _G["MultiCastActionButton"..i]
 		local icon = _G["MultiCastActionButton"..i.."Icon"]
 		local normal = _G["MultiCastActionButton"..i.."NormalTexture"]
 		local cooldown = _G["MultiCastActionButton"..i.."Cooldown"]
 		local hotkey = _G["MultiCastActionButton"..i.."HotKey"]
 
 		if isShaman then
-			button:SetAttribute('type2', 'destroytotem')
-			button:SetAttribute('*totem-slot*', TOTEM_PRIORITIES[i])
+			button:SetAttribute("type2", "destroytotem")
+			button:SetAttribute("*totem-slot*", TOTEM_PRIORITIES[i])
 		end
 
 		button:StyleButton()
@@ -334,7 +334,7 @@ function AB:CreateTotemBar()
 		normal:SetAlpha(0)
 
 		icon:SetTexCoord(unpack(E.TexCoords))
-		icon:SetDrawLayer('ARTWORK')
+		icon:SetDrawLayer("ARTWORK")
 		icon:SetInside()
 
 		hotkey.SetVertexColor = E.noop
@@ -347,23 +347,23 @@ function AB:CreateTotemBar()
 
 	local summonButton = MultiCastSummonSpellButton
 	AB:SkinMultiCastButton(summonButton)
-	summonButton.commandName = summonButton.buttonType..'1' -- hotkey support
+	summonButton.commandName = summonButton.buttonType.."1" -- hotkey support
 	bar.buttons[summonButton] = true
 
 	local spellButton = MultiCastRecallSpellButton
 	AB:SkinMultiCastButton(spellButton)
-	spellButton.commandName = spellButton.buttonType..'1' -- hotkey support
+	spellButton.commandName = spellButton.buttonType.."1" -- hotkey support
 	bar.buttons[spellButton] = true
 
 	for button in pairs(bar.buttons) do
-		button:HookScript('OnEnter', AB.TotemButton_OnEnter)
-		button:HookScript('OnLeave', AB.TotemButton_OnLeave)
+		button:HookScript("OnEnter", AB.TotemButton_OnEnter)
+		button:HookScript("OnLeave", AB.TotemButton_OnLeave)
 	end
 
-	hooksecurefunc(spellButton, 'SetPoint', function(button, point, attachTo, anchorPoint, xOffset, yOffset)
+	hooksecurefunc(spellButton, "SetPoint", function(button, point, attachTo, anchorPoint, xOffset, yOffset)
 		if InCombatLockdown() then
 			AB.NeedsRecallButtonUpdate = true
-			AB:RegisterEvent('PLAYER_REGEN_ENABLED')
+			AB:RegisterEvent("PLAYER_REGEN_ENABLED")
 		elseif xOffset ~= AB.db.totemBar.spacing or button:GetPoint(2) then
 			button:ClearAllPoints()
 			button:SetPoint(point, attachTo, anchorPoint, AB.db.totemBar.spacing, yOffset)
@@ -372,18 +372,18 @@ function AB:CreateTotemBar()
 
 	AB:UpdateTotemBindings()
 
-	AB:RawHook('MultiCastRecallSpellButton_Update', 'MultiCastRecallSpellButton_Update', true)
+	AB:RawHook("MultiCastRecallSpellButton_Update", "MultiCastRecallSpellButton_Update", true)
 
-	AB:SecureHook('MultiCastFlyoutFrameOpenButton_Show')
-	AB:SecureHook('MultiCastActionButton_Update')
-	AB:SecureHook('MultiCastFlyoutFrame_ToggleFlyout')
-	AB:SecureHook('MultiCastSlotButton_Update', 'StyleTotemSlotButton')
+	AB:SecureHook("MultiCastFlyoutFrameOpenButton_Show")
+	AB:SecureHook("MultiCastActionButton_Update")
+	AB:SecureHook("MultiCastFlyoutFrame_ToggleFlyout")
+	AB:SecureHook("MultiCastSlotButton_Update", "StyleTotemSlotButton")
 
-	AB:HookScript(MultiCastActionBarFrame, 'OnEnter', 'TotemBar_OnEnter')
-	AB:HookScript(MultiCastActionBarFrame, 'OnLeave', 'TotemBar_OnLeave')
+	AB:HookScript(MultiCastActionBarFrame, "OnEnter", "TotemBar_OnEnter")
+	AB:HookScript(MultiCastActionBarFrame, "OnLeave", "TotemBar_OnLeave")
 
-	AB:HookScript(MultiCastFlyoutFrame, 'OnEnter', 'TotemBar_OnEnter')
-	AB:HookScript(MultiCastFlyoutFrame, 'OnLeave', 'TotemBar_OnLeave')
+	AB:HookScript(MultiCastFlyoutFrame, "OnEnter", "TotemBar_OnEnter")
+	AB:HookScript(MultiCastFlyoutFrame, "OnLeave", "TotemBar_OnLeave")
 
-	E:CreateMover(bar, 'TotemBarMover', L["Totem Bar"], nil, nil, nil, nil, nil, 'actionbar,totemBar')
+	E:CreateMover(bar, "TotemBarMover", L["Totem Bar"], nil, nil, nil, nil, nil, "actionbar,totemBar")
 end

@@ -9,8 +9,8 @@ local function SetFont(obj, font, size, style, sr, sg, sb, sa, sox, soy, r, g, b
 	if not obj then return end
 
 	-- convert because of bad values between versions
-	if (style == '' or not style) then
-		style = 'NONE'
+	if (style == "" or not style) then
+		style = "NONE"
 	end
 
 	obj:SetFont(font, size, style)
@@ -36,10 +36,10 @@ function E:UpdateBlizzardFonts()
 	local db			= E.private.general
 	local NORMAL		= E.media.normFont
 	local NUMBER		= E.media.normFont
-	local NAMEFONT		= LSM:Fetch('font', db.namefont)
+	local NAMEFONT		= LSM:Fetch("font", db.namefont)
 
 	-- set an invisible font for xp, honor kill, etc
-	local COMBAT		= (E.eyefinity or E.ultrawide) and E.Media.Fonts.Invisible or LSM:Fetch('font', db.dmgfont)
+	local COMBAT		= (E.eyefinity or E.ultrawide) and E.Media.Fonts.Invisible or LSM:Fetch("font", db.dmgfont)
 
 	CHAT_FONT_HEIGHTS = chatFontHeights
 
@@ -63,7 +63,7 @@ function E:UpdateBlizzardFonts()
 	if db.replaceBlizzFonts then
 		local size, style, stock = E.db.general.fontSize, E.db.general.fontStyle, not db.unifiedBlizzFonts
 		if lastFont.font == NORMAL and lastFont.size == size and lastFont.style == style and lastFont.stock == stock then
-			return -- only execute this when needed as it's excessive to reset all of these
+			return -- only execute this when needed as it"s excessive to reset all of these
 		end
 
 		UNIT_NAME_FONT		= NAMEFONT
@@ -100,11 +100,11 @@ function E:UpdateBlizzardFonts()
 		SetFont(MailFont_Large,						NORMAL, 14)							-- 10  Mail
 		SetFont(NumberFont_Outline_Huge,			NUMBER, stock and huge or 28, thick)		-- 30
 		SetFont(NumberFont_Outline_Large,			NUMBER, stock and large or 15, outline)		-- 16
-		SetFont(NumberFont_Outline_Med,				NUMBER, medium, 'OUTLINE')					-- 14
-		SetFont(NumberFont_OutlineThick_Mono_Small,	NUMBER, size, 'OUTLINE')					-- 12
+		SetFont(NumberFont_Outline_Med,				NUMBER, medium, "OUTLINE")					-- 14
+		SetFont(NumberFont_OutlineThick_Mono_Small,	NUMBER, size, "OUTLINE")					-- 12
 		SetFont(NumberFont_Shadow_Med,				NORMAL, stock and medium or size)			-- 14  Chat EditBox
 		SetFont(NumberFont_Shadow_Small,			NORMAL, stock and small or size)			-- 12
-		SetFont(NumberFontNormalSmall,				NORMAL, stock and small or 11, 'OUTLINE')	-- 12  Calendar
+		SetFont(NumberFontNormalSmall,				NORMAL, stock and small or 11, "OUTLINE")	-- 12  Calendar
 		SetFont(PVPArenaTextString,					NORMAL, 22, outline)
 		SetFont(PVPInfoTextString,					NORMAL, 22, outline)
 		SetFont(QuestFont,							NORMAL, size)								-- 18  Quest rewards title(Rewards)
@@ -120,7 +120,7 @@ function E:UpdateBlizzardFonts()
 		SetFont(SystemFont_Med1,					NORMAL, size)								-- 12
 		SetFont(SystemFont_Med3,					NORMAL, medium)								-- 14
 		SetFont(SystemFont_Outline,					NORMAL, stock and size or 13, outline)		-- 13  Pet level on World map
-		SetFont(SystemFont_Outline_Small,			NUMBER, stock and small or size, 'OUTLINE')	-- 10
+		SetFont(SystemFont_Outline_Small,			NUMBER, stock and small or size, "OUTLINE")	-- 10
 		SetFont(SystemFont_OutlineThick_Huge2,		NORMAL, stock and huge or 20, thick)		-- 22
 		SetFont(SystemFont_OutlineThick_WTF,		NORMAL, stock and enormous or 32, outline)	-- 32  World Map
 		SetFont(SystemFont_Shadow_Huge1,			NORMAL, 20, outline)						-- Raid Warning, Boss emote frame too

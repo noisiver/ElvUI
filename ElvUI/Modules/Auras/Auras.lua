@@ -582,13 +582,13 @@ function A:UpdateHeader(header)
 end
 
 function A:CreateAuraHeader(filter)
-	local name, auraType = filter == 'HELPFUL' and 'ElvUIPlayerBuffs' or 'ElvUIPlayerDebuffs', filter == 'HELPFUL' and 'buffs' or 'debuffs'
+	local name, auraType = filter == "HELPFUL" and "ElvUIPlayerBuffs" or "ElvUIPlayerDebuffs", filter == "HELPFUL" and "buffs" or "debuffs"
 
 
 	local header = CreateFrame("Frame", name, UIParent)
 	header:SetClampedToScreen(true)
-	header:SetAttribute('unit', 'player')
-	header:SetAttribute('filter', filter)
+	header:SetAttribute("unit", "player")
+	header:SetAttribute("filter", filter)
 	header.filter = filter
 	header.auraType = auraType
 
@@ -627,7 +627,7 @@ function A:Initialize()
 		A.BuffFrame = A:CreateAuraHeader("HELPFUL")
 		A.BuffFrame:ClearAllPoints()
 		A.BuffFrame:Point("TOPRIGHT", MinimapCluster, "TOPLEFT", xoffset, E.Spacing)
-		E:CreateMover(A.BuffFrame, 'BuffsMover', L["Player Buffs"], nil, nil, nil, nil, nil, 'auras,buffs')
+		E:CreateMover(A.BuffFrame, "BuffsMover", L["Player Buffs"], nil, nil, nil, nil, nil, "auras,buffs")
 
 		A.BuffFrame.nextUpdate = -1
 		A.BuffFrame:SetScript("OnUpdate", function(bf, elapsed)
@@ -649,7 +649,7 @@ function A:Initialize()
 		A.DebuffFrame = A:CreateAuraHeader("HARMFUL")
 		A.DebuffFrame:ClearAllPoints()
 		A.DebuffFrame:Point("BOTTOMRIGHT", MinimapCluster, "BOTTOMLEFT", xoffset, E.Spacing)
-		E:CreateMover(A.DebuffFrame, 'DebuffsMover', L["Player Debuffs"], nil, nil, nil, nil, nil, 'auras,debuffs')
+		E:CreateMover(A.DebuffFrame, "DebuffsMover", L["Player Debuffs"], nil, nil, nil, nil, nil, "auras,debuffs")
 	end
 end
 

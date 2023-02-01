@@ -312,14 +312,14 @@ local function OnEvent(self, event, ...)
 		local func = eventHandlers[event]
 		if func then func(self, ...) end
 
-		if not IsAltKeyDown() and event == 'MODIFIER_STATE_CHANGED' and GetMouseFocus() == self then
+		if not IsAltKeyDown() and event == "MODIFIER_STATE_CHANGED" and GetMouseFocus() == self then
 			OnEnter(self)
 		end
 
 		if E.global.datatexts.settings.Guild.NoLabel then
 			self.text:SetFormattedText(displayString, #guildTable)
 		else
-			self.text:SetFormattedText(displayString, E.global.datatexts.settings.Guild.Label ~= '' and E.global.datatexts.settings.Guild.Label or GUILD..': ', #guildTable)
+			self.text:SetFormattedText(displayString, E.global.datatexts.settings.Guild.Label ~= "" and E.global.datatexts.settings.Guild.Label or GUILD..": ", #guildTable)
 		end
 	else
 		self.text:SetText(noGuildString)
@@ -327,13 +327,13 @@ local function OnEvent(self, event, ...)
 end
 
 local function ValueColorUpdate(hex)
-	displayString = strjoin('', E.global.datatexts.settings.Guild.NoLabel and '' or '%s', hex, '%d|r')
+	displayString = strjoin("", E.global.datatexts.settings.Guild.NoLabel and "" or "%s", hex, "%d|r")
 	noGuildString = hex..L["No Guild"]
 
 	if lastPanel then
-		OnEvent(lastPanel, 'ELVUI_COLOR_UPDATE')
+		OnEvent(lastPanel, "ELVUI_COLOR_UPDATE")
 	end
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext('Guild', SOCIAL_LABEL, {'CHAT_MSG_SYSTEM', 'GUILD_ROSTER_UPDATE', 'PLAYER_GUILD_UPDATE', 'GUILD_MOTD', 'MODIFIER_STATE_CHANGED'}, OnEvent, nil, Click, OnEnter, nil, GUILD, nil, ValueColorUpdate)
+DT:RegisterDatatext("Guild", SOCIAL_LABEL, {"CHAT_MSG_SYSTEM", "GUILD_ROSTER_UPDATE", "PLAYER_GUILD_UPDATE", "GUILD_MOTD", "MODIFIER_STATE_CHANGED"}, OnEvent, nil, Click, OnEnter, nil, GUILD, nil, ValueColorUpdate)

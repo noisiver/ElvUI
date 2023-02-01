@@ -15,7 +15,7 @@ local GetInventoryItemTexture = GetInventoryItemTexture
 local GetInspectSpecialization = LCS.GetInspectSpecialization
 local RETRIEVING_ITEM_INFO = RETRIEVING_ITEM_INFO
 
-local MATCH_ITEM_LEVEL = ITEM_LEVEL:gsub('%%d', '(%%d+)')
+local MATCH_ITEM_LEVEL = ITEM_LEVEL:gsub("%%d", "(%%d+)")
 local X2_INVTYPES, X2_EXCEPTIONS, ARMOR_SLOTS = {
 	INVTYPE_2HWEAPON = true,
 	INVTYPE_RANGEDRIGHT = true,
@@ -38,7 +38,7 @@ end
 
 function E:GetGearSlotInfo(unit, slot, deepScan)
 	local tt = E.ScanTooltip
-	tt:SetOwner(UIParent, 'ANCHOR_NONE')
+	tt:SetOwner(UIParent, "ANCHOR_NONE")
 	tt:SetInventoryItem(unit, slot)
 	tt:Show()
 
@@ -54,11 +54,11 @@ function E:GetGearSlotInfo(unit, slot, deepScan)
 		slotInfo.itemLevelColors = tt.itemLevelColors
 
 		for x = 1, tt:NumLines() do
-			local line = _G['ElvUI_ScanTooltipTextLeft'..x]
+			local line = _G["ElvUI_ScanTooltipTextLeft"..x]
 			if line then
 				local lineText = line:GetText()
 				if x == 1 and lineText == RETRIEVING_ITEM_INFO then
-					return 'tooSoon'
+					return "tooSoon"
 				else
 					E:InspectGearSlot(line, lineText, slotInfo)
 				end
@@ -67,12 +67,12 @@ function E:GetGearSlotInfo(unit, slot, deepScan)
 	else
 		local firstLine = ElvUI_ScanTooltipTextLeft1:GetText()
 		if firstLine == RETRIEVING_ITEM_INFO then
-			return 'tooSoon'
+			return "tooSoon"
 		end
 
-		local colorblind = GetCVarBool('colorblindmode') and 4 or 3
+		local colorblind = GetCVarBool("colorblindmode") and 4 or 3
 		for x = 2, colorblind do
-			local line = _G['ElvUI_ScanTooltipTextLeft'..x]
+			local line = _G["ElvUI_ScanTooltipTextLeft"..x]
 			if line then
 				local lineText = line:GetText()
 				local itemLevel = lineText and strmatch(lineText, MATCH_ITEM_LEVEL)
@@ -145,17 +145,17 @@ function E:CalculateAverageItemLevel(iLevelDB, unit)
 		isOK = false
 	end
 
-	return isOK and format('%0.2f', E:Round(total / 16, 2))
+	return isOK and format("%0.2f", E:Round(total / 16, 2))
 end
 
 function E:GetPlayerItemLevel()
-	return format('%0.2f', E:Round((select(2, E:GetAverageItemLevel())), 2))
+	return format("%0.2f", E:Round((select(2, E:GetAverageItemLevel())), 2))
 end
 
 do
 	local iLevelDB, tryAgain = {}, {}
 	function E:GetUnitItemLevel(unit)
-		if UnitIsUnit(unit, 'player') then
+		if UnitIsUnit(unit, "player") then
 			return E:GetPlayerItemLevel()
 		end
 
@@ -165,7 +165,7 @@ do
 		for i = 1, 17 do
 			if i ~= 4 then
 				local slotInfo = E:GetGearSlotInfo(unit, i)
-				if slotInfo == 'tooSoon' then
+				if slotInfo == "tooSoon" then
 					tinsert(tryAgain, i)
 				else
 					iLevelDB[i] = slotInfo.iLvl
@@ -174,7 +174,7 @@ do
 		end
 
 		if next(tryAgain) then
-			return 'tooSoon', unit, tryAgain, iLevelDB
+			return "tooSoon", unit, tryAgain, iLevelDB
 		end
 
 		return E:CalculateAverageItemLevel(iLevelDB, unit)

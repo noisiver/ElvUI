@@ -86,7 +86,7 @@ end
 -- Text Gradient by Simpy
 function E:TextGradient(text, ...)
 	local msg, total = "", utf8len(text)
-	local idx, num = 0, select('#', ...) / 3
+	local idx, num = 0, select("#", ...) / 3
 
 	for i = 1, total do
 		local x = utf8sub(text, i, i)
@@ -347,19 +347,19 @@ E.TimeThreshold = 3
 
 for i = 0, 14 do
 	E.TimeColors[i] = {r = 1, g = 1, b = 1}
-	E.TimeIndicatorColors[i] = '|cFFffffff'
+	E.TimeIndicatorColors[i] = "|cFFffffff"
 end
 
 E.TimeFormats = { -- short / indicator color
 	-- special options (3, 4): rounding
-	[0] = {'%dd', '%d%sd|r', '%.0fd', '%.0f%sd|r'},
-	[1] = {'%dh', '%d%sh|r', '%.0fh', '%.0f%sh|r'},
-	[2] = {'%dm', '%d%sm|r', '%.0fm', '%.0f%sm|r'},
+	[0] = {"%dd", "%d%sd|r", "%.0fd", "%.0f%sd|r"},
+	[1] = {"%dh", "%d%sh|r", "%.0fh", "%.0f%sh|r"},
+	[2] = {"%dm", "%d%sm|r", "%.0fm", "%.0f%sm|r"},
 	-- special options (3, 4): show seconds
-	[3] = {'%d', '%d', '%ds', '%d%ss|r'},
-	[4] = {'%.1f', '%.1f', '%.1fs', '%.1f%ss|r'},
+	[3] = {"%d", "%d", "%ds", "%d%ss|r"},
+	[4] = {"%.1f", "%.1f", "%.1fs", "%.1f%ss|r"},
 
-	[5] = {'%d:%02d', '%d%s:|r%02d'}, -- mmss
+	[5] = {"%d:%02d", "%d%s:|r%02d"}, -- mmss
 }
 
 for _, x in pairs(E.TimeFormats) do
@@ -415,10 +415,10 @@ end
 
 -- Taken from FormattingUtil.lua and modified by Simpy
 function E:FormatLargeNumber(amount, seperator)
-	local num, len = '', strlen(amount)
+	local num, len = "", strlen(amount)
 	local trd = len % 3
 
-	if not seperator then seperator = ',' end
+	if not seperator then seperator = "," end
 	for i=4, len, 3 do num = seperator..strsub(amount, -(i - 1), -(i - 3))..num end
 
 	return strsub(amount, 1, (trd == 0) and 3 or trd)..num
@@ -426,9 +426,9 @@ end
 
 --Money text formatting, code taken from Scrooge by thelibrarian (http://www.wowace.com/addons/scrooge/)
 local COLOR_COPPER, COLOR_SILVER, COLOR_GOLD = "|cffeda55f", "|cffc7c7cf", "|cffffd700"
-local ICON_COPPER = E:TextureString(E.Media.Textures.Coins, ':14:14:0:0:64:32:0:21:1:20')
-local ICON_GOLD = E:TextureString(E.Media.Textures.Coins, ':14:14:0:0:64:32:22:42:1:20')
-local ICON_SILVER = E:TextureString(E.Media.Textures.Coins, ':14:14:0:0:64:32:43:64:1:20')
+local ICON_COPPER = E:TextureString(E.Media.Textures.Coins, ":14:14:0:0:64:32:0:21:1:20")
+local ICON_GOLD = E:TextureString(E.Media.Textures.Coins, ":14:14:0:0:64:32:22:42:1:20")
+local ICON_SILVER = E:TextureString(E.Media.Textures.Coins, ":14:14:0:0:64:32:43:64:1:20")
 function E:FormatMoney(amount, style, textonly)
 	local coppername = textonly and L["copperabbrev"] or ICON_COPPER
 	local silvername = textonly and L["silverabbrev"] or ICON_SILVER
@@ -489,6 +489,6 @@ function E:FormatMoney(amount, style, textonly)
 		end
 	end
 
-	-- Shouldn't be here; punt
+	-- Shouldn"t be here; punt
 	return self:FormatMoney(amount, "SMART")
 end

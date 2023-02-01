@@ -1,5 +1,5 @@
 local E, L, V, P, G = unpack(ElvUI)
-local DT = E:GetModule('DataTexts')
+local DT = E:GetModule("DataTexts")
 
 local _G = _G
 local format, tonumber, wipe = format, tonumber, wipe
@@ -8,22 +8,22 @@ local GetMoney = GetMoney
 
 local BONUS_ROLL_REWARD_MONEY = BONUS_ROLL_REWARD_MONEY
 
-local iconString = '|T%s:16:16:0:0:64:64:4:60:4:60|t'
-DT.CurrencyList = { GOLD = BONUS_ROLL_REWARD_MONEY, BACKPACK = 'Backpack' }
+local iconString = "|T%s:16:16:0:0:64:64:4:60:4:60|t"
+DT.CurrencyList = { GOLD = BONUS_ROLL_REWARD_MONEY, BACKPACK = "Backpack" }
 
 local function OnClick()
-	_G.ToggleCharacter('TokenFrame')
+	_G.ToggleCharacter("TokenFrame")
 end
 
 local function AddInfo(id)
 	local info, name, icon = DT:CurrencyInfo(id)
 	if name then
-		local textRight = '%s'
+		local textRight = "%s"
 		if E.global.datatexts.settings.Currencies.maxCurrency and info.maxQuantity and info.maxQuantity > 0 then
-			textRight = '%s / '..info.quantity
+			textRight = "%s / "..info.quantity
 		end
 
-		DT.tooltip:AddDoubleLine(format('%s %s', icon, name), format(textRight, info.quantity), 1, 1, 1, 1, 1, 1)
+		DT.tooltip:AddDoubleLine(format("%s %s", icon, name), format(textRight, info.quantity), 1, 1, 1, 1, 1, 1)
 	end
 end
 
@@ -32,7 +32,7 @@ local function AddHeader(id, addLine)
 	if (not E.global.datatexts.settings.Currencies.headers) or shownHeaders[id] then return end
 
 	if addLine then
-		DT.tooltip:AddLine(' ')
+		DT.tooltip:AddLine(" ")
 	end
 
 	DT.tooltip:AddLine(E.global.datatexts.settings.Currencies.tooltipData[id][1])
@@ -41,20 +41,20 @@ end
 
 local goldText
 local function OnEvent(self)
-	goldText = E:FormatMoney(GetMoney(), E.global.datatexts.settings.Currencies.goldFormat or 'BLIZZARD', not E.global.datatexts.settings.Currencies.goldCoins)
+	goldText = E:FormatMoney(GetMoney(), E.global.datatexts.settings.Currencies.goldFormat or "BLIZZARD", not E.global.datatexts.settings.Currencies.goldCoins)
 
 	local displayed = E.global.datatexts.settings.Currencies.displayedCurrency
-	if displayed == 'BACKPACK' then
+	if displayed == "BACKPACK" then
 		local displayString
 		for i = 1, 3 do
 			local info = DT:BackpackCurrencyInfo(i)
 			if info and info.quantity then
-				displayString = (i > 1 and displayString..' ' or '')..format('%s %s', format(iconString, info.iconFileID), E:ShortValue(info.quantity))
+				displayString = (i > 1 and displayString.." " or "")..format("%s %s", format(iconString, info.iconFileID), E:ShortValue(info.quantity))
 			end
 		end
 
 		self.text:SetText(displayString or goldText)
-	elseif displayed == 'GOLD' then
+	elseif displayed == "GOLD" then
 		self.text:SetText(goldText)
 	else
 		local id = tonumber(displayed)
@@ -64,12 +64,12 @@ local function OnEvent(self)
 		if not name then return end
 
 		local style = E.global.datatexts.settings.Currencies.displayStyle
-		if style == 'ICON' then
-			self.text:SetFormattedText('%s %s', icon, E:ShortValue(info.quantity))
-		elseif style == 'ICON_TEXT' then
-			self.text:SetFormattedText('%s %s %s', icon, name, E:ShortValue(info.quantity))
+		if style == "ICON" then
+			self.text:SetFormattedText("%s %s", icon, E:ShortValue(info.quantity))
+		elseif style == "ICON_TEXT" then
+			self.text:SetFormattedText("%s %s %s", icon, name, E:ShortValue(info.quantity))
 		else --ICON_TEXT_ABBR
-			self.text:SetFormattedText('%s %s %s', icon, E:AbbreviateString(name), E:ShortValue(info.quantity))
+			self.text:SetFormattedText("%s %s %s", icon, E:AbbreviateString(name), E:ShortValue(info.quantity))
 		end
 	end
 end
@@ -89,7 +89,7 @@ local function OnEnter()
 	end
 
 	if addLine then
-		DT.tooltip:AddLine(' ')
+		DT.tooltip:AddLine(" ")
 	end
 
 	for _, info in pairs(E.global.datatexts.customCurrencies) do
@@ -100,11 +100,11 @@ local function OnEnter()
 	end
 
 	if addLine2 then
-		DT.tooltip:AddLine(' ')
+		DT.tooltip:AddLine(" ")
 	end
 
-	DT.tooltip:AddDoubleLine(L["Gold"]..':', goldText, nil, nil, nil, 1, 1, 1)
+	DT.tooltip:AddDoubleLine(L["Gold"]..":", goldText, nil, nil, nil, 1, 1, 1)
 	DT.tooltip:Show()
 end
 
-DT:RegisterDatatext('Currencies', nil, {'PLAYER_MONEY', 'SEND_MAIL_MONEY_CHANGED', 'SEND_MAIL_COD_CHANGED', 'PLAYER_TRADE_MONEY', 'TRADE_MONEY_CHANGED', 'CHAT_MSG_CURRENCY', 'PLAYER_MONEY'}, OnEvent, nil, OnClick, OnEnter, nil, _G.CURRENCY)
+DT:RegisterDatatext("Currencies", nil, {"PLAYER_MONEY", "SEND_MAIL_MONEY_CHANGED", "SEND_MAIL_COD_CHANGED", "PLAYER_TRADE_MONEY", "TRADE_MONEY_CHANGED", "CHAT_MSG_CURRENCY", "PLAYER_MONEY"}, OnEvent, nil, OnClick, OnEnter, nil, _G.CURRENCY)

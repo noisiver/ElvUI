@@ -1,6 +1,6 @@
 local E, L, V, P, G = unpack(select(2, ...))
-local M = E:GetModule('Misc')
-local CH = E:GetModule('Chat')
+local M = E:GetModule("Misc")
+local CH = E:GetModule("Chat")
 
 local format, wipe, pairs = format, wipe, pairs
 local strmatch, strlower, gmatch, gsub = strmatch, strlower, gmatch, gsub
@@ -21,9 +21,9 @@ function M:UpdateBubbleBorder()
 	if not str then return end
 
 	local option = E.private.general.chatBubbles
-	if option == 'backdrop' then
+	if option == "backdrop" then
 		holder:SetBackdropBorderColor(str:GetTextColor())
-	elseif option == 'backdrop_noborder' then
+	elseif option == "backdrop_noborder" then
 		holder:SetBackdropBorderColor(0,0,0,0)
 	end
 
@@ -39,9 +39,9 @@ function M:UpdateBubbleBorder()
 
 	if E.private.chat.enable and E.private.general.classColorMentionsSpeech then
 		local isFirstWord, rebuiltString
-		if text and strmatch(text, '%s-%S+%s*') then
-			for word in gmatch(text, '%s-%S+%s*') do
-				local tempWord = gsub(word, '^[%s%p]-([^%s%p]+)([%-]?[^%s%p]-)[%s%p]*$', '%1%2')
+		if text and strmatch(text, "%s-%S+%s*") then
+			for word in gmatch(text, "%s-%S+%s*") do
+				local tempWord = gsub(word, "^[%s%p]-([^%s%p]+)([%-]?[^%s%p]-)[%s%p]*$", "%1%2")
 				local lowerCaseWord = strlower(tempWord)
 
 				local classMatch = CH.ClassNames[lowerCaseWord]
@@ -50,7 +50,7 @@ function M:UpdateBubbleBorder()
 				if wordMatch and not E.global.chat.classColorMentionExcludedNames[wordMatch] then
 					local classColorTable = E:ClassColor(classMatch)
 					if classColorTable then
-						word = gsub(word, gsub(tempWord, '%-','%%-'), format('|cff%.2x%.2x%.2x%s|r', classColorTable.r*255, classColorTable.g*255, classColorTable.b*255, tempWord))
+						word = gsub(word, gsub(tempWord, "%-","%%-"), format("|cff%.2x%.2x%.2x%s|r", classColorTable.r*255, classColorTable.g*255, classColorTable.b*255, tempWord))
 					end
 				end
 
@@ -58,7 +58,7 @@ function M:UpdateBubbleBorder()
 					rebuiltString = word
 					isFirstWord = true
 				else
-					rebuiltString = format('%s%s', rebuiltString, word)
+					rebuiltString = format("%s%s", rebuiltString, word)
 				end
 			end
 
@@ -73,12 +73,12 @@ function M:AddChatBubbleName(chatBubble, guid, name)
 	if not name then return end
 
 	local color = PRIEST_COLOR
-	local data = guid and guid ~= '' and CH:GetPlayerInfoByGUID(guid)
+	local data = guid and guid ~= "" and CH:GetPlayerInfoByGUID(guid)
 	if data and data.classColor then
 		color = data.classColor
 	end
 
-	chatBubble.Name:SetFormattedText('|c%s%s|r', color.colorStr, name)
+	chatBubble.Name:SetFormattedText("|c%s%s|r", color.colorStr, name)
 	chatBubble.Name:Width(chatBubble:GetWidth()-10)
 end
 
@@ -214,7 +214,7 @@ function M:IsChatBubble(frame)
 end
 
 local function ChatBubble_OnEvent(_, event, msg, sender, _, _, _, _, _, _, _, _, _, guid)
-	if event == 'PLAYER_ENTERING_WORLD' then --Clear caches
+	if event == "PLAYER_ENTERING_WORLD" then --Clear caches
 		wipe(messageToGUID)
 		wipe(messageToSender)
 	elseif E.private.general.chatBubbleName then
@@ -246,20 +246,20 @@ local function ChatBubble_OnUpdate(eventFrame, elapsed)
 end
 
 function M:LoadChatBubbles()
-	yOffset = (E.private.general.chatBubbles == 'backdrop' and 2) or (E.private.general.chatBubbles == 'backdrop_noborder' and -2) or 0
+	yOffset = (E.private.general.chatBubbles == "backdrop" and 2) or (E.private.general.chatBubbles == "backdrop_noborder" and -2) or 0
 
-	M.BubbleFrame = CreateFrame('Frame')
-	M.BubbleFrame:RegisterEvent('CHAT_MSG_SAY')
-	M.BubbleFrame:RegisterEvent('CHAT_MSG_YELL')
-	M.BubbleFrame:RegisterEvent('CHAT_MSG_MONSTER_SAY')
-	M.BubbleFrame:RegisterEvent('CHAT_MSG_MONSTER_YELL')
-	M.BubbleFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
+	M.BubbleFrame = CreateFrame("Frame")
+	M.BubbleFrame:RegisterEvent("CHAT_MSG_SAY")
+	M.BubbleFrame:RegisterEvent("CHAT_MSG_YELL")
+	M.BubbleFrame:RegisterEvent("CHAT_MSG_MONSTER_SAY")
+	M.BubbleFrame:RegisterEvent("CHAT_MSG_MONSTER_YELL")
+	M.BubbleFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
-	if E.private.general.chatBubbles ~= 'disabled' then
-		M.BubbleFrame:SetScript('OnEvent', ChatBubble_OnEvent)
-		M.BubbleFrame:SetScript('OnUpdate', ChatBubble_OnUpdate)
+	if E.private.general.chatBubbles ~= "disabled" then
+		M.BubbleFrame:SetScript("OnEvent", ChatBubble_OnEvent)
+		M.BubbleFrame:SetScript("OnUpdate", ChatBubble_OnUpdate)
 	else
-		M.BubbleFrame:SetScript('OnEvent', nil)
-		M.BubbleFrame:SetScript('OnUpdate', nil)
+		M.BubbleFrame:SetScript("OnEvent", nil)
+		M.BubbleFrame:SetScript("OnUpdate", nil)
 	end
 end

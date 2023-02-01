@@ -1,5 +1,5 @@
 local E, L, V, P, G = unpack(ElvUI)
-local DT = E:GetModule('DataTexts')
+local DT = E:GetModule("DataTexts")
 
 local next = next
 local pairs = pairs
@@ -9,11 +9,11 @@ local GetLatestThreeSenders = GetLatestThreeSenders
 local HAVE_MAIL_FROM = HAVE_MAIL_FROM
 local MAIL_LABEL = MAIL_LABEL
 
-local displayString, lastPanel = ''
+local displayString, lastPanel = ""
 
 local function OnEvent(self)
 	lastPanel = self
-	self.text:SetFormattedText(displayString, HasNewMail() and 'New Mail' or 'No Mail')
+	self.text:SetFormattedText(displayString, HasNewMail() and "New Mail" or "No Mail")
 end
 
 local function OnEnter()
@@ -23,7 +23,7 @@ local function OnEnter()
 	if not next(senders) then return end
 
 	DT.tooltip:AddLine(HasNewMail() and HAVE_MAIL_FROM or MAIL_LABEL, 1, 1, 1)
-	DT.tooltip:AddLine(' ')
+	DT.tooltip:AddLine(" ")
 
 	for _, sender in pairs(senders) do
 		DT.tooltip:AddLine(sender)
@@ -33,10 +33,10 @@ local function OnEnter()
 end
 
 local function ValueColorUpdate(hex)
-	displayString = strjoin(hex, '%s|r')
+	displayString = strjoin(hex, "%s|r")
 
 	if lastPanel then OnEvent(lastPanel) end
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext('Mail', nil, {'MAIL_INBOX_UPDATE', 'UPDATE_PENDING_MAIL', 'MAIL_CLOSED', 'MAIL_SHOW'}, OnEvent, nil, nil, OnEnter, nil, MAIL_LABEL, nil, ValueColorUpdate)
+DT:RegisterDatatext("Mail", nil, {"MAIL_INBOX_UPDATE", "UPDATE_PENDING_MAIL", "MAIL_CLOSED", "MAIL_SHOW"}, OnEvent, nil, nil, OnEnter, nil, MAIL_LABEL, nil, ValueColorUpdate)

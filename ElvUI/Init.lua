@@ -37,7 +37,7 @@ Engine[5] = E.DF.global
 ElvUI = Engine
 
 E.oUF = ElvUF
-assert(E.oUF, 'ElvUI was unable to locate oUF.')
+assert(E.oUF, "ElvUI was unable to locate oUF.")
 
 E.ActionBars = E:NewModule("ActionBars", "AceHook-3.0", "AceEvent-3.0")
 E.AFK = E:NewModule("AFK", "AceEvent-3.0", "AceTimer-3.0")
@@ -50,21 +50,21 @@ E.DataTexts = E:NewModule("DataTexts", "AceTimer-3.0", "AceHook-3.0", "AceEvent-
 E.DebugTools = E:NewModule("DebugTools", "AceEvent-3.0", "AceHook-3.0")
 E.Distributor = E:NewModule("Distributor", "AceEvent-3.0", "AceTimer-3.0", "AceComm-3.0", "AceSerializer-3.0")
 E.Layout = E:NewModule("Layout", "AceEvent-3.0")
-E.Minimap = E:NewModule('Minimap','AceHook-3.0','AceEvent-3.0','AceTimer-3.0')
-E.Misc = E:NewModule('Misc','AceEvent-3.0','AceTimer-3.0','AceHook-3.0')
+E.Minimap = E:NewModule("Minimap","AceHook-3.0","AceEvent-3.0","AceTimer-3.0")
+E.Misc = E:NewModule("Misc","AceEvent-3.0","AceTimer-3.0","AceHook-3.0")
 E.ModuleCopy = E:NewModule("ModuleCopy", "AceEvent-3.0", "AceTimer-3.0", "AceComm-3.0", "AceSerializer-3.0")
 E.NamePlates = E:NewModule("NamePlates", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0")
 E.PluginInstaller = E:NewModule("PluginInstaller")
 E.RaidUtility = E:NewModule("RaidUtility", "AceEvent-3.0")
-E.Skins = E:NewModule('Skins','AceTimer-3.0','AceHook-3.0','AceEvent-3.0')
-E.Tooltip = E:NewModule('Tooltip','AceTimer-3.0','AceHook-3.0','AceEvent-3.0')
+E.Skins = E:NewModule("Skins","AceTimer-3.0","AceHook-3.0","AceEvent-3.0")
+E.Tooltip = E:NewModule("Tooltip","AceTimer-3.0","AceHook-3.0","AceEvent-3.0")
 E.TotemBar = E:NewModule("TotemBar","AceEvent-3.0")
-E.TotemTracker = E:NewModule('TotemTracker','AceEvent-3.0')
+E.TotemTracker = E:NewModule("TotemTracker","AceEvent-3.0")
 E.UnitFrames = E:NewModule("UnitFrames", "AceTimer-3.0", "AceEvent-3.0", "AceHook-3.0")
 E.WorldMap = E:NewModule("WorldMap", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0")
 
-E.InfoColor = '|cff1784d1' -- blue
-E.InfoColor2 = '|cff9b9b9b' -- silver
+E.InfoColor = "|cff1784d1" -- blue
+E.InfoColor2 = "|cff9b9b9b" -- silver
 E.twoPixelsPlease = false -- changing this option is not supported! :P
 
 do -- this is different from E.locale because we need to convert for ace locale files
@@ -92,7 +92,7 @@ do
 
 	E:AddLib("AceAddon", AceAddon, AceAddonMinor)
 	E:AddLib("AceDB", "AceDB-3.0")
-	E:AddLib('ACH', 'LibAceConfigHelper')
+	E:AddLib("ACH", "LibAceConfigHelper")
 	E:AddLib("EP", "LibElvUIPlugin-1.0")
 	E:AddLib("LSM", "LibSharedMedia-3.0")
 	E:AddLib("ACL", "AceLocale-3.0-ElvUI")
@@ -106,7 +106,7 @@ do
 	E:AddLib("Masque", "Masque", true)
 	E:AddLib("Translit", "LibTranslit-1.0")
 	E:AddLib("DualSpec", "LibDualSpec-1.0")
-	E:AddLib('LCS', 'LibClassicSpecs-ElvUI')
+	E:AddLib("LCS", "LibClassicSpecs-ElvUI")
 
 	-- backwards compatible for plugins
 	E.LSM = E.Libs.LSM
@@ -115,10 +115,10 @@ do
 end
 
 do
-	local a,b,c = '','([%(%)%.%%%+%-%*%?%[%^%$])','%%%1'
+	local a,b,c = "","([%(%)%.%%%+%-%*%?%[%^%$])","%%%1"
 	function E:EscapeString(s) return gsub(s,b,c) end
 
-	local d = {'|[TA].-|[ta]','|c[fF][fF]%x%x%x%x%x%x','|r','^%s+','%s+$'}
+	local d = {"|[TA].-|[ta]","|c[fF][fF]%x%x%x%x%x%x","|r","^%s+","%s+$"}
 	function E:StripString(s, ignoreTextures)
 		for i = ignoreTextures and 2 or 1, #d do s = gsub(s,d[i],a) end
 		return s
@@ -179,8 +179,8 @@ function E:OnInitialize()
 		end
 	end
 
-	E.ScanTooltip = CreateFrame('GameTooltip', 'ElvUI_ScanTooltip', UIParent, 'GameTooltipTemplate')
-	E.EasyMenu = CreateFrame('Frame', 'ElvUI_EasyMenu', UIParent, 'UIDropDownMenuTemplate')
+	E.ScanTooltip = CreateFrame("GameTooltip", "ElvUI_ScanTooltip", UIParent, "GameTooltipTemplate")
+	E.EasyMenu = CreateFrame("Frame", "ElvUI_EasyMenu", UIParent, "UIDropDownMenuTemplate")
 
 	E.PixelMode = E.twoPixelsPlease or E.private.general.pixelPerfect -- keep this over `UIScale`
 	E.Border = (E.PixelMode and not E.twoPixelsPlease) and 1 or 2
@@ -202,11 +202,11 @@ end
 
 function E:SetEasyMenuAnchor(menu, frame)
 	local point = E:GetScreenQuadrant(frame)
-	local bottom = point and strfind(point, 'BOTTOM')
-	local left = point and strfind(point, 'LEFT')
+	local bottom = point and strfind(point, "BOTTOM")
+	local left = point and strfind(point, "LEFT")
 
-	local anchor1 = (bottom and left and 'BOTTOMLEFT') or (bottom and 'BOTTOMRIGHT') or (left and 'TOPLEFT') or 'TOPRIGHT'
-	local anchor2 = (bottom and left and 'TOPLEFT') or (bottom and 'TOPRIGHT') or (left and 'BOTTOMLEFT') or 'BOTTOMRIGHT'
+	local anchor1 = (bottom and left and "BOTTOMLEFT") or (bottom and "BOTTOMRIGHT") or (left and "TOPLEFT") or "TOPRIGHT"
+	local anchor2 = (bottom and left and "TOPLEFT") or (bottom and "TOPRIGHT") or (left and "BOTTOMLEFT") or "BOTTOMRIGHT"
 
 	UIDropDownMenu_SetAnchor(menu, 0, 0, anchor1, frame, anchor2)
 end

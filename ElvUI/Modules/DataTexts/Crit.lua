@@ -21,7 +21,7 @@ local RANGED_CRIT_CHANCE = RANGED_CRIT_CHANCE
 local SPELL_CRIT_CHANCE = SPELL_CRIT_CHANCE
 
 local critChance
-local displayString, lastPanel = ''
+local displayString, lastPanel = ""
 
 local function OnEvent(self, event)
 	if event == "SPELL_UPDATE_USABLE" then
@@ -39,7 +39,7 @@ local function OnEvent(self, event)
 	if E.global.datatexts.settings.Crit.NoLabel then
 		self.text:SetFormattedText(displayString, critChance)
 	else
-		self.text:SetFormattedText(displayString, E.global.datatexts.settings.Crit.Label ~= '' and E.global.datatexts.settings.Crit.Label or CRIT_ABBR..': ', critChance)
+		self.text:SetFormattedText(displayString, E.global.datatexts.settings.Crit.Label ~= "" and E.global.datatexts.settings.Crit.Label or CRIT_ABBR..": ", critChance)
 	end
 
 	lastPanel = self
@@ -69,7 +69,7 @@ local function OnEnter(self)
 end
 
 local function ValueColorUpdate(hex)
-	displayString = strjoin('', E.global.datatexts.settings.Crit.NoLabel and '' or '%s', hex, '%.'..E.global.datatexts.settings.Crit.decimalLength..'f%%|r')
+	displayString = strjoin("", E.global.datatexts.settings.Crit.NoLabel and "" or "%s", hex, "%."..E.global.datatexts.settings.Crit.decimalLength.."f%%|r")
 
 	if lastPanel ~= nil then
 		OnEvent(lastPanel)
@@ -77,4 +77,4 @@ local function ValueColorUpdate(hex)
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("Crit Chance", L['Enhancements'], {"SPELL_UPDATE_USABLE", "ACTIVE_TALENT_GROUP_CHANGED", "PLAYER_TALENT_UPDATE", "PLAYER_DAMAGE_DONE_MODS"}, OnEvent, nil, nil, OnEnter, nil, MELEE_CRIT_CHANCE, nil, ValueColorUpdate)
+DT:RegisterDatatext("Crit Chance", L["Enhancements"], {"SPELL_UPDATE_USABLE", "ACTIVE_TALENT_GROUP_CHANGED", "PLAYER_TALENT_UPDATE", "PLAYER_DAMAGE_DONE_MODS"}, OnEvent, nil, nil, OnEnter, nil, MELEE_CRIT_CHANCE, nil, ValueColorUpdate)

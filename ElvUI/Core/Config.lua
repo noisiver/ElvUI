@@ -240,62 +240,62 @@ end
 function E:CreateMoverPopup()
 	local r, g, b = unpack(E.media.rgbvaluecolor)
 
-	local f = CreateFrame('Frame', 'ElvUIMoverPopupWindow', UIParent)
-	f:SetFrameStrata('FULLSCREEN_DIALOG')
+	local f = CreateFrame("Frame", "ElvUIMoverPopupWindow", UIParent)
+	f:SetFrameStrata("FULLSCREEN_DIALOG")
 	f:SetToplevel(true)
 	f:EnableMouse(true)
 	f:SetMovable(true)
 	f:SetFrameLevel(99)
 	f:SetClampedToScreen(true)
 	f:Size(370, 190)
-	f:SetTemplate('Transparent')
-	f:Point('BOTTOM', UIParent, 'CENTER', 0, 100)
+	f:SetTemplate("Transparent")
+	f:Point("BOTTOM", UIParent, "CENTER", 0, 100)
 	f:Hide()
 
-	local header = CreateFrame('Button', nil, f)
+	local header = CreateFrame("Button", nil, f)
 	header:SetTemplate(nil, true)
 	header:Size(100, 25)
-	header:SetPoint('CENTER', f, 'TOP')
+	header:SetPoint("CENTER", f, "TOP")
 	header:SetFrameLevel(header:GetFrameLevel() + 2)
 	header:EnableMouse(true)
-	header:RegisterForClicks('AnyUp', 'AnyDown')
-	header:SetScript('OnMouseDown', function() f:StartMoving() end)
-	header:SetScript('OnMouseUp', function() f:StopMovingOrSizing() end)
+	header:RegisterForClicks("AnyUp", "AnyDown")
+	header:SetScript("OnMouseDown", function() f:StartMoving() end)
+	header:SetScript("OnMouseUp", function() f:StopMovingOrSizing() end)
 	f.header = header
 
-	local title = header:CreateFontString(nil, 'OVERLAY')
+	local title = header:CreateFontString(nil, "OVERLAY")
 	title:FontTemplate()
-	title:Point('CENTER', header, 'CENTER')
-	title:SetText('ElvUI')
+	title:Point("CENTER", header, "CENTER")
+	title:SetText("ElvUI")
 	f.title = title
 
-	local desc = f:CreateFontString(nil, 'ARTWORK')
-	desc:SetFontObject('GameFontHighlight')
-	desc:SetJustifyV('TOP')
-	desc:SetJustifyH('LEFT')
-	desc:Point('TOPLEFT', 18, -20)
-	desc:Point('BOTTOMRIGHT', -18, 48)
+	local desc = f:CreateFontString(nil, "ARTWORK")
+	desc:SetFontObject("GameFontHighlight")
+	desc:SetJustifyV("TOP")
+	desc:SetJustifyH("LEFT")
+	desc:Point("TOPLEFT", 18, -20)
+	desc:Point("BOTTOMRIGHT", -18, 48)
 	desc:SetText(L["DESC_MOVERCONFIG"])
 	f.desc = desc
 
-	local snapName = f:GetName()..'CheckButton'
-	local snapping = CreateFrame('CheckButton', snapName, f, 'UICheckButtonTemplate')
-	snapping:SetScript('OnShow', function(cb) cb:SetChecked(E.db.general.stickyFrames) end)
-	snapping:SetScript('OnClick', function(cb) E.db.general.stickyFrames = cb:GetChecked() end)
-	snapping.text = _G[snapName..'Text']
+	local snapName = f:GetName().."CheckButton"
+	local snapping = CreateFrame("CheckButton", snapName, f, "UICheckButtonTemplate")
+	snapping:SetScript("OnShow", function(cb) cb:SetChecked(E.db.general.stickyFrames) end)
+	snapping:SetScript("OnClick", function(cb) E.db.general.stickyFrames = cb:GetChecked() end)
+	snapping.text = _G[snapName.."Text"]
 	snapping.text:SetText(L["Sticky Frames"])
 	f.snapping = snapping
 
-	local lock = CreateFrame('Button', f:GetName()..'CloseButton', f, 'OptionsButtonTemplate')
+	local lock = CreateFrame("Button", f:GetName().."CloseButton", f, "OptionsButtonTemplate")
 	lock.text = _G[lock:GetName().."Text"]
 	lock.text:SetText(L["Lock"])
-	lock:SetScript('OnClick', function()
+	lock:SetScript("OnClick", function()
 		E:ToggleMoveMode()
 
 		if E.ConfigurationToggled then
 			E.ConfigurationToggled = nil
 
-			if IsAddOnLoaded('ElvUI_OptionsUI') then
+			if IsAddOnLoaded("ElvUI_OptionsUI") then
 				E:Config_OpenWindow()
 			end
 		end
@@ -323,17 +323,17 @@ function E:CreateMoverPopup()
 		E:Grid_Show()
 		EditBox_ClearFocus(eb)
 	end)
-	align:SetScript('OnEditFocusLost', function(eb)
+	align:SetScript("OnEditFocusLost", function(eb)
 		eb:SetText(E.db.gridSize)
 	end)
-	align:SetScript('OnEditFocusGained', EditBox_HighlightText)
-	align:SetScript('OnShow', function(eb)
+	align:SetScript("OnEditFocusGained", EditBox_HighlightText)
+	align:SetScript("OnShow", function(eb)
 		EditBox_ClearFocus(eb)
 		eb:SetText(E.db.gridSize)
 	end)
 
-	align.text = align:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-	align.text:Point('RIGHT', align, 'LEFT', -4, 0)
+	align.text = align:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	align.text:Point("RIGHT", align, "LEFT", -4, 0)
 	align.text:SetText(L["Grid Size:"])
 	f.align = align
 
@@ -355,11 +355,11 @@ function E:CreateMoverPopup()
 		end
 	end)
 
-	local dropDown = CreateFrame('Frame', f:GetName()..'DropDown', f, 'UIDropDownMenuTemplate')
-	dropDown:Point('BOTTOMRIGHT', lock, 'TOPRIGHT', 8, -5)
+	local dropDown = CreateFrame("Frame", f:GetName().."DropDown", f, "UIDropDownMenuTemplate")
+	dropDown:Point("BOTTOMRIGHT", lock, "TOPRIGHT", 8, -5)
 	S:HandleDropDownBox(dropDown, 165)
-	dropDown.text = dropDown:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-	dropDown.text:Point('RIGHT', dropDown.backdrop, 'LEFT', -2, 0)
+	dropDown.text = dropDown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	dropDown.text:Point("RIGHT", dropDown.backdrop, "LEFT", -2, 0)
 	dropDown.text:SetText(L["Config Mode:"])
 	f.dropDown = dropDown
 
@@ -602,7 +602,7 @@ local function Config_ButtonOnLeave()
 end
 
 local function Config_StripNameColor(name)
-	if type(name) == 'function' then name = name() end
+	if type(name) == "function" then name = name() end
 	return E:StripString(name)
 end
 
@@ -628,20 +628,20 @@ local function ConfigSliderOnMouseWheel(self, offset)
 	if newValue > maxValue then return end
 
 	self:SetValue(newValue)
-	self.buttons:Point('TOPLEFT', 0, newValue * 36)
+	self.buttons:Point("TOPLEFT", 0, newValue * 36)
 end
 
 local function ConfigSliderOnValueChanged(self, value)
 	self:SetValue(value)
-	self.buttons:Point('TOPLEFT', 0, value * 36)
+	self.buttons:Point("TOPLEFT", 0, value * 36)
 end
 
 function E:Config_SetButtonText(btn, noColor)
 	local name = btn.info.name
-	if type(name) == 'function' then name = name() end
+	if type(name) == "function" then name = name() end
 
 	if noColor then
-		btn:SetText(name:gsub('|c[fF][fF]%x%x%x%x%x%x',''):gsub('|r',''))
+		btn:SetText(name:gsub("|c[fF][fF]%x%x%x%x%x%x",""):gsub("|r",""))
 	else
 		btn:SetText(name)
 	end
@@ -652,7 +652,7 @@ function E:Config_CreateSeparatorLine(frame, lastButton)
 	line:SetTexture(E.Media.Textures.White8x8)
 	line:SetVertexColor(1, .82, 0, .4)
 	line:Size(179, 2)
-	line:Point('TOP', lastButton, 'BOTTOM', 0, -6)
+	line:Point("TOP", lastButton, "BOTTOM", 0, -6)
 	line.separator = true
 	return line
 end
@@ -700,17 +700,17 @@ function E:Config_CreateButton(info, frame, unskinned, ...)
 	end
 
 	E:Config_SetButtonText(btn)
-	E:Config_SetButtonColor(btn, btn.info.key == 'general')
-	btn:HookScript('OnEnter', Config_ButtonOnEnter)
-	btn:HookScript('OnLeave', Config_ButtonOnLeave)
-	btn:SetScript('OnClick', info.func)
+	E:Config_SetButtonColor(btn, btn.info.key == "general")
+	btn:HookScript("OnEnter", Config_ButtonOnEnter)
+	btn:HookScript("OnLeave", Config_ButtonOnLeave)
+	btn:SetScript("OnClick", info.func)
 	btn:Width(btn:GetTextWidth() + 40)
 
 	return btn
 end
 
 function E:Config_DialogOpened(name)
-	if name ~= 'ElvUI' then return end
+	if name ~= "ElvUI" then return end
 
 	local frame = E:Config_GetWindow()
 	if frame and frame.leftHolder then
@@ -725,7 +725,7 @@ function E:Config_UpdateLeftButtons()
 	local status = frame.obj.status
 	local selected = status and status.groups.selected
 	for _, btn in ipairs(frame.leftHolder.buttons) do
-		if type(btn) == 'table' and btn.IsObjectType and btn:IsObjectType('Button') then
+		if type(btn) == "table" and btn.IsObjectType and btn:IsObjectType("Button") then
 			local enabled = btn.info.key == selected
 			E:Config_SetButtonColor(btn, enabled)
 
@@ -743,11 +743,11 @@ function E:Config_UpdateLeftScroller(frame)
 	local btns = left.buttons
 	local bottom = btns:GetBottom()
 	if not bottom then return end
-	btns:Point('TOPLEFT', 0, 0)
+	btns:Point("TOPLEFT", 0, 0)
 
 	local max = 0
 	for _, btn in ipairs(btns) do
-		local button = type(btn) == 'table' and btn.IsObjectType and btn:IsObjectType('Button')
+		local button = type(btn) == "table" and btn.IsObjectType and btn:IsObjectType("Button")
 		if button then
 			btn.sliderValue = nil
 
@@ -797,7 +797,7 @@ function E:Config_CreateLeftButtons(frame, unskinned, options)
 		if (not info.order or info.order < 6) and not tContains(E.OriginalOptions, key) then
 			info.order = 6
 		end
-		if key == 'profiles' then
+		if key == "profiles" then
 			info.desc = nil
 		end
 		tinsert(opts, {info.order, key, info})
@@ -817,16 +817,16 @@ function E:Config_CreateLeftButtons(frame, unskinned, options)
 		info.key = key
 		info.func = function()
 			local ACD = E.Libs.AceConfigDialog
-			if ACD then ACD:SelectGroup('ElvUI', key) end
+			if ACD then ACD:SelectGroup("ElvUI", key) end
 		end
 
 		local btn = E:Config_CreateButton(info, frame, unskinned, "Button", nil, buttons, "UIPanelButtonTemplate")
 		btn:Size(177, 22)
 
 		if not last then
-			btn:Point('TOP', buttons, 'TOP', 0, 0)
+			btn:Point("TOP", buttons, "TOP", 0, 0)
 		else
-			btn:Point('TOP', last, 'BOTTOM', 0, (last.separator and -6) or -4)
+			btn:Point("TOP", last, "BOTTOM", 0, (last.separator and -6) or -4)
 		end
 
 		buttons[index] = btn
@@ -842,14 +842,14 @@ end
 
 function E:Config_CloseWindow()
 	local ACD = E.Libs.AceConfigDialog
-	if ACD then ACD:Close('ElvUI') end
+	if ACD then ACD:Close("ElvUI") end
 
 	ConfigTooltip:Hide()
 end
 
 function E:Config_OpenWindow()
 	local ACD = E.Libs.AceConfigDialog
-	if ACD then ACD:Open('ElvUI') end
+	if ACD then ACD:Open("ElvUI") end
 
 	ConfigTooltip:Hide()
 end
@@ -893,7 +893,7 @@ function E:Config_WindowClosed()
 		E:Config_RestoreOldPosition(self.obj.titlebg)
 
 		if E.ShowPopup then
-			E:StaticPopup_Show('CONFIG_RL')
+			E:StaticPopup_Show("CONFIG_RL")
 			E.ShowPopup = nil
 		end
 	end
@@ -919,7 +919,7 @@ function E:Config_WindowOpened(frame)
 		local version = frame.topHolder.version
 		E:Config_SaveOldPosition(version)
 		version:ClearAllPoints()
-		version:Point("LEFT", frame.topHolder, 'LEFT', unskinned and 8 or 6, unskinned and -4 or 0)
+		version:Point("LEFT", frame.topHolder, "LEFT", unskinned and 8 or 6, unskinned and -4 or 0)
 
 		local holderHeight = frame.bottomHolder:GetHeight()
 		local content = frame.obj.content
@@ -1065,24 +1065,24 @@ function E:ToggleOptionsUI(msg)
 		return
 	end
 
-	if not IsAddOnLoaded('ElvUI_OptionsUI') then
+	if not IsAddOnLoaded("ElvUI_OptionsUI") then
 		local noConfig
-		local _, _, _, _, reason = GetAddOnInfo('ElvUI_OptionsUI')
+		local _, _, _, _, reason = GetAddOnInfo("ElvUI_OptionsUI")
 
-		if reason ~= 'MISSING' then
-			EnableAddOn('ElvUI_OptionsUI')
-			LoadAddOn('ElvUI_OptionsUI')
+		if reason ~= "MISSING" then
+			EnableAddOn("ElvUI_OptionsUI")
+			LoadAddOn("ElvUI_OptionsUI")
 
-			-- version check elvui options if it's actually enabled
-			if GetAddOnMetadata('ElvUI_OptionsUI', 'Version') ~= '1.09' then
-				self:StaticPopup_Show('CLIENT_UPDATE_REQUEST')
+			-- version check elvui options if it"s actually enabled
+			if GetAddOnMetadata("ElvUI_OptionsUI", "Version") ~= "1.09" then
+				self:StaticPopup_Show("CLIENT_UPDATE_REQUEST")
 			end
 		else
 			noConfig = true
 		end
 
 		if noConfig then
-			self:Print('|cffff0000Error -- Addon "ElvUI_OptionsUI" not found.|r')
+			self:Print("|cffff0000Error -- Addon \"ElvUI_OptionsUI\" not found.|r")
 			return
 		end
 	end
@@ -1093,7 +1093,7 @@ function E:ToggleOptionsUI(msg)
 	local ACD = E.Libs.AceConfigDialog
 	if ACD then
 		if not ACD.OpenHookedElvUI then
-			hooksecurefunc(E.Libs.AceConfigDialog, 'Open', E.Config_DialogOpened)
+			hooksecurefunc(E.Libs.AceConfigDialog, "Open", E.Config_DialogOpened)
 			ACD.OpenHookedElvUI = true
 		end
 

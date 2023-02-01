@@ -89,10 +89,10 @@ function M:HandleQueueButton(actionbarMode)
 	local queueDisplay = M.QueueStatusDisplay
 	if queueDisplay then
 		local db = E.db.general.minimap.icons.queueStatus
-		local _, position, xOffset, yOffset = M:GetIconSettings('queueStatus')
+		local _, position, xOffset, yOffset = M:GetIconSettings("queueStatus")
 		queueDisplay.text:ClearAllPoints()
 		queueDisplay.text:Point(position, Minimap, xOffset, yOffset)
-		queueDisplay.text:FontTemplate(LSM:Fetch('font', db.font), db.fontSize, db.fontOutline)
+		queueDisplay.text:FontTemplate(LSM:Fetch("font", db.font), db.fontSize, db.fontOutline)
 
 		if not db.enable and queueDisplay.title then
 			M:ClearQueueStatus()
@@ -100,10 +100,10 @@ function M:HandleQueueButton(actionbarMode)
 	end
 
 	if actionbarMode then
-		queueButton:Point('BOTTOMLEFT', Minimap, 10, -10)
+		queueButton:Point("BOTTOMLEFT", Minimap, 10, -10)
 		M:SetScale(queueButton, 1)
 	else
-		local scale, position, xOffset, yOffset = M:GetIconSettings('lfgEye')
+		local scale, position, xOffset, yOffset = M:GetIconSettings("lfgEye")
 		queueButton:Point(position, Minimap, xOffset, yOffset)
 		M:SetScale(queueButton, scale)
 	end
@@ -116,7 +116,7 @@ function M:HandleTrackingButton()
 	if E.private.general.minimap.hideTracking then
 		tracking:SetParent(E.HiddenFrame)
 	else
-		local scale, position, xOffset, yOffset = M:GetIconSettings('tracking')
+		local scale, position, xOffset, yOffset = M:GetIconSettings("tracking")
 
 		tracking:ClearAllPoints()
 		tracking:Point(position, Minimap, xOffset, yOffset)
@@ -131,7 +131,7 @@ function M:HandleTrackingButton()
 		end
 
 		if MiniMapTrackingIcon then
-			MiniMapTrackingIcon:SetDrawLayer('ARTWORK')
+			MiniMapTrackingIcon:SetDrawLayer("ARTWORK")
 			MiniMapTrackingIcon:SetTexCoord(unpack(E.TexCoords))
 			MiniMapTrackingIcon:SetInside()
 		end
@@ -143,7 +143,7 @@ function M:ADDON_LOADED(_, addon)
 		-- self:UnregisterEvent(event)
 		TimeManagerClockButton:Kill()
 
-		TimeManagerClockTicker:FontTemplate(LSM:Fetch('font', E.db.general.minimap.timeFont), E.db.general.minimap.timeFontSize, E.db.general.minimap.timeFontOutline)
+		TimeManagerClockTicker:FontTemplate(LSM:Fetch("font", E.db.general.minimap.timeFont), E.db.general.minimap.timeFontSize, E.db.general.minimap.timeFontOutline)
 
 		if E.db.general.minimap.clusterDisable then
 			TimeManagerClockButton:Kill()
@@ -171,12 +171,12 @@ function M:Minimap_OnMouseUp(btn)
 end
 
 function M:CreateMinimapTrackingDropdown()
-	local dropdown = CreateFrame('Frame', 'ElvUIMiniMapTrackingDropDown', UIParent, 'UIDropDownMenuTemplate')
+	local dropdown = CreateFrame("Frame", "ElvUIMiniMapTrackingDropDown", UIParent, "UIDropDownMenuTemplate")
 	dropdown:SetID(1)
 	dropdown:SetClampedToScreen(true)
 	dropdown:Hide()
 
-	UIDropDownMenu_Initialize(dropdown, MiniMapTrackingDropDown_Initialize, 'MENU')
+	UIDropDownMenu_Initialize(dropdown, MiniMapTrackingDropDown_Initialize, "MENU")
 	dropdown.noResize = true
 
 	return dropdown
@@ -190,15 +190,15 @@ function M:Minimap_OnMouseDown(btn)
 	end
 
 	local position = self:GetPoint()
-	if btn == 'MiddleButton' or (btn == 'RightButton' and IsShiftKeyDown()) then
+	if btn == "MiddleButton" or (btn == "RightButton" and IsShiftKeyDown()) then
 		if InCombatLockdown() then UIErrorsFrame:AddMessage(E.InfoColor..ERR_NOT_IN_COMBAT) return end
-		if position:match('LEFT') then
+		if position:match("LEFT") then
 			E:DropDown(menuList, menuFrame)
 		else
 			E:DropDown(menuList, menuFrame, -160, 0)
 		end
-	elseif btn == 'RightButton' and M.TrackingDropdown then
-		ToggleDropDownMenu(1, nil, M.TrackingDropdown, 'cursor')
+	elseif btn == "RightButton" and M.TrackingDropdown then
+		ToggleDropDownMenu(1, nil, M.TrackingDropdown, "cursor")
 	else
 		Minimap_OnClick(self)
 	end
@@ -217,17 +217,17 @@ end
 
 function M:GetLocTextColor()
 	local pvpType = GetZonePVPInfo()
-	if pvpType == 'arena' then
+	if pvpType == "arena" then
 		return 0.84, 0.03, 0.03
-	elseif pvpType == 'friendly' then
+	elseif pvpType == "friendly" then
 		return 0.05, 0.85, 0.03
-	elseif pvpType == 'contested' then
+	elseif pvpType == "contested" then
 		return 0.9, 0.85, 0.05
-	elseif pvpType == 'hostile' then
+	elseif pvpType == "hostile" then
 		return 0.84, 0.03, 0.03
-	elseif pvpType == 'sanctuary' then
+	elseif pvpType == "sanctuary" then
 		return 0.035, 0.58, 0.84
-	elseif pvpType == 'combat' then
+	elseif pvpType == "combat" then
 		return 0.84, 0.03, 0.03
 	else
 		return 0.9, 0.85, 0.05
@@ -235,7 +235,7 @@ function M:GetLocTextColor()
 end
 
 function M:Update_ZoneText()
-	if E.db.general.minimap.locationText == 'HIDE' then return end
+	if E.db.general.minimap.locationText == "HIDE" then return end
 
 	Minimap.location:SetText(utf8sub(GetMinimapZoneText(), 1, 46))
 	Minimap.location:SetTextColor(M:GetLocTextColor())
@@ -263,7 +263,7 @@ do
 		end
 	end
 
-	hooksecurefunc(Minimap, 'SetZoom', SetupZoomReset)
+	hooksecurefunc(Minimap, "SetZoom", SetupZoomReset)
 end
 
 function M:GetIconSettings(button)
@@ -303,7 +303,7 @@ function M:UpdateSettings()
 		local mmOffset = E.PixelMode and 1 or 3
 		local mmScale = E.db.general.minimap.scale
 		Minimap:ClearAllPoints()
-		Minimap:Point('TOPRIGHT', holder, 'TOPRIGHT', -mmOffset/mmScale, -mmOffset/mmScale)
+		Minimap:Point("TOPRIGHT", holder, "TOPRIGHT", -mmOffset/mmScale, -mmOffset/mmScale)
 		Minimap:Size(E.MinimapSize, E.MinimapSize)
 		Minimap:SetScale(mmScale)
 
@@ -325,11 +325,11 @@ function M:UpdateSettings()
 		end
 	end
 
-	local locationFont, locaitonSize, locationOutline = LSM:Fetch('font', E.db.general.minimap.locationFont), E.db.general.minimap.locationFontSize, E.db.general.minimap.locationFontOutline
+	local locationFont, locaitonSize, locationOutline = LSM:Fetch("font", E.db.general.minimap.locationFont), E.db.general.minimap.locationFontSize, E.db.general.minimap.locationFontOutline
 	if Minimap.location then
 		Minimap.location:Width(E.MinimapSize)
 		Minimap.location:FontTemplate(locationFont, locaitonSize, locationOutline)
-		if E.db.general.minimap.locationText == 'SHOW' and noCluster then
+		if E.db.general.minimap.locationText == "SHOW" and noCluster then
 			Minimap.location:Show()
 		else
 			Minimap.location:Hide()
@@ -364,7 +364,7 @@ function M:UpdateSettings()
 			if E.private.general.minimap.hideCalendar then
 				gameTime:Hide()
 			else
-				local scale, position, xOffset, yOffset = M:GetIconSettings('calendar')
+				local scale, position, xOffset, yOffset = M:GetIconSettings("calendar")
 				gameTime:ClearAllPoints()
 				gameTime:Point(position, Minimap, xOffset, yOffset)
 				gameTime:SetParent(MinimapBackdrop)
@@ -376,7 +376,7 @@ function M:UpdateSettings()
 
 		local mailFrame = MiniMapMailFrame
 		if mailFrame then
-			local scale, position, xOffset, yOffset = M:GetIconSettings('mail')
+			local scale, position, xOffset, yOffset = M:GetIconSettings("mail")
 			mailFrame:ClearAllPoints()
 			mailFrame:Point(position, Minimap, xOffset, yOffset)
 			M:SetScale(mailFrame, scale)
@@ -384,7 +384,7 @@ function M:UpdateSettings()
 
 		local battlefieldFrame = MiniMapBattlefieldFrame
 		if battlefieldFrame then
-			local scale, position, xOffset, yOffset = M:GetIconSettings('battlefield')
+			local scale, position, xOffset, yOffset = M:GetIconSettings("battlefield")
 			battlefieldFrame:ClearAllPoints()
 			battlefieldFrame:Point(position, Minimap, xOffset, yOffset)
 			M:SetScale(battlefieldFrame, scale)
@@ -395,14 +395,14 @@ function M:UpdateSettings()
 		end
 
 		if instance then
-			local scale, position, xOffset, yOffset = M:GetIconSettings('difficulty')
+			local scale, position, xOffset, yOffset = M:GetIconSettings("difficulty")
 			instance:ClearAllPoints()
 			instance:Point(position, Minimap, xOffset, yOffset)
 			M:SetScale(instance, scale)
 		end
 
 		if guild then
-			local scale, position, xOffset, yOffset = M:GetIconSettings('difficulty')
+			local scale, position, xOffset, yOffset = M:GetIconSettings("difficulty")
 			guild:ClearAllPoints()
 			guild:Point(position, Minimap, xOffset, yOffset)
 			M:SetScale(guild, scale)
@@ -423,13 +423,13 @@ end
 
 function M:QueueStatusTimeFormat(seconds)
 	local hours = floor(mod(seconds,86400)/3600)
-	if hours > 0 then return M.QueueStatusDisplay.text:SetFormattedText('%dh', hours) end
+	if hours > 0 then return M.QueueStatusDisplay.text:SetFormattedText("%dh", hours) end
 
 	local mins = floor(mod(seconds,3600)/60)
-	if mins > 0 then return M.QueueStatusDisplay.text:SetFormattedText('%dm', mins) end
+	if mins > 0 then return M.QueueStatusDisplay.text:SetFormattedText("%dm", mins) end
 
 	local secs = mod(seconds,60)
-	if secs > 0 then return M.QueueStatusDisplay.text:SetFormattedText('%ds', secs) end
+	if secs > 0 then return M.QueueStatusDisplay.text:SetFormattedText("%ds", secs) end
 end
 
 function M:QueueStatusSetTime(seconds)
@@ -465,7 +465,7 @@ function M:SetFullQueueStatus(title, queuedTime, averageWait)
 			display.updateThrottle = 0
 			display.queuedTime = queuedTime
 			display.averageWait = averageWait
-			display:SetScript('OnUpdate', M.QueueStatusOnUpdate)
+			display:SetScript("OnUpdate", M.QueueStatusOnUpdate)
 		else
 			M:ClearQueueStatus()
 		end
@@ -480,11 +480,11 @@ end
 
 function M:ClearQueueStatus()
 	local display = M.QueueStatusDisplay
-	display.text:SetText('')
+	display.text:SetText("")
 	display.title = nil
 	display.queuedTime = nil
 	display.averageWait = nil
-	display:SetScript('OnUpdate', nil)
+	display:SetScript("OnUpdate", nil)
 end
 
 function M:ClusterPoint(_, anchor)
@@ -493,12 +493,12 @@ function M:ClusterPoint(_, anchor)
 
 	if anchor ~= holder then
 		MinimapCluster:ClearAllPoints()
-		MinimapCluster:Point('TOPRIGHT', holder, 0, noCluster and 0 or 1)
+		MinimapCluster:Point("TOPRIGHT", holder, 0, noCluster and 0 or 1)
 	end
 end
 
 function M:GetMinimapShape()
-	return 'SQUARE'
+	return "SQUARE"
 end
 
 function M:Initialize()
@@ -516,56 +516,56 @@ function M:Initialize()
 
 	M.Initialized = true
 
-	menuFrame:SetTemplate('Transparent')
+	menuFrame:SetTemplate("Transparent")
 
-	local holder = CreateFrame('Frame', 'ElvUI_MinimapHolder', Minimap)
-	holder:Point('TOPRIGHT', E.UIParent, 'TOPRIGHT', -3, -3)
+	local holder = CreateFrame("Frame", "ElvUI_MinimapHolder", Minimap)
+	holder:Point("TOPRIGHT", E.UIParent, "TOPRIGHT", -3, -3)
 	holder:Size(Minimap:GetSize())
 	M.holder = holder
-	E:CreateMover(holder, 'MinimapMover', L["Minimap"], nil, nil, MinimapPostDrag, nil, nil, 'maps,minimap')
+	E:CreateMover(holder, "MinimapMover", L["Minimap"], nil, nil, MinimapPostDrag, nil, nil, "maps,minimap")
 
 	MinimapCluster:SetFrameLevel(20)
 
-	Minimap:SetFrameStrata('LOW')
+	Minimap:SetFrameStrata("LOW")
 	Minimap:SetFrameLevel(10)
 	Minimap:CreateBackdrop()
 
 	if Minimap.backdrop then -- level to hybrid maps fixed values
 		Minimap.backdrop:SetFrameLevel(99)
-		Minimap.backdrop:SetFrameStrata('BACKGROUND')
+		Minimap.backdrop:SetFrameStrata("BACKGROUND")
 		M:SetScale(Minimap.backdrop, 1)
 	end
 
-	local clusterHolder = CreateFrame('Frame', 'ElvUI_MinimapClusterHolder', MinimapCluster)
-	clusterHolder:Point('TOPRIGHT', E.UIParent, 'TOPRIGHT', -3, -3)
+	local clusterHolder = CreateFrame("Frame", "ElvUI_MinimapClusterHolder", MinimapCluster)
+	clusterHolder:Point("TOPRIGHT", E.UIParent, "TOPRIGHT", -3, -3)
 	clusterHolder:Size(MinimapCluster:GetSize())
 
 	M.ClusterHolder = clusterHolder
-	E:CreateMover(clusterHolder, 'MinimapClusterMover', L["Minimap Cluster"], nil, nil, nil, nil, nil, 'maps,minimap')
+	E:CreateMover(clusterHolder, "MinimapClusterMover", L["Minimap Cluster"], nil, nil, nil, nil, nil, "maps,minimap")
 
-	local clusterBackdrop = CreateFrame('Frame', 'ElvUI_MinimapClusterBackdrop', MinimapCluster)
-	clusterBackdrop:Point('TOPRIGHT', 0, -1)
+	local clusterBackdrop = CreateFrame("Frame", "ElvUI_MinimapClusterBackdrop", MinimapCluster)
+	clusterBackdrop:Point("TOPRIGHT", 0, -1)
 	clusterBackdrop:SetTemplate()
 	M:SetScale(clusterBackdrop, 1)
 	M.ClusterBackdrop = clusterBackdrop
 
 	M:ClusterPoint()
-	hooksecurefunc(MinimapCluster, 'SetPoint', M.ClusterPoint)
+	hooksecurefunc(MinimapCluster, "SetPoint", M.ClusterPoint)
 
-	Minimap:HookScript('OnEnter', function(mm) if E.db.general.minimap.locationText == 'MOUSEOVER' and E.db.general.minimap.clusterDisable then mm.location:Show() end end)
-	Minimap:HookScript('OnLeave', function(mm) if E.db.general.minimap.locationText == 'MOUSEOVER' and E.db.general.minimap.clusterDisable then mm.location:Hide() end end)
+	Minimap:HookScript("OnEnter", function(mm) if E.db.general.minimap.locationText == "MOUSEOVER" and E.db.general.minimap.clusterDisable then mm.location:Show() end end)
+	Minimap:HookScript("OnLeave", function(mm) if E.db.general.minimap.locationText == "MOUSEOVER" and E.db.general.minimap.clusterDisable then mm.location:Hide() end end)
 
-	Minimap.location = Minimap:CreateFontString(nil, 'OVERLAY')
-	Minimap.location:Point('TOP', Minimap, 'TOP', 0, -2)
-	Minimap.location:SetJustifyH('CENTER')
-	Minimap.location:SetJustifyV('MIDDLE')
+	Minimap.location = Minimap:CreateFontString(nil, "OVERLAY")
+	Minimap.location:Point("TOP", Minimap, "TOP", 0, -2)
+	Minimap.location:SetJustifyH("CENTER")
+	Minimap.location:SetJustifyV("MIDDLE")
 	-- M:SetScale(Minimap.location, 1)
-	Minimap.location:Hide() -- Fixes blizzard's font rendering issue, keep after M:SetScale
+	Minimap.location:Hide() -- Fixes blizzard"s font rendering issue, keep after M:SetScale
 
-	M:RegisterEvent('PLAYER_ENTERING_WORLD', 'Update_ZoneText')
-	M:RegisterEvent('ZONE_CHANGED_NEW_AREA', 'Update_ZoneText')
-	M:RegisterEvent('ZONE_CHANGED_INDOORS', 'Update_ZoneText')
-	M:RegisterEvent('ZONE_CHANGED', 'Update_ZoneText')
+	M:RegisterEvent("PLAYER_ENTERING_WORLD", "Update_ZoneText")
+	M:RegisterEvent("ZONE_CHANGED_NEW_AREA", "Update_ZoneText")
+	M:RegisterEvent("ZONE_CHANGED_INDOORS", "Update_ZoneText")
+	M:RegisterEvent("ZONE_CHANGED", "Update_ZoneText")
 
 	local killFrames = {
 		MinimapBorder,
@@ -597,11 +597,11 @@ function M:Initialize()
 
 	MinimapCluster:EnableMouse(false)
 	Minimap:EnableMouseWheel(true)
-	Minimap:SetScript('OnMouseWheel', M.Minimap_OnMouseWheel)
-	Minimap:SetScript('OnMouseDown', M.Minimap_OnMouseDown)
-	-- Minimap:SetScript('OnMouseUp', M.Minimap_OnMouseUp)
+	Minimap:SetScript("OnMouseWheel", M.Minimap_OnMouseWheel)
+	Minimap:SetScript("OnMouseDown", M.Minimap_OnMouseDown)
+	-- Minimap:SetScript("OnMouseUp", M.Minimap_OnMouseUp)
 
-	M:RegisterEvent('ADDON_LOADED')
+	M:RegisterEvent("ADDON_LOADED")
 	M:UpdateSettings()
 end
 

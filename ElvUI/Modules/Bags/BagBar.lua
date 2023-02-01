@@ -110,7 +110,7 @@ function B:SizeAndPositionBagBar()
 	local btnSpace = btnSpacing * (NUM_BAG_FRAMES + 1)
 	local bdpDoubled = bdpSpacing * 2
 
-	if growthDirection == 'HORIZONTAL' then
+	if growthDirection == "HORIZONTAL" then
 		ElvUIBags:SetWidth(btnSize + btnSpace + bdpDoubled)
 		ElvUIBags:SetHeight(bagBarSize + bdpDoubled)
 	else

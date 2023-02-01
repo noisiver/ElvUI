@@ -19,7 +19,7 @@ function E:AreOtherAddOnsEnabled()
 
 	for i = 1, GetNumAddOns() do
 		local name = GetAddOnInfo(i)
-		if name ~= 'ElvUI' and name ~= 'ElvUI_OptionsUI' and name ~= 'ElvUI_CPU' and E:IsAddOnEnabled(name) then
+		if name ~= "ElvUI" and name ~= "ElvUI_OptionsUI" and name ~= "ElvUI_CPU" and E:IsAddOnEnabled(name) then
 			if EP[name] then plugins = true else addons = true end
 		end
 	end
@@ -28,54 +28,54 @@ function E:AreOtherAddOnsEnabled()
 end
 
 function E:GetDisplayMode()
-	return GetCVarBool('gxMaximize') and 'Fullscreen' or 'Windowed'
+	return GetCVarBool("gxMaximize") and "Fullscreen" or "Windowed"
 end
 
 local EnglishClassName = {
-	DEATHKNIGHT = 'Death Knight',
-	DRUID = 'Druid',
-	HUNTER = 'Hunter',
-	MAGE = 'Mage',
-	PALADIN = 'Paladin',
-	PRIEST = 'Priest',
-	ROGUE = 'Rogue',
-	SHAMAN = 'Shaman',
-	WARLOCK = 'Warlock',
-	WARRIOR = 'Warrior',
+	DEATHKNIGHT = "Death Knight",
+	DRUID = "Druid",
+	HUNTER = "Hunter",
+	MAGE = "Mage",
+	PALADIN = "Paladin",
+	PRIEST = "Priest",
+	ROGUE = "Rogue",
+	SHAMAN = "Shaman",
+	WARLOCK = "Warlock",
+	WARRIOR = "Warrior",
 }
 
 local EnglishSpecName = {
-	[250] = 'Blood',
-	[251] = 'Frost',
-	[252] = 'Unholy',
-	[102] = 'Balance',
-	[103] = 'Feral',
-	[104] = 'Guardian',
-	[105] = 'Restoration',
-	[253] = 'Beast Mastery',
-	[254] = 'Marksmanship',
-	[255] = 'Survival',
-	[62] = 'Arcane',
-	[63] = 'Fire',
-	[64] = 'Frost',
-	[65] = 'Holy',
-	[66] = 'Protection',
-	[70] = 'Retribution',
-	[256] = 'Discipline',
-	[257] = 'Holy',
-	[258] = 'Shadow',
-	[259] = 'Assasination',
-	[260] = 'Combat',
-	[261] = 'Sublety',
-	[262] = 'Elemental',
-	[263] = 'Enhancement',
-	[264] = 'Restoration',
-	[265] = 'Affliction',
-	[266] = 'Demonoligy',
-	[267] = 'Destruction',
-	[71] = 'Arms',
-	[72] = 'Fury',
-	[73] = 'Protection',
+	[250] = "Blood",
+	[251] = "Frost",
+	[252] = "Unholy",
+	[102] = "Balance",
+	[103] = "Feral",
+	[104] = "Guardian",
+	[105] = "Restoration",
+	[253] = "Beast Mastery",
+	[254] = "Marksmanship",
+	[255] = "Survival",
+	[62] = "Arcane",
+	[63] = "Fire",
+	[64] = "Frost",
+	[65] = "Holy",
+	[66] = "Protection",
+	[70] = "Retribution",
+	[256] = "Discipline",
+	[257] = "Holy",
+	[258] = "Shadow",
+	[259] = "Assasination",
+	[260] = "Combat",
+	[261] = "Sublety",
+	[262] = "Elemental",
+	[263] = "Enhancement",
+	[264] = "Restoration",
+	[265] = "Affliction",
+	[266] = "Demonoligy",
+	[267] = "Destruction",
+	[71] = "Arms",
+	[72] = "Fury",
+	[73] = "Protection",
 }
 
 local function GetSpecName()
@@ -83,30 +83,30 @@ local function GetSpecName()
 end
 
 function E:CreateStatusContent(num, width, parent, anchorTo, content)
-	if not content then content = CreateFrame('Frame', nil, parent) end
+	if not content then content = CreateFrame("Frame", nil, parent) end
 	content:SetSize(width, (num * 20) + ((num-1)*5)) --20 height and 5 spacing
-	content:SetPoint('TOP', anchorTo, 'BOTTOM')
+	content:SetPoint("TOP", anchorTo, "BOTTOM")
 
-	local font = LSM:Fetch('font', 'Expressway')
+	local font = LSM:Fetch("font", "Expressway")
 	for i = 1, num do
-		if not content['Line'..i] then
-			local line = CreateFrame('Frame', nil, content)
+		if not content["Line"..i] then
+			local line = CreateFrame("Frame", nil, content)
 			line:SetSize(width, 20)
 
-			local text = line:CreateFontString(nil, 'ARTWORK')
+			local text = line:CreateFontString(nil, "ARTWORK")
 			text:SetAllPoints()
-			text:SetJustifyH('LEFT')
-			text:SetJustifyV('MIDDLE')
-			text:FontTemplate(font, 14, 'OUTLINE')
+			text:SetJustifyH("LEFT")
+			text:SetJustifyV("MIDDLE")
+			text:FontTemplate(font, 14, "OUTLINE")
 			line.Text = text
 
 			if i == 1 then
-				line:SetPoint('TOP', content, 'TOP')
+				line:SetPoint("TOP", content, "TOP")
 			else
-				line:SetPoint('TOP', content['Line'..(i-1)], 'BOTTOM', 0, -5)
+				line:SetPoint("TOP", content["Line"..(i-1)], "BOTTOM", 0, -5)
 			end
 
-			content['Line'..i] = line
+			content["Line"..i] = line
 		end
 	end
 
@@ -126,36 +126,36 @@ function E:CreateStatusSection(width, height, headerWidth, headerHeight, parent,
 	if width > parentWidth then parent:Width(width + 25) end
 	if height then parent:SetHeight(parentHeight + height) end
 
-	local section = CreateFrame('Frame', nil, parent)
+	local section = CreateFrame("Frame", nil, parent)
 	section:SetSize(width, height or 0)
 	section:SetPoint(anchor1, anchorTo, anchor2, 0, yOffset)
 
-	local header = CreateFrame('Frame', nil, section)
+	local header = CreateFrame("Frame", nil, section)
 	header:SetSize(headerWidth or width, headerHeight)
-	header:SetPoint('TOP', section)
+	header:SetPoint("TOP", section)
 	section.Header = header
 
-	local font = LSM:Fetch('font', 'Expressway')
-	local text = section.Header:CreateFontString(nil, 'ARTWORK')
-	text:SetPoint('TOP')
-	text:SetPoint('BOTTOM')
-	text:SetJustifyH('CENTER')
-	text:SetJustifyV('MIDDLE')
-	text:FontTemplate(font, 18, 'OUTLINE')
+	local font = LSM:Fetch("font", "Expressway")
+	local text = section.Header:CreateFontString(nil, "ARTWORK")
+	text:SetPoint("TOP")
+	text:SetPoint("BOTTOM")
+	text:SetJustifyH("CENTER")
+	text:SetJustifyV("MIDDLE")
+	text:FontTemplate(font, 18, "OUTLINE")
 	section.Header.Text = text
 
-	local leftDivider = section.Header:CreateTexture(nil, 'ARTWORK')
+	local leftDivider = section.Header:CreateTexture(nil, "ARTWORK")
 	leftDivider:SetHeight(8)
-	leftDivider:SetPoint('LEFT', section.Header, 'LEFT', 5, 0)
-	leftDivider:SetPoint('RIGHT', section.Header.Text, 'LEFT', -5, 0)
+	leftDivider:SetPoint("LEFT", section.Header, "LEFT", 5, 0)
+	leftDivider:SetPoint("RIGHT", section.Header.Text, "LEFT", -5, 0)
 	leftDivider:SetTexture([[Interface\Tooltips\UI-Tooltip-Border]])
 	leftDivider:SetTexCoord(0.81, 0.94, 0.5, 1)
 	section.Header.LeftDivider = leftDivider
 
-	local rightDivider = section.Header:CreateTexture(nil, 'ARTWORK')
+	local rightDivider = section.Header:CreateTexture(nil, "ARTWORK")
 	rightDivider:SetHeight(8)
-	rightDivider:SetPoint('RIGHT', section.Header, 'RIGHT', -5, 0)
-	rightDivider:SetPoint('LEFT', section.Header.Text, 'RIGHT', 5, 0)
+	rightDivider:SetPoint("RIGHT", section.Header, "RIGHT", -5, 0)
+	rightDivider:SetPoint("LEFT", section.Header.Text, "RIGHT", 5, 0)
 	rightDivider:SetTexture([[Interface\Tooltips\UI-Tooltip-Border]])
 	rightDivider:SetTexCoord(0.81, 0.94, 0.5, 1)
 	section.Header.RightDivider = rightDivider
@@ -165,10 +165,10 @@ end
 
 function E:CreateStatusFrame()
 	--Main frame
-	local StatusFrame = CreateFrame('Frame', 'ElvUIStatusReport', E.UIParent)
-	StatusFrame:SetPoint('CENTER', E.UIParent, 'CENTER')
-	StatusFrame:SetFrameStrata('HIGH')
-	StatusFrame:CreateBackdrop('Transparent', nil, true)
+	local StatusFrame = CreateFrame("Frame", "ElvUIStatusReport", E.UIParent)
+	StatusFrame:SetPoint("CENTER", E.UIParent, "CENTER")
+	StatusFrame:SetFrameStrata("HIGH")
+	StatusFrame:CreateBackdrop("Transparent", nil, true)
 	StatusFrame.backdrop:SetBackdropColor(0, 0, 0, 0.6)
 	StatusFrame:SetClampedToScreen(true)
 	StatusFrame:SetMovable(true)
@@ -180,42 +180,42 @@ function E:CreateStatusFrame()
 	StatusFrame:Hide()
 
 	--Plugin frame
-	local PluginFrame = CreateFrame('Frame', 'ElvUIStatusPlugins', StatusFrame)
-	PluginFrame:SetPoint('TOPLEFT', StatusFrame, 'TOPRIGHT', E:Scale(E.Border * 2 + 1), 0)
-	PluginFrame:SetFrameStrata('HIGH')
-	PluginFrame:CreateBackdrop('Transparent', nil, true)
+	local PluginFrame = CreateFrame("Frame", "ElvUIStatusPlugins", StatusFrame)
+	PluginFrame:SetPoint("TOPLEFT", StatusFrame, "TOPRIGHT", E:Scale(E.Border * 2 + 1), 0)
+	PluginFrame:SetFrameStrata("HIGH")
+	PluginFrame:CreateBackdrop("Transparent", nil, true)
 	PluginFrame.backdrop:SetBackdropColor(0, 0, 0, 0.6)
 	PluginFrame:SetSize(0, 25)
 	StatusFrame.PluginFrame = PluginFrame
 
 	--Close button and script to retoggle the options.
 	StatusFrame:CreateCloseButton()
-	StatusFrame.CloseButton:HookScript('OnClick', CloseClicked)
+	StatusFrame.CloseButton:HookScript("OnClick", CloseClicked)
 
 	--Title logo (drag to move frame)
-	local titleLogoFrame = CreateFrame('Frame', nil, StatusFrame)
-	titleLogoFrame:SetPoint('CENTER', StatusFrame, 'TOP')
+	local titleLogoFrame = CreateFrame("Frame", nil, StatusFrame)
+	titleLogoFrame:SetPoint("CENTER", StatusFrame, "TOP")
 	titleLogoFrame:SetSize(240, 80)
 	StatusFrame.TitleLogoFrame = titleLogoFrame
 
-	local LogoTop = StatusFrame.TitleLogoFrame:CreateTexture(nil, 'ARTWORK')
-	LogoTop:SetPoint('CENTER', titleLogoFrame, 'TOP', 0, -36)
+	local LogoTop = StatusFrame.TitleLogoFrame:CreateTexture(nil, "ARTWORK")
+	LogoTop:SetPoint("CENTER", titleLogoFrame, "TOP", 0, -36)
 	LogoTop:SetTexture(E.Media.Textures.LogoTopSmall)
 	LogoTop:SetSize(128, 64)
 	titleLogoFrame.LogoTop = LogoTop
 
-	local LogoBottom = StatusFrame.TitleLogoFrame:CreateTexture(nil, 'ARTWORK')
-	LogoBottom:SetPoint('CENTER', titleLogoFrame, 'TOP', 0, -36)
+	local LogoBottom = StatusFrame.TitleLogoFrame:CreateTexture(nil, "ARTWORK")
+	LogoBottom:SetPoint("CENTER", titleLogoFrame, "TOP", 0, -36)
 	LogoBottom:SetTexture(E.Media.Textures.LogoBottomSmall)
 	LogoBottom:SetSize(128, 64)
 	titleLogoFrame.LogoBottom = LogoBottom
 
 	--Sections
-	StatusFrame.Section1 = E:CreateStatusSection(300, 125, nil, 30, StatusFrame, 'TOP', StatusFrame, 'TOP', -30)
-	StatusFrame.Section2 = E:CreateStatusSection(300, 130, nil, 30, StatusFrame, 'TOP', StatusFrame.Section1, 'BOTTOM', 0)
-	StatusFrame.Section3 = E:CreateStatusSection(300, 185, nil, 30, StatusFrame, 'TOP', StatusFrame.Section2, 'BOTTOM', 0)
+	StatusFrame.Section1 = E:CreateStatusSection(300, 125, nil, 30, StatusFrame, "TOP", StatusFrame, "TOP", -30)
+	StatusFrame.Section2 = E:CreateStatusSection(300, 130, nil, 30, StatusFrame, "TOP", StatusFrame.Section1, "BOTTOM", 0)
+	StatusFrame.Section3 = E:CreateStatusSection(300, 185, nil, 30, StatusFrame, "TOP", StatusFrame.Section2, "BOTTOM", 0)
 
-	PluginFrame.SectionP = E:CreateStatusSection(280, nil, nil, 30, PluginFrame, 'TOP', PluginFrame, 'TOP', -10)
+	PluginFrame.SectionP = E:CreateStatusSection(280, nil, nil, 30, PluginFrame, "TOP", PluginFrame, "TOP", -10)
 
 	--Section content
 	StatusFrame.Section1.Content = E:CreateStatusContent(4, 260, StatusFrame.Section1, StatusFrame.Section1.Header)
@@ -223,13 +223,13 @@ function E:CreateStatusFrame()
 	StatusFrame.Section3.Content = E:CreateStatusContent(6, 260, StatusFrame.Section3, StatusFrame.Section3.Header)
 
 	--Content lines
-	StatusFrame.Section1.Content.Line3.Text:SetFormattedText('Recommended Scale: |cff4beb2c%s|r', E:PixelBestSize())
-	StatusFrame.Section1.Content.Line4.Text:SetFormattedText('UI Scale Is: |cff4beb2c%s|r', E.global.general.UIScale)
-	StatusFrame.Section2.Content.Line1.Text:SetFormattedText('Version of WoW: |cff4beb2c%s (build %s)|r', E.wowpatch, E.wowbuild)
-	StatusFrame.Section2.Content.Line2.Text:SetFormattedText('Client Language: |cff4beb2c%s|r', E.locale)
-	StatusFrame.Section3.Content.Line1.Text:SetFormattedText('Faction: |cff4beb2c%s|r', E.myfaction)
-	StatusFrame.Section3.Content.Line2.Text:SetFormattedText('Race: |cff4beb2c%s|r', E.myrace)
-	StatusFrame.Section3.Content.Line3.Text:SetFormattedText('Class: |cff4beb2c%s|r', EnglishClassName[E.myclass])
+	StatusFrame.Section1.Content.Line3.Text:SetFormattedText("Recommended Scale: |cff4beb2c%s|r", E:PixelBestSize())
+	StatusFrame.Section1.Content.Line4.Text:SetFormattedText("UI Scale Is: |cff4beb2c%s|r", E.global.general.UIScale)
+	StatusFrame.Section2.Content.Line1.Text:SetFormattedText("Version of WoW: |cff4beb2c%s (build %s)|r", E.wowpatch, E.wowbuild)
+	StatusFrame.Section2.Content.Line2.Text:SetFormattedText("Client Language: |cff4beb2c%s|r", E.locale)
+	StatusFrame.Section3.Content.Line1.Text:SetFormattedText("Faction: |cff4beb2c%s|r", E.myfaction)
+	StatusFrame.Section3.Content.Line2.Text:SetFormattedText("Race: |cff4beb2c%s|r", E.myrace)
+	StatusFrame.Section3.Content.Line3.Text:SetFormattedText("Class: |cff4beb2c%s|r", EnglishClassName[E.myclass])
 
 	return StatusFrame
 end
@@ -248,21 +248,21 @@ function E:UpdateStatusFrame()
 
 	--Section headers
 	local valueColor = E.media.hexvaluecolor
-	StatusFrame.Section1.Header.Text:SetFormattedText('%sAddOn Info|r', valueColor)
-	StatusFrame.Section2.Header.Text:SetFormattedText('%sWoW Info|r', valueColor)
-	StatusFrame.Section3.Header.Text:SetFormattedText('%sCharacter Info|r', valueColor)
+	StatusFrame.Section1.Header.Text:SetFormattedText("%sAddOn Info|r", valueColor)
+	StatusFrame.Section2.Header.Text:SetFormattedText("%sWoW Info|r", valueColor)
+	StatusFrame.Section3.Header.Text:SetFormattedText("%sCharacter Info|r", valueColor)
 
-	StatusFrame.Section1.Content.Line3.Text:SetFormattedText('Recommended Scale: |cff4beb2c%s|r', E:PixelBestSize())
-	StatusFrame.Section1.Content.Line4.Text:SetFormattedText('UI Scale Is: |cff4beb2c%s|r', E.global.general.UIScale)
+	StatusFrame.Section1.Content.Line3.Text:SetFormattedText("Recommended Scale: |cff4beb2c%s|r", E:PixelBestSize())
+	StatusFrame.Section1.Content.Line4.Text:SetFormattedText("UI Scale Is: |cff4beb2c%s|r", E.global.general.UIScale)
 
 	local PluginSection = PluginFrame.SectionP
-	PluginSection.Header.Text:SetFormattedText('%sPlugins|r', valueColor)
+	PluginSection.Header.Text:SetFormattedText("%sPlugins|r", valueColor)
 
-	local verWarning = E.recievedOutOfDateMessage and 'ff3333' or E.shownUpdatedWhileRunningPopup and 'ff9933'
-	StatusFrame.Section1.Content.Line1.Text:SetFormattedText('Version of ElvUI: |cff%s%.2f|r', verWarning or '33ff33', E.version)
+	local verWarning = E.recievedOutOfDateMessage and "ff3333" or E.shownUpdatedWhileRunningPopup and "ff9933"
+	StatusFrame.Section1.Content.Line1.Text:SetFormattedText("Version of ElvUI: |cff%s%.2f|r", verWarning or "33ff33", E.version)
 
 	local addons, plugins = E:AreOtherAddOnsEnabled()
-	StatusFrame.Section1.Content.Line2.Text:SetFormattedText('Other AddOns Enabled: |cff%s|r', (not addons and plugins and 'ff9933Plugins') or (addons and 'ff3333Yes') or '33ff33No')
+	StatusFrame.Section1.Content.Line2.Text:SetFormattedText("Other AddOns Enabled: |cff%s|r", (not addons and plugins and "ff9933Plugins") or (addons and "ff3333Yes") or "33ff33No")
 
 	if plugins then
 		wipe(pluginData)
@@ -281,8 +281,8 @@ function E:UpdateStatusFrame()
 
 			for i=1, count do
 				local data = pluginData[i]
-				local color = data.old and 'ff3333' or '33ff33'
-				PluginSection.Content['Line'..i].Text:SetFormattedText('%s |cff888888v|r|cff%s%s|r', data.title or data.name, color, data.version)
+				local color = data.old and "ff3333" or "33ff33"
+				PluginSection.Content["Line"..i].Text:SetFormattedText("%s |cff888888v|r|cff%s%s|r", data.title or data.name, color, data.version)
 			end
 
 			PluginFrame.SectionP:SetHeight(count * 20)
@@ -296,13 +296,13 @@ function E:UpdateStatusFrame()
 	end
 
 	local Section2 = StatusFrame.Section2
-	Section2.Content.Line3.Text:SetFormattedText('Display Mode: |cff4beb2c%s|r', E:GetDisplayMode())
-	Section2.Content.Line4.Text:SetFormattedText('Resolution: |cff4beb2c%s|r', E.resolution)
+	Section2.Content.Line3.Text:SetFormattedText("Display Mode: |cff4beb2c%s|r", E:GetDisplayMode())
+	Section2.Content.Line4.Text:SetFormattedText("Resolution: |cff4beb2c%s|r", E.resolution)
 
 	local Section3 = StatusFrame.Section3
-	Section3.Content.Line4.Text:SetFormattedText('Level: |cff4beb2c%s|r', E.mylevel)
-	Section3.Content.Line5.Text:SetFormattedText('Zone: |cff4beb2c%s|r', GetRealZoneText() or UNKNOWN)
-	Section3.Content.Line6.Text:SetFormattedText('Specialization: |cff4beb2c%s|r', GetSpecName() or UNKNOWN)
+	Section3.Content.Line4.Text:SetFormattedText("Level: |cff4beb2c%s|r", E.mylevel)
+	Section3.Content.Line5.Text:SetFormattedText("Zone: |cff4beb2c%s|r", GetRealZoneText() or UNKNOWN)
+	Section3.Content.Line6.Text:SetFormattedText("Specialization: |cff4beb2c%s|r", GetSpecName() or UNKNOWN)
 
 	StatusFrame.TitleLogoFrame.LogoTop:SetVertexColor(unpack(E.media.rgbvaluecolor))
 end

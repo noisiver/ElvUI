@@ -33,4 +33,4 @@ local function ValueColorUpdate(hex)
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext('Coords', nil, {'LOADING_SCREEN_DISABLED', 'ZONE_CHANGED', 'ZONE_CHANGED_INDOORS', 'ZONE_CHANGED_NEW_AREA'}, nil, Update, Click, nil, nil, L["Coords"], ValueColorUpdate)
+DT:RegisterDatatext("Coords", nil, {"LOADING_SCREEN_DISABLED", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA"}, nil, Update, Click, nil, nil, L["Coords"], ValueColorUpdate)

@@ -12,7 +12,7 @@ local GetNumBattlefieldScores = GetNumBattlefieldScores
 local GetNumBattlefieldStats = GetNumBattlefieldStats
 local RAID_CLASS_COLORS = RAID_CLASS_COLORS
 
-local displayString = ''
+local displayString = ""
 local LEFT, RIGHT = {}, {}
 local holder = {
 	LEFT = { data = LEFT, KILLS, KILLING_BLOWS, DEATHS },
@@ -50,8 +50,8 @@ function DT:UPDATE_BATTLEFIELD_SCORE()
 	end
 
 	if myIndex then
-		DT:UpdateBattlePanel('LEFT')
-		DT:UpdateBattlePanel('RIGHT')
+		DT:UpdateBattlePanel("LEFT")
+		DT:UpdateBattlePanel("RIGHT")
 	end
 end
 
@@ -59,7 +59,7 @@ function DT:HoverBattleStats()
 	DT.tooltip:ClearLines()
 
 	local numStatInfo = GetNumBattlefieldStats()
-	if numStatInfo and DT.ShowingBattleStats == 'pvp' then
+	if numStatInfo and DT.ShowingBattleStats == "pvp" then
 		for i = 1, GetNumBattlefieldScores() do
 			local name = GetBattlefieldScore(i)
 			if name and name == E.myname then
@@ -90,21 +90,21 @@ function DT:ToggleBattleStats()
 		E:Print(L["Battleground datatexts temporarily hidden, to show type /bgstats"])
 	end
 
-	DT:UpdatePanelInfo('LeftChatDataPanel')
-	DT:UpdatePanelInfo('RightChatDataPanel')
+	DT:UpdatePanelInfo("LeftChatDataPanel")
+	DT:UpdatePanelInfo("RightChatDataPanel")
 
 	if DT.ShowingBattleStats then
-		DT:UpdateBattlePanel('LEFT')
-		DT:UpdateBattlePanel('RIGHT')
+		DT:UpdateBattlePanel("LEFT")
+		DT:UpdateBattlePanel("RIGHT")
 	end
 end
 
 local function ValueColorUpdate(hex)
-	displayString = strjoin('', '%s: ', hex, '%s|r')
+	displayString = strjoin("", "%s: ", hex, "%s|r")
 
 	if DT.ShowingBattleStats then
-		DT:UpdateBattlePanel('LEFT')
-		DT:UpdateBattlePanel('RIGHT')
+		DT:UpdateBattlePanel("LEFT")
+		DT:UpdateBattlePanel("RIGHT")
 	end
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true

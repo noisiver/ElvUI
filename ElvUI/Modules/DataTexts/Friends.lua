@@ -275,7 +275,7 @@ local function OnEvent(self, event, message)
 	if E.global.datatexts.settings.Friends.NoLabel then
 		self.text:SetFormattedText(displayString, onlineFriends)
 	else
-		self.text:SetFormattedText(displayString, E.global.datatexts.settings.Friends.Label ~= '' and E.global.datatexts.settings.Friends.Label or FRIENDS..': ', onlineFriends + numBNetOnline)
+		self.text:SetFormattedText(displayString, E.global.datatexts.settings.Friends.Label ~= "" and E.global.datatexts.settings.Friends.Label or FRIENDS..": ", onlineFriends + numBNetOnline)
 	end
 
 	-- force update when showing tooltip
@@ -287,12 +287,12 @@ local function OnEvent(self, event, message)
 end
 
 local function ValueColorUpdate(hex)
-	displayString = join('', E.global.datatexts.settings.Friends.NoLabel and '' or '%s', hex, '%d|r')
+	displayString = join("", E.global.datatexts.settings.Friends.NoLabel and "" or "%s", hex, "%d|r")
 
 	if lastPanel then
-		OnEvent(lastPanel, 'ELVUI_COLOR_UPDATE')
+		OnEvent(lastPanel, "ELVUI_COLOR_UPDATE")
 	end
 end
 E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext('Friends', SOCIAL_LABEL, {'BN_FRIEND_ACCOUNT_ONLINE', 'BN_FRIEND_ACCOUNT_OFFLINE', 'BN_FRIEND_INFO_CHANGED', 'FRIENDLIST_UPDATE', 'CHAT_MSG_SYSTEM', 'MODIFIER_STATE_CHANGED'}, OnEvent, nil, Click, OnEnter, nil, FRIENDS, nil, ValueColorUpdate)
+DT:RegisterDatatext("Friends", SOCIAL_LABEL, {"BN_FRIEND_ACCOUNT_ONLINE", "BN_FRIEND_ACCOUNT_OFFLINE", "BN_FRIEND_INFO_CHANGED", "FRIENDLIST_UPDATE", "CHAT_MSG_SYSTEM", "MODIFIER_STATE_CHANGED"}, OnEvent, nil, Click, OnEnter, nil, FRIENDS, nil, ValueColorUpdate)

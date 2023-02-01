@@ -38,7 +38,7 @@ local MAX_PAGE = 9
 
 local PLAYER_NAME = format("%s-%s", E.myname, E:ShortenRealm(E.myrealm))
 local ELV_TOONS = {
-	-- ['CharacterName-Server'] = true, -- Example
+	-- ["CharacterName-Server"] = true, -- Example
 }
 
 function E:SetupChat(noDisplayMsg)
@@ -57,13 +57,13 @@ function E:SetupChat(noDisplayMsg)
 
 		if id == 1 then
 			frame:ClearAllPoints()
-			frame:Point('BOTTOMLEFT', LeftChatToggleButton, 'TOPLEFT', 1, 3)
+			frame:Point("BOTTOMLEFT", LeftChatToggleButton, "TOPLEFT", 1, 3)
 		elseif id == 2 then
 			FCF_SetWindowName(frame, GUILD_EVENT_LOG)
 		elseif id == 3 then
 			frame:ClearAllPoints()
-			frame:Point('BOTTOMLEFT', RightChatDataPanel, 'TOPLEFT', 1, 3)
-			FCF_SetWindowName(frame, LOOT..' / '..TRADE)
+			frame:Point("BOTTOMLEFT", RightChatDataPanel, "TOPLEFT", 1, 3)
+			FCF_SetWindowName(frame, LOOT.." / "..TRADE)
 		end
 
 		FCF_SetChatWindowFontSize(nil, frame, 12)
@@ -77,7 +77,7 @@ function E:SetupChat(noDisplayMsg)
 		ChatFrame_AddMessageGroup(ChatFrame1, v)
 	end
 
-	-- keys taken from `ChatTypeGroup` which weren't added above to ChatFrame1
+	-- keys taken from `ChatTypeGroup` which weren"t added above to ChatFrame1
 	chatGroup = {"COMBAT_XP_GAIN", "COMBAT_HONOR_GAIN", "COMBAT_FACTION_CHANGE", "COMBAT_GUILD_XP_GAIN", "SKILL", "LOOT", "CURRENCY", "MONEY"}
 	ChatFrame_RemoveAllMessageGroups(rightChatFrame)
 	for _, v in ipairs(chatGroup) do
@@ -98,9 +98,9 @@ function E:SetupChat(noDisplayMsg)
 	end
 
 	-- Adjust Chat Colors
-	ChangeChatColor('CHANNEL1', 0.76, 0.90, 0.91) -- General
-	ChangeChatColor('CHANNEL2', 0.91, 0.62, 0.47) -- Trade
-	ChangeChatColor('CHANNEL3', 0.91, 0.89, 0.47) -- Local Defense
+	ChangeChatColor("CHANNEL1", 0.76, 0.90, 0.91) -- General
+	ChangeChatColor("CHANNEL2", 0.91, 0.62, 0.47) -- Trade
+	ChangeChatColor("CHANNEL3", 0.91, 0.89, 0.47) -- Local Defense
 
 	if E.private.chat.enable then
 		CH:PositionChats()
@@ -115,7 +115,7 @@ function E:SetupChat(noDisplayMsg)
 	end
 
 	if ELV_TOONS[PLAYER_NAME] then
-		SetCVar('scriptErrors', 1)
+		SetCVar("scriptErrors", 1)
 	end
 
 	if InstallStepComplete and not noDisplayMsg then
@@ -143,9 +143,9 @@ function E:SetupCVars(noDisplayMsg)
 	SetCVar("showItemLevel", 1)
 
 	if E.private.chat.enable then
-		SetCVar('chatMouseScroll', 1)
-		SetCVar('chatStyle', 'classic')
-		SetCVar('wholeChatWindowClickable', 0)
+		SetCVar("chatMouseScroll", 1)
+		SetCVar("chatStyle", "classic")
+		SetCVar("wholeChatWindowClickable", 0)
 	end
 
 	if InstallStepComplete and not noDisplayMsg then
@@ -290,10 +290,10 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 			E.db.databars.reputation.orientation = "HORIZONTAL"
 			E.db.databars.reputation.width = 222
 		--General
-			E.db.general.bonusObjectivePosition = 'AUTO'
+			E.db.general.bonusObjectivePosition = "AUTO"
 			E.db.general.minimap.size = 220
 			E.db.general.objectiveFrameHeight = 400
-			E.db.general.totems.growthDirection = 'HORIZONTAL'
+			E.db.general.totems.growthDirection = "HORIZONTAL"
 			E.db.general.totems.size = 50
 			E.db.general.totems.spacing = 8
 			E.db.general.autoTrackReputation = true
@@ -306,9 +306,9 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 			end
 		--Tooltip
 			E.db.tooltip.healthBar.height = 12
-			E.db.movers.TooltipMover = nil --ensure that this mover gets completely reset.. yes E:ResetMover call above doesn't work.
+			E.db.movers.TooltipMover = nil --ensure that this mover gets completely reset.. yes E:ResetMover call above doesn"t work.
 			E.db.tooltip.healthBar.font = "PT Sans Narrow"
-			E.db.tooltip.healthBar.fontOutline = 'NONE'
+			E.db.tooltip.healthBar.fontOutline = "NONE"
 			E.db.tooltip.healthBar.fontSize = 12
 			-- temp
 			E.db.tooltip.textFontSize = 12
@@ -348,25 +348,25 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 				E.db.unitframe.units.player.power.height = 22
 			--Target
 				E.db.unitframe.units.target.aurabar.height = 26
-				E.db.unitframe.units.target.buffs.anchorPoint = 'TOPLEFT'
-				E.db.unitframe.units.target.buffs.growthX = 'RIGHT'
+				E.db.unitframe.units.target.buffs.anchorPoint = "TOPLEFT"
+				E.db.unitframe.units.target.buffs.growthX = "RIGHT"
 				E.db.unitframe.units.target.buffs.perrow = 7
 				E.db.unitframe.units.target.castbar.height = 40
 				E.db.unitframe.units.target.castbar.insideInfoPanel = false
 				E.db.unitframe.units.target.castbar.width = 405
-				E.db.unitframe.units.target.debuffs.anchorPoint = 'TOPLEFT'
-				E.db.unitframe.units.target.debuffs.attachTo = 'FRAME'
+				E.db.unitframe.units.target.debuffs.anchorPoint = "TOPLEFT"
+				E.db.unitframe.units.target.debuffs.attachTo = "FRAME"
 				E.db.unitframe.units.target.debuffs.enable = false
 				E.db.unitframe.units.target.debuffs.maxDuration = 0
 				E.db.unitframe.units.target.debuffs.perrow = 7
 				E.db.unitframe.units.target.disableMouseoverGlow = true
 				E.db.unitframe.units.target.healPrediction.showOverAbsorbs = false
-				E.db.unitframe.units.target.health.attachTextTo = 'InfoPanel'
+				E.db.unitframe.units.target.health.attachTextTo = "InfoPanel"
 				E.db.unitframe.units.target.height = 82
 				E.db.unitframe.units.target.infoPanel.enable = true
-				E.db.unitframe.units.target.name.attachTextTo = 'InfoPanel'
-				E.db.unitframe.units.target.orientation = 'LEFT'
-				E.db.unitframe.units.target.power.attachTextTo = 'InfoPanel'
+				E.db.unitframe.units.target.name.attachTextTo = "InfoPanel"
+				E.db.unitframe.units.target.orientation = "LEFT"
+				E.db.unitframe.units.target.power.attachTextTo = "InfoPanel"
 				E.db.unitframe.units.target.power.height = 22
 				--old
 				E.db.unitframe.units.target.name.text_format = "[namecolor][name]"
@@ -374,17 +374,17 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 				E.db.unitframe.units.targettarget.debuffs.enable = false
 				E.db.unitframe.units.targettarget.disableMouseoverGlow = true
 				E.db.unitframe.units.targettarget.power.enable = false
-				E.db.unitframe.units.targettarget.raidicon.attachTo = 'LEFT'
+				E.db.unitframe.units.targettarget.raidicon.attachTo = "LEFT"
 				E.db.unitframe.units.targettarget.raidicon.enable = false
 				E.db.unitframe.units.targettarget.raidicon.xOffset = 2
 				E.db.unitframe.units.targettarget.raidicon.yOffset = 0
-				E.db.unitframe.units.targettarget.threatStyle = 'GLOW'
+				E.db.unitframe.units.targettarget.threatStyle = "GLOW"
 				E.db.unitframe.units.targettarget.width = 270
 				--old
 				E.db.unitframe.units.targettarget.debuffs.anchorPoint = "TOPRIGHT"
 			--Focus
-				E.db.unitframe.units.focus.debuffs.anchorPoint = 'BOTTOMLEFT'
-				E.db.unitframe.units.focus.debuffs.growthX = 'RIGHT'
+				E.db.unitframe.units.focus.debuffs.anchorPoint = "BOTTOMLEFT"
+				E.db.unitframe.units.focus.debuffs.growthX = "RIGHT"
 				E.db.unitframe.units.focus.castbar.width = 270
 				E.db.unitframe.units.focus.width = 270
 			--Pet
@@ -418,18 +418,18 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 				--old
 				E.db.unitframe.units.party.rdebuffs.font = "PT Sans Narrow"
 			--Raid
-				-- E.db.unitframe.units.raid1.growthDirection = 'RIGHT_UP'
+				-- E.db.unitframe.units.raid1.growthDirection = "RIGHT_UP"
 				-- E.db.unitframe.units.raid1.infoPanel.enable = true
-				-- E.db.unitframe.units.raid1.name.attachTextTo = 'InfoPanel'
-				-- E.db.unitframe.units.raid1.name.position = 'BOTTOMLEFT'
+				-- E.db.unitframe.units.raid1.name.attachTextTo = "InfoPanel"
+				-- E.db.unitframe.units.raid1.name.position = "BOTTOMLEFT"
 				-- E.db.unitframe.units.raid1.name.xOffset = 2
 				-- E.db.unitframe.units.raid1.numGroups = 8
 				-- E.db.unitframe.units.raid1.rdebuffs.size = 30
 				-- E.db.unitframe.units.raid1.rdebuffs.xOffset = 30
 				-- E.db.unitframe.units.raid1.rdebuffs.yOffset = 25
-				-- E.db.unitframe.units.raid1.resurrectIcon.attachTo = 'BOTTOMRIGHT'
-				-- E.db.unitframe.units.raid1.roleIcon.attachTo = 'InfoPanel'
-				-- E.db.unitframe.units.raid1.roleIcon.position = 'BOTTOMRIGHT'
+				-- E.db.unitframe.units.raid1.resurrectIcon.attachTo = "BOTTOMRIGHT"
+				-- E.db.unitframe.units.raid1.roleIcon.attachTo = "InfoPanel"
+				-- E.db.unitframe.units.raid1.roleIcon.position = "BOTTOMRIGHT"
 				-- E.db.unitframe.units.raid1.roleIcon.size = 12
 				-- E.db.unitframe.units.raid1.roleIcon.xOffset = 0
 				-- E.db.unitframe.units.raid1.width = 92
@@ -713,7 +713,7 @@ function E:SetPage(PageNum)
 
 		InstallOption4Button:Show()
 		InstallOption4Button:SetText(L["Auto Scale"])
-		InstallOption4Button:SetScript('OnClick', function()
+		InstallOption4Button:SetScript("OnClick", function()
 			E.global.general.UIScale = E:PixelBestSize()
 			InstallSlider.Cur:SetText(E.global.general.UIScale)
 			E.PixelScaleChanged()
@@ -729,13 +729,13 @@ function E:SetPage(PageNum)
 		f.Desc3:FontTemplate(nil, 18)
 
 		InstallOption1Button:Show()
-		InstallOption1Button:SetScript("OnClick", function() E.db.layoutSet = nil; E:SetupLayout('tank') end)
+		InstallOption1Button:SetScript("OnClick", function() E.db.layoutSet = nil; E:SetupLayout("tank") end)
 		InstallOption1Button:SetText(MELEE)
 		InstallOption2Button:Show()
-		InstallOption2Button:SetScript("OnClick", function() E.db.layoutSet = nil; E:SetupLayout('healer') end)
+		InstallOption2Button:SetScript("OnClick", function() E.db.layoutSet = nil; E:SetupLayout("healer") end)
 		InstallOption2Button:SetText(HEALER)
 		InstallOption3Button:Show()
-		InstallOption3Button:SetScript("OnClick", function() E.db.layoutSet = nil; E:SetupLayout('dpsCaster') end)
+		InstallOption3Button:SetScript("OnClick", function() E.db.layoutSet = nil; E:SetupLayout("dpsCaster") end)
 		InstallOption3Button:SetText(RANGED)
 	elseif PageNum == 8 then
 		f.SubTitle:SetText(L["Auras"])
