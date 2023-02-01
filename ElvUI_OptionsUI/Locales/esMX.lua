@@ -769,6 +769,7 @@ L["Pet"] = true
 L["Pet Experience"] = "Experiencia con mascotas"
 L["Pet Experience Bar"] = "Bar de experiencias para mascotas"
 L["PetTarget"] = true
+L["PICKUP_ACTION_KEY_TEXT"] = "Tecla de arrastrar acción"
 L["Petition Frame"] = "Petición"
 L["Pick Up Action Key"] = true
 L["Player Frame Aura Bars"] = true

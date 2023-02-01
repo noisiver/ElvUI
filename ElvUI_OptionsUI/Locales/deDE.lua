@@ -766,6 +766,7 @@ L["Pet"] = "Begleiter"
 L["Pet Experience"] = "Haustier Erfahrung"
 L["Pet Experience Bar"] = true
 L["PetTarget"] = "Begleiter Ziel"
+L["PICKUP_ACTION_KEY_TEXT"] = "Freischaltungstaste"
 L["Petition Frame"] = "Abstimmungsfenster"
 L["Pick Up Action Key"] = true
 L["Player Frame Aura Bars"] = "Spielerfenster Aurenleiste"

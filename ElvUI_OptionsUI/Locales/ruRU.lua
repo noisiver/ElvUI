@@ -766,6 +766,7 @@ L["Pet"] = "Питомец"
 L["Pet Experience"] = "Опыт питомца"
 L["Pet Experience Bar"] = "Панель опыта питомцев"
 L["PetTarget"] = "Цель питомца"
+L["PICKUP_ACTION_KEY_TEXT"] = "Клавиша перетаскивания"
 L["Petition Frame"] = "Хартия гильдии"
 L["Pick Up Action Key"] = true
 L["Player Frame Aura Bars"] = "Полосы аур рамки игрока"

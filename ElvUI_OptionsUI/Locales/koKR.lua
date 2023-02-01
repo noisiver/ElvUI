@@ -769,6 +769,7 @@ L["Pet"] = true
 L["Pet Experience"] = "애완 동물 체험"
 L["Pet Experience Bar"] = "애완 동물 체험 바"
 L["PetTarget"] = true
+L["PICKUP_ACTION_KEY_TEXT"] = "행동 단축바 수정 키"
 L["Petition Frame"] = "GM 요청 창"
 L["Pick Up Action Key"] = true
 L["Player Frame Aura Bars"] = true

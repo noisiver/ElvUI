@@ -766,6 +766,7 @@ L["Pet"] = "宠物"
 L["Pet Experience"] = "宠物体验"
 L["Pet Experience Bar"] = "宠物体验吧"
 L["PetTarget"] = "宠物的目标"
+L["PICKUP_ACTION_KEY_TEXT"] = "提取动作键"
 L["Petition Frame"] = "回报GM"
 L["Pick Up Action Key"] = true
 L["Player Frame Aura Bars"] = "玩家框架光环条"

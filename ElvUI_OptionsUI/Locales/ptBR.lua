@@ -769,6 +769,7 @@ L["Pet"] = true
 L["Pet Experience"] = "Experiência Pet"
 L["Pet Experience Bar"] = true
 L["PetTarget"] = true
+L["PICKUP_ACTION_KEY_TEXT"] = "Botão de ação de saquear"
 L["Petition Frame"] = "Petição"
 L["Pick Up Action Key"] = true
 L["Player Frame Aura Bars"] = true
