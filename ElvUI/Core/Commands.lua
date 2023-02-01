@@ -7,8 +7,6 @@ local type, pairs, select, tonumber = type, pairs, select, tonumber
 local format, lower, split = string.format, string.lower, string.split
 local wipe, next, print = wipe, next, print
 --WoW API / Variables
-local InCombatLockdown = InCombatLockdown
-local UIFrameFadeOut, UIFrameFadeIn = UIFrameFadeOut, UIFrameFadeIn
 local EnableAddOn, DisableAddOn = EnableAddOn, DisableAddOn
 local SetCVar = SetCVar
 local ReloadUI = ReloadUI
@@ -18,7 +16,6 @@ local ResetCPUUsage = ResetCPUUsage
 local GetAddOnInfo = GetAddOnInfo
 local GetNumAddOns = GetNumAddOns
 local GetCVarBool = GetCVarBool
-local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
 
 function E:Grid(msg)
 	msg = msg and tonumber(msg)

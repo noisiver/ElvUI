@@ -1,8 +1,6 @@
 local E, L, V, P, G = unpack(select(2, ...))
 local LSM = E.Libs.LSM
 
-local _G = _G
-local strmatch = strmatch
 local SetCVar = SetCVar
 
 local function SetFont(obj, font, size, style, sr, sg, sb, sa, sox, soy, r, g, b)

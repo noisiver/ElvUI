@@ -29,12 +29,6 @@ LibDeflate.compressLevel = { level = 5 }
 local Downloads = {}
 local Uploads = {}
 
-local ACECOMMPREFIXES = {
-	[TRANSFER_PREFIX.."\001"] = true,
-	[TRANSFER_PREFIX.."\002"] = true,
-	[TRANSFER_PREFIX.."\003"] = true,
-}
-
 --Keys that should not be exported
 D.blacklistedKeys = {
 	profile = {
@@ -333,30 +327,6 @@ function D:OnCommReceived(prefix, msg, dist, sender)
 		end
 	end
 end
-
---Keys that should not be exported
-local blacklistedKeys = {
-	profile = {
-		general = {
-			numberPrefixStyle = true,
-		}
-	},
-	private = {},
-	global = {
-		general = {
-			UIScale = true,
-			locale = true,
-			eyefinity = true,
-			ignoreScalePopup = true
-		},
-		chat = {
-			classColorMentionExcludedNames = true
-		},
-		unitframe = {
-			spellRangeCheck = true
-		}
-	}
-}
 
 local function GetProfileData(profileType)
 	if not profileType or type(profileType) ~= "string" then

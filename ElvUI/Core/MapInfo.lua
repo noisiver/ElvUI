@@ -78,7 +78,7 @@ function E:MapInfo_CoordsUpdate()
 	end
 end
 
-function E:MapInfo_OnUpdate(self, elapsed)
+function E:MapInfo_OnUpdate(_, elapsed)
 	self.lastUpdate = (self.lastUpdate or 0) + elapsed
 	if self.lastUpdate > 0.1 then
 		E:MapInfo_CoordsUpdate()

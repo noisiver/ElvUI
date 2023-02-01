@@ -5,7 +5,7 @@ local LCS = E.Libs.LCS
 
 local _G = _G
 local tonumber, pairs, ipairs, error, unpack, select, tostring = tonumber, pairs, ipairs, error, unpack, select, tostring
-local strsplit, strjoin, wipe, sort, tinsert, tremove, tContains, twipe = strsplit, strjoin, wipe, sort, tinsert, tremove, tContains, table.wipe
+local strjoin, wipe, sort, tinsert, tremove, tContains, twipe = strjoin, wipe, sort, tinsert, tremove, tContains, table.wipe
 local format, find, match, strrep, strlen, sub, gsub = format, strfind, string.match, strrep, strlen, strsub, gsub
 local assert, type, pcall, xpcall, next, print = assert, type, pcall, xpcall, next, print
 local rawget, rawset, setmetatable = rawget, rawset, setmetatable
@@ -37,7 +37,7 @@ local ActionBars = E:GetModule("ActionBars")
 local AFK = E:GetModule("AFK")
 local Auras = E:GetModule("Auras")
 local Bags = E:GetModule("Bags")
-local Blizzard = E:GetModule("Blizzard")
+-- local Blizzard = E:GetModule("Blizzard")
 local Chat = E:GetModule("Chat")
 local DataBars = E:GetModule("DataBars")
 local DataTexts = E:GetModule("DataTexts")
@@ -534,7 +534,15 @@ end
 
 function E:IsIncompatible(module, addons)
 	for _, addon in ipairs(addons) do
-		if E:IsAddOnEnabled(addon) then
+		local incompatible
+		if addon == "Leatrix_Plus" then
+			local db = _G.LeaPlusDB
+			incompatible = db and db.MinimapMod == "On"
+		else
+			incompatible = E:IsAddOnEnabled(addon)
+		end
+
+		if incompatible then
 			E:IncompatibleAddOn(addon, module, addons.info)
 			return true
 		end
@@ -546,7 +554,7 @@ do
 		ActionBar = {
 			info = {
 				enabled = function() return E.private.actionbar.enable end,
-				accept = function() E.private.actionbar.enable = false ReloadUI() end,
+				accept = function() E.private.actionbar.enable = false; ReloadUI() end,
 				name = "ElvUI ActionBars"
 			},
 			"Bartender4",
@@ -555,7 +563,7 @@ do
 		Chat = {
 			info = {
 				enabled = function() return E.private.chat.enable end,
-				accept = function() E.private.chat.enable = false ReloadUI() end,
+				accept = function() E.private.chat.enable = false; ReloadUI() end,
 				name = "ElvUI Chat"
 			},
 			"Prat-3.0",
@@ -565,7 +573,7 @@ do
 		NamePlates = {
 			info = {
 				enabled = function() return E.private.nameplates.enable end,
-				accept = function() E.private.nameplates.enable = false ReloadUI() end,
+				accept = function() E.private.nameplates.enable = false; ReloadUI() end,
 				name = "ElvUI NamePlates"
 			},
 			"TidyPlates",
@@ -576,21 +584,19 @@ do
 		ToolTip = {
 			info = {
 				enabled = function() return E.private.tooltip.enable end,
-				accept = function() E.private.tooltip.enable = false ReloadUI() end,
+				accept = function() E.private.tooltip.enable = false; ReloadUI() end,
 				name = "ElvUI ToolTip"
 			},
 			"TipTac"
 		},
 		Minimap = {
 			info = {
-				enabled = function()
-					local db = E.private.general.minimap.enable and LeaPlusDB
-					return db and db.MinimapMod == "On"
-				end,
+				enabled = function() return E.private.general.minimap.enable end,
 				accept = function() E.private.general.minimap.enable = false; ReloadUI() end,
 				name = "ElvUI Minimap",
 			},
-			"Leatrix_Plus"
+			"Leatrix_Plus", -- has custom check in IsIncompatible
+			"SexyMap"
 		},
 	}
 

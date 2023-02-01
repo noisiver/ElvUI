@@ -14,8 +14,6 @@ local GetTalentTabInfo = GetTalentTabInfo
 local RequestBattlefieldScoreData = RequestBattlefieldScoreData
 local UnitGroupRolesAssigned = UnitGroupRolesAssigned
 local UnitHasVehicleUI = UnitHasVehicleUI
-local IsInInstance = IsInInstance
-local IsSpellKnown = IsSpellKnown
 local GetSpecialization = LCS.GetSpecialization
 local GetSpecializationRole = LCS.GetSpecializationRole
 

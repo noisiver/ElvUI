@@ -2,10 +2,9 @@ local E, L, V, P, G = unpack(ElvUI)
 local LCS = E.Libs.LCS
 
 local _G = _G
-local tinsert, strfind, strmatch = tinsert, strfind, strmatch
+local tinsert, strmatch = tinsert, strmatch
 local select, tonumber, format = select, tonumber, format
-local next, max, wipe, gsub = next, max, wipe, gsub
-local utf8sub = string.utf8sub
+local next, max, wipe = next, max, wipe
 
 local UnitIsUnit = UnitIsUnit
 local GetCVarBool = GetCVarBool
