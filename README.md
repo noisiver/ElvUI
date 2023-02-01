@@ -1,6 +1,6 @@
 [![Game Version](https://img.shields.io/badge/wow-3.3.5-blue.svg)](https://github.com/ElvUI-WotLK)
 [![Discord](https://discordapp.com/api/guilds/259362419372064778/widget.png?style=shield)](https://discord.gg/UXSc7nt)
-[![GitHub Actions](https://github.com/ElvUI-WotLK/ElvUI/workflows/lint/badge.svg?branch=master&event=push)](https://github.com/ElvUI-WotLK/ElvUI/actions?query=workflow%3Alint+branch%3Amaster)
+[![GitHub Actions](https://github.com/Crumdidlyumshis/ElvUI/workflows/lint/badge.svg?branch=development&event=push)](https://github.com/Crumdidlyumshis/ElvUI/actions?query=workflow%3Alint+branch%3Adevelopment)
 
 # ElvUI - Wrath of the Lich King (3.3.5a)
 
