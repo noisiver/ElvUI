@@ -82,7 +82,7 @@ end
 E.TagFunctions = {}
 
 local function abbrev(name)
-	local letters, lastWord = "", match(name, ".+%s(.+)$")
+	local letters, lastWord = "", strmatch(name, ".+%s(.+)$")
 	if lastWord then
 		for word in gmatch(name, ".-%s") do
 			local firstLetter = utf8sub(gsub(word, "^[%s%p]*", ""), 1, 1)
@@ -119,7 +119,7 @@ ElvUF.Tags.Events["name:abbrev"] = "UNIT_NAME_UPDATE"
 ElvUF.Tags.Methods["name:abbrev"] = function(unit)
 	local name = UnitName(unit)
 
-	if name and find(name, "%s") then
+	if name and strfind(name, "%s") then
 		name = abbrev(name)
 	end
 
@@ -184,7 +184,7 @@ for textFormat, length in pairs({veryshort = 5, short = 10, medium = 15, long = 
 	ElvUF.Tags.Methods[format("name:abbrev:%s", textFormat)] = function(unit)
 		local name = UnitName(unit)
 
-		if name and find(name, "%s") then
+		if name and strfind(name, "%s") then
 			name = abbrev(name)
 		end
 
