@@ -2,12 +2,10 @@ local E, L, V, P, G = unpack(select(2, ...))
 
 local min, match, max, format = min, string.match, max, format
 
-local _G = _G
 local UIParent = UIParent
 local GetScreenWidth = GetScreenWidth
 local GetScreenHeight = GetScreenHeight
 local InCombatLockdown = InCombatLockdown
-local UIParent = UIParent
 
 function E:IsEyefinity(width, height)
 	if E.global.general.eyefinity and width >= 3840 then

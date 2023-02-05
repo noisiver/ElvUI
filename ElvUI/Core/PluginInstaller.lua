@@ -59,7 +59,6 @@ local E, L, V, P, G = unpack(ElvUI)
 local PI = E:GetModule("PluginInstaller")
 local S = E:GetModule("Skins")
 
-local _G = _G
 local pairs, unpack = pairs, unpack
 local tinsert, tremove, format = tinsert, tremove, format
 

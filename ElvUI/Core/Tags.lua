@@ -1,18 +1,15 @@
 local E, L, V, P, G = unpack(select(2, ...))
-local NP = E:GetModule('NamePlates')
 local ElvUF = E.oUF
 local Tags = ElvUF.Tags
 
-local LCS = E.Libs.LCS
 -- local RangeCheck = E.Libs.RangeCheck
 local Translit = E.Libs.Translit
 local translitMark = '!'
 
-local _G = _G
-local next, type, gmatch, gsub, format = next, type, gmatch, gsub, format
-local ipairs, pairs, wipe, floor, ceil = ipairs, pairs, wipe, floor, ceil
-local strfind, strmatch, strlower, strsplit = strfind, strmatch, strlower, strsplit
-local utf8lower, utf8sub, utf8len = string.utf8lower, string.utf8sub, string.utf8len
+local type, gmatch, gsub, format = type, gmatch, gsub, format
+local pairs, floor = pairs, floor
+local strfind, strmatch, strlower = strfind, strmatch, strlower
+local utf8lower, utf8sub = string.utf8lower, string.utf8sub
 
 --WoW API / Variables
 local GetGuildInfo = GetGuildInfo

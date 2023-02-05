@@ -82,6 +82,9 @@ function E:UpdateBlizzardFonts()
 		local small		= size * 0.9
 		local tiny		= size * 0.8
 
+		local mono = strmatch(style, "MONOCHROME") and "MONOCHROME" or ""
+		local thick, outline = mono.."THICKOUTLINE", mono.."OUTLINE"
+
 		SetFont(AchievementFont_Small,				NORMAL, stock and small or size)	-- 10  Achiev dates
 		SetFont(BossEmoteNormalHuge,				NORMAL, 24)							-- Talent Title
 		SetFont(FriendsFont_Large,					NORMAL, stock and large or size)	-- 14
