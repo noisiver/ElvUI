@@ -4,10 +4,9 @@
 		local E, L, V, P, G = unpack(ElvUI)
 ]]
 
-local _G, format, next, strfind = _G, format, next, strfind
-local gsub, pairs, type = gsub, pairs, type
+local next, strfind = next, strfind
+local gsub, type = gsub, type
 
-local GetAddOnMetadata = GetAddOnMetadata
 local GetBuildInfo = GetBuildInfo
 local GetLocale = GetLocale
 local GetTime = GetTime
