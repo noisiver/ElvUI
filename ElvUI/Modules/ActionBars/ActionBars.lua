@@ -2,8 +2,8 @@ local E, L, V, P, G = unpack(select(2, ...))
 local AB = E:GetModule("ActionBars")
 
 local _G = _G
-local ipairs, pairs, strmatch, next, unpack, tonumber = ipairs, pairs, strmatch, next, unpack, tonumber
-local format, gsub, strsplit, strfind, strsub, strupper = format, gsub, strsplit, strfind, strsub, strupper
+local ipairs, pairs, next, unpack = ipairs, pairs, next, unpack
+local format, gsub, strsplit, strfind, strupper = format, gsub, strsplit, strfind, strupper
 
 local ClearOverrideBindings = ClearOverrideBindings
 local CreateFrame = CreateFrame
@@ -800,20 +800,23 @@ do
 
 		-- Hide MultiBar Buttons, but keep the bars alive
 		local buttons = {
-			ActionButton,
-			MultiBarBottomLeftButton,
-			MultiBarBottomRightButton,
-			MultiBarRightButton,
-			MultiBarLeftButton,
-			BonusActionButton,
-			VehicleMenuBarActionButton,
+			"ActionButton",
+			"MultiBarBottomLeftButton",
+			"MultiBarBottomRightButton",
+			"MultiBarRightButton",
+			"MultiBarLeftButton",
+			"BonusActionButton",
+			"VehicleMenuBarActionButton",
 		}
 
 		for i = 1, 12 do
-			for button in ipairs(buttons) do
-				_G[button..i]:Hide()
-				_G[button..i]:UnregisterAllEvents()
-				_G[button..i]:SetAttribute("statehidden", true)
+			for _, buttonPrefix in ipairs(buttons) do
+				local button = _G[buttonPrefix..i]
+				if button then
+					button:Hide()
+					button:UnregisterAllEvents()
+					button:SetAttribute("statehidden", true)
+				end
 			end
 		end
 
@@ -1052,7 +1055,7 @@ function AB:FixKeybindText(button)
 end
 
 local function OnCooldownUpdate(_, button, start, duration)
-	if not button._state_type == "action" then return end
+	if button._state_type ~= "action" then return end
 
 	if duration and duration > 1.5 then
 		button.saturationLocked = true --Lock any new actions that are created after we activated desaturation option
@@ -1150,7 +1153,7 @@ function AB:SetAuraCooldownDuration(value)
 end
 
 function AB:SetAuraCooldowns(enabled)
-	local enable, reverse = E.db.cooldown.enable, E.db.actionbar.cooldown.reverse
+	-- local enable, reverse = E.db.cooldown.enable, E.db.actionbar.cooldown.reverse
 	-- LAB:SetAuraCooldowns(enabled and (enable and not reverse) or (not enable and reverse))
 end
 
@@ -1236,9 +1239,9 @@ function AB:LAB_CooldownUpdate(button, _, duration)
 		AB:UpdateAuraCooldown(button, duration)
 	end
 
-	if button.cooldown then
-		-- AB:ColorSwipeTexture(button.cooldown)
-	end
+	-- if button.cooldown then
+	-- 	AB:ColorSwipeTexture(button.cooldown)
+	-- end
 end
 
 function AB:PLAYER_ENTERING_WORLD(event)

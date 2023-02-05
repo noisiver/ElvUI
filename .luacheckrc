@@ -119,6 +119,7 @@ globals = {
 	"TopLeftMiniPanel",
 	"TopMiniPanel",
 	"TopRightMiniPanel",
+	"VehicleLeaveButtonHolder",
 	"VehicleSeatMover",
 	"WatchFrameMover",
 
