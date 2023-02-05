@@ -7,25 +7,22 @@ local pairs, error = pairs, error
 
 local GetNumQuestLogEntries = GetNumQuestLogEntries
 local GetQuestLogRewardXP = GetQuestLogRewardXP
-local GetQuestLogSelection = GetQuestLogSelection
 local GetQuestLogTitle = GetQuestLogTitle
 local GetXPExhaustion = GetXPExhaustion
 local GetZoneText = GetZoneText
-local IsXPUserDisabled = IsXPUserDisabled
 local SelectQuestLogEntry = SelectQuestLogEntry
-local UnitLevel = UnitLevel
 local UnitXP = UnitXP
 local UnitXPMax = UnitXPMax
 
 local CurrentXP, XPToLevel, PercentRested, PercentXP, RemainXP, RemainTotal, RemainBars
 local RestedXP, QuestLogXP = 0, 0
 
-function DB:ExperienceBar_CheckQuests(questID, completedOnly)
+function DB:ExperienceBar_CheckQuests(_, completedOnly)
 	local currentZone = GetZoneText()
 	if not currentZone then return end
 
 	local bar = DB.StatusBars.Experience
-	local currentZoneCheck, isHeader, isComplete, name, _
+	local currentZoneCheck, isHeader, isComplete, name, _, questID
 	for i = 1, GetNumQuestLogEntries() do
 		name, _, _, _, isHeader, _, isComplete, _, questID = GetQuestLogTitle(i)
 		if isHeader then

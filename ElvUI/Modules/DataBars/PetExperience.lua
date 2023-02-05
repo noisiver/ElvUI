@@ -12,7 +12,7 @@ local GameTooltip = GameTooltip
 local MAX_PLAYER_LEVEL_TABLE = MAX_PLAYER_LEVEL_TABLE
 
 function DB:PetExperienceBar_ShouldBeVisible()
-	return not (UnitLevel("pet") >= MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()])
+	return (UnitLevel("pet") < MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()])
 end
 
 function DB:PetExperienceBar_Update()

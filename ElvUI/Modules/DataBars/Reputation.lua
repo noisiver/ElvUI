@@ -1,10 +1,8 @@
 local E, L, V, P, G = unpack(select(2, ...))
 local DB = E:GetModule("DataBars")
-local LSM = LibStub("LibSharedMedia-3.0")
 
 --Lua functions
 local _G = _G
-local max = math.max
 local format = string.format
 --WoW API
 local GetWatchedFactionInfo = GetWatchedFactionInfo
@@ -34,12 +32,10 @@ function DB:ReputationBar_Update()
 
 	if not bar.db.enable or bar:ShouldHide() then return end
 
-	local displayString, textFormat, label, _ = "", DB.db.reputation.textFormat
+	local displayString, textFormat = "", DB.db.reputation.textFormat
 	local name, reaction, minValue, maxValue, curValue = GetWatchedFactionInfo()
 
-	if not label then
-		label = _G["FACTION_STANDING_LABEL"..reaction] or UNKNOWN
-	end
+	local label = _G["FACTION_STANDING_LABEL"..reaction] or UNKNOWN
 
 	local customColors = DB.db.colors.useCustomFactionColors
 	local color = customColors and DB.db.colors.factionColors[reaction] or FACTION_BAR_COLORS[reaction]

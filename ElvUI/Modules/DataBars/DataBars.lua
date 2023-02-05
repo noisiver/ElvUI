@@ -2,7 +2,6 @@ local E, L, V, P, G = unpack(select(2, ...))
 local DB = E:GetModule("DataBars")
 local LSM = E.Libs.LSM
 
-local _G = _G
 local unpack, select = unpack, select
 local pairs, ipairs = pairs, ipairs
 
@@ -154,7 +153,7 @@ function DB:SetVisibility(bar)
 		end
 	elseif bar.db.enable then
 		local hideBar = (bar == DB.StatusBars.Threat or bar.db.hideInCombat) and UnitAffectingCombat("player")
-		or (bar.db.hideOutsidePvP and not (select(2, GetInstanceInfo()) == "pvp"))
+		or (bar.db.hideOutsidePvP and (select(2, GetInstanceInfo()) ~= "pvp"))
 		or (bar.ShouldHide and bar:ShouldHide())
 
 		if not hideBar then
