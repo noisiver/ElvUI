@@ -627,18 +627,37 @@ end
 
 local function colorizeLine(text, r, g, b)
 	local hexCode = E:RGBToHex(r, g, b)
-	return format("%s%s|r", hexCode, text)
+	local hexReplacement = format("|r%s", hexCode)
+
+	text = gsub(text, "|r", hexReplacement) -- If the message contains color strings then we need to add message color hex code after every "|r"
+	text = format("%s%s|r", hexCode, text) -- Add message color
+
+	return text
 end
 
+local chatTypeIndexToName = {}
 local copyLines = {}
-function CH:GetLines(frame, text)
-	local index = 1
+
+for chatType in pairs(ChatTypeInfo) do
+	chatTypeIndexToName[GetChatTypeIndex(chatType)] = chatType
+end
+
+function CH:GetLines(frame)
+	local lineCount = 0
+	local _, message, lineID, info, r, g, b
+
 	for i = 1, frame:GetNumMessages() do
-		local message = frame:GetMessageInfo(i)
-		local r, g, b
-		if message and not CH:MessageIsProtected(message) then
+		message, _, lineID = frame:GetMessageInfo(i)
+
+		if message then
+			info = ChatTypeInfo[chatTypeIndexToName[lineID]]
+
 			--Set fallback color values
-			r, g, b = r or 1, g or 1, b or 1
+			if info then
+				r, g, b = info.r, info.g, info.b
+			else
+				r, g, b = 1, 1, 1
+			end
 
 			--Remove icons
 			message = removeIconFromLine(message)
@@ -646,12 +665,12 @@ function CH:GetLines(frame, text)
 			--Add text color
 			message = colorizeLine(message, r, g, b)
 
-			copyLines[index] = message
-			index = index + 1
+			lineCount = lineCount + 1
+			copyLines[lineCount] = message
 		end
 	end
 
-	return index - 1
+	return lineCount
 end
 
 function CH:CopyChat(frame)
@@ -1074,10 +1093,6 @@ function CH:Panels_ColorUpdate()
 	local panelColor = CH.db.panelColor
 	LeftChatPanel.backdrop:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
 	RightChatPanel.backdrop:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
-
-	if ChatButtonHolder then
-		ChatButtonHolder:SetBackdropColor(panelColor.r, panelColor.g, panelColor.b, panelColor.a)
-	end
 end
 
 function CH:UpdateChatTabColors()
@@ -2063,7 +2078,7 @@ function CH:FCF_SetWindowAlpha(frame, alpha)
 end
 
 function CH:CheckLFGRoles()
-	if not CH.db.lfgIcons or not (GetNumPartyMembers() > 0) then return end
+	if not CH.db.lfgIcons or (GetNumPartyMembers() <= 0) then return end
 
 	wipe(lfgRoles)
 
@@ -2313,67 +2328,55 @@ CH.TabStyles = {
 function CH:FCFTab_UpdateColors(tab, selected)
 	if not tab then return end
 
-	if tab:GetParent() == ChatConfigFrameChatTabManager then
-		if selected then
-			tab.text:SetTextColor(1, 1, 1)
-		end
+	-- actual chat tab and other
+	local chat = CH:GetOwner(tab)
+	if not chat then return end
 
-		local name = GetChatWindowInfo(tab:GetID())
-		if name then
-			tab.text:SetText(name)
-		end
+	tab.selected = selected
 
-		tab:SetAlpha(1) -- for some reason blizzard likes to change the alpha here? idk
-	else -- actual chat tab and other
-		local chat = CH:GetOwner(tab)
-		if not chat then return end
+	local whisper = tab.conversationIcon and chat.chatTarget
+	local name = chat.name or UNKNOWN
 
-		tab.selected = selected
+	if whisper and not tab.whisperName then
+		tab.whisperName = gsub(E:StripMyRealm(name), "([%S]-)%-[%S]+", "%1|cFF999999*|r")
+	end
 
-		local whisper = tab.conversationIcon and chat.chatTarget
-		local name = chat.name or UNKNOWN
-
-		if whisper and not tab.whisperName then
-			tab.whisperName = gsub(E:StripMyRealm(name), "([%S]-)%-[%S]+", "%1|cFF999999*|r")
-		end
-
-		if selected then -- color tables are class updated in UpdateMedia
-			if CH.db.tabSelector == "NONE" then
-				tab:SetFormattedText(CH.TabStyles.NONE, tab.whisperName or name)
-			else
-				local color = CH.db.tabSelectorColor
-				local hexColor = E:RGBToHex(color.r, color.g, color.b)
-				tab:SetFormattedText(CH.TabStyles[CH.db.tabSelector] or CH.TabStyles.ARROW1, hexColor, tab.whisperName or name, hexColor)
-			end
-
-			if CH.db.tabSelectedTextEnabled then
-				local color = CH.db.tabSelectedTextColor
-				tab.text:SetTextColor(color.r, color.g, color.b)
-				return -- using selected text color
-			end
-		end
-
-		if whisper then
-			if not selected then
-				tab:SetText(tab.whisperName or name)
-			end
-
-			if not tab.classColor then
-				local classMatch = CH.ClassNames[strlower(name)]
-				if classMatch then tab.classColor = E:ClassColor(classMatch) end
-			end
-
-			if tab.classColor then
-				tab:GetText():SetTextColor(tab.classColor.r, tab.classColor.g, tab.classColor.b)
-			end
+	if selected then -- color tables are class updated in UpdateMedia
+		if CH.db.tabSelector == "NONE" then
+			tab:SetFormattedText(CH.TabStyles.NONE, tab.whisperName or name)
 		else
-			if not selected then
-				tab:SetText(name)
-			end
+			local color = CH.db.tabSelectorColor
+			local hexColor = E:RGBToHex(color.r, color.g, color.b)
+			tab:SetFormattedText(CH.TabStyles[CH.db.tabSelector] or CH.TabStyles.ARROW1, hexColor, tab.whisperName or name, hexColor)
+		end
 
-			if tab.text then
-				tab.text:SetTextColor(unpack(E.media.rgbvaluecolor))
-			end
+		if CH.db.tabSelectedTextEnabled then
+			local color = CH.db.tabSelectedTextColor
+			tab.text:SetTextColor(color.r, color.g, color.b)
+			return -- using selected text color
+		end
+	end
+
+	if whisper then
+		if not selected then
+			tab:SetText(tab.whisperName or name)
+		end
+
+		if not tab.classColor then
+			local classMatch = CH.ClassNames[strlower(name)]
+			if classMatch then tab.classColor = E:ClassColor(classMatch) end
+		end
+
+		if tab.classColor then
+			tab:GetText():SetTextColor(tab.classColor.r, tab.classColor.g, tab.classColor.b)
+		end
+	else
+		if not selected then
+			tab:SetText(name)
+		end
+
+		if tab.text then
+			tab.text:SetTextColor(unpack(E.media.rgbvaluecolor))
 		end
 	end
 end
