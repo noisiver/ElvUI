@@ -1323,7 +1323,7 @@ function AB:Initialize()
 	AB:RegisterEvent("PLAYER_ENTERING_WORLD")
 	AB:RegisterEvent("UPDATE_BINDINGS", "ReassignBindings")
 
-	if E.myclass == "SHAMAN" and AB.db.totemBar.enabled then
+	if E.myclass == "SHAMAN" and AB.db.totemBar.enable then
 		AB:CreateTotemBar()
 	end
 
