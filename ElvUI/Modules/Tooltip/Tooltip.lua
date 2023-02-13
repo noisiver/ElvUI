@@ -398,9 +398,9 @@ function TT:AddInspectInfo(tooltip, unit, numTries, r, g, b)
 		if lastGUID ~= unitGUID then
 			lastGUID = unitGUID
 			NotifyInspect(unit)
-			TT:RegisterEvent("INSPECT_READY")
+			TT:RegisterEvent("INSPECT_TALENT_READY")
 		else
-			TT:INSPECT_READY(nil, unitGUID)
+			TT:INSPECT_TALENT_READY(nil, unitGUID)
 		end
 	end
 end

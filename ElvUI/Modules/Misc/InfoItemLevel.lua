@@ -129,9 +129,9 @@ function M:ToggleItemLevelInfo(setupCharacterPage)
 	end
 
 	if E.db.general.itemLevel.displayInspectInfo then
-		M:RegisterEvent("INSPECT_READY", "UpdateInspectInfo")
+		M:RegisterEvent("INSPECT_TALENT_READY", "UpdateInspectInfo")
 	else
-		M:UnregisterEvent("INSPECT_READY")
+		M:UnregisterEvent("INSPECT_TALENT_READY")
 		M:ClearPageInfo(_G.InspectFrame, "Inspect")
 	end
 end
