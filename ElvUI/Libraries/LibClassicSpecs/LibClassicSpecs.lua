@@ -39,7 +39,7 @@ for _, classInfo in pairs(ClassByID) do classInfo.displayName = LOCALIZED_CLASS_
 local Stat = { Strength = 1, Agility = 2, Stamina = 3, Intellect = 4, Spirit = 5 }
 local Role = { Damager = 'DAMAGER', Tank = 'TANK', Healer = 'HEALER' }
 
-local function GetClassID()
+function LCS.GetClassID()
 	local id
 	local englishclass = select(2, UnitClass('player'))
 
@@ -66,7 +66,7 @@ local function GetClassID()
 	return id
 end
 
-local ClassID = GetClassID()
+local ClassID = LCS:GetClassID()
 
 -- Detailed info for each spec
 local SpecInfo = {
