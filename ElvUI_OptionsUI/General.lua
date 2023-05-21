@@ -45,7 +45,7 @@ GenGen.monitor.args.ultrawide = ACH:Toggle(L["Ultrawide Support"], L["Attempts t
 
 GenGen.camera = ACH:Group(L["Camera"], nil, 55, nil, nil, nil, nil)
 GenGen.camera.args.lockCameraDistanceMax = ACH:Toggle(L["Lock Distance Max"], nil, 11)
-GenGen.camera.args.cameraDistanceMax = ACH:Range(L["Max Distance"], nil, 12, { min = 1, max = 4, step = 0.1 }, nil, nil, nil, function() return not E.db.general.lockCameraDistanceMax end)
+GenGen.camera.args.cameraDistanceMax = ACH:Range(L["Max Distance"], nil, 12, { min = 1, max = 15, step = 0.1 }, nil, nil, nil, function() return not E.db.general.lockCameraDistanceMax end)
 GenGen.camera.inline = true
 
 GenGen.scaling = ACH:Group(L["UI Scale"], nil, 60)

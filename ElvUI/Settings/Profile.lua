@@ -58,7 +58,7 @@ P.general = {
 	},
 	durabilityScale = 1,
 	lockCameraDistanceMax = true,
-	cameraDistanceMax = 4,
+	cameraDistanceMax = 15,
 	afk = true,
 	afkChat = true,
 	numberPrefixStyle = "ENGLISH",
