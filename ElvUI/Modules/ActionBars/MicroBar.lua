@@ -223,7 +223,7 @@ function AB:SetupMicroBar()
 
 	MicroButtonPortrait:SetInside(CharacterMicroButton)
 
-	-- With this method we might don"t taint anything. Instead of using :Kill()
+	-- With this method we might don't taint anything. Instead of using :Kill()
 	local MenuPerformanceBar = MainMenuBarPerformanceBar
 	if MenuPerformanceBar then
 		MenuPerformanceBar:SetAlpha(0)

@@ -226,7 +226,7 @@ local function OnEnter(_, _, noUpdate)
 
 	DT.tooltip:AddLine(" ")
 	for i, info in ipairs(guildTable) do
-		-- if more then 30 guild members are online, we don"t Show any more, but inform user there are more
+		-- if more then 30 guild members are online, we don't Show any more, but inform user there are more
 		if 30 - i < 1 then
 			if online - 30 > 1 then DT.tooltip:AddLine(format(moreMembersOnlineString, online - 30), ttsubh.r, ttsubh.g, ttsubh.b) end
 			break

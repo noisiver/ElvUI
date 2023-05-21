@@ -243,7 +243,7 @@ end
 function S:UpdateRecapButton()
 	-- when UpdateRecapButton runs and enables the button, it unsets OnEnter
 	-- we need to reset it with ours. blizzard will replace it when the button
-	-- is disabled. so, we don"t have to worry about anything else.
+	-- is disabled. so, we don't have to worry about anything else.
 	if self and self.button4 and self.button4:IsEnabled() then
 		self.button4:SetScript("OnEnter", S.SetModifiedBackdrop)
 		self.button4:SetScript("OnLeave", S.SetOriginalBackdrop)
@@ -1359,7 +1359,7 @@ function S:AddCallbackForAddon(addonName, eventName, loadFunc, forceLoad, bypass
 	end
 
 	if self.addonCallbacks[addonName][eventName] or E.ModuleCallbacks[eventName] or E.InitialModuleCallbacks[eventName] then
-		--Don"t allow a registered callback to be overwritten
+		--Don't allow a registered callback to be overwritten
 		E:Print("Invalid argument #2 to S:AddCallbackForAddon (event name:", eventName, "is already registered, please use a unique event name)")
 		return
 	end
@@ -1388,7 +1388,7 @@ function S:AddCallback(eventName, loadFunc)
 	end
 
 	if self.nonAddonCallbacks[eventName] or E.ModuleCallbacks[eventName] or E.InitialModuleCallbacks[eventName] then
-		--Don"t allow a registered callback to be overwritten
+		--Don't allow a registered callback to be overwritten
 		E:Print("Invalid argument #1 to S:AddCallback (event name:", eventName, "is already registered, please use a unique event name)")
 		return
 	end
@@ -1416,7 +1416,7 @@ function S:Initialize()
 	self.uiPanelQueue = {}
 	self.hitRectQueue = {}
 
-	--Fire event for all skins that doesn"t rely on a Blizzard addon
+	--Fire event for all skins that doesn't rely on a Blizzard addon
 	for index, event in ipairs(self.nonAddonCallbacks.CallPriority) do
 		self.nonAddonCallbacks[event] = nil
 		self.nonAddonCallbacks.CallPriority[index] = nil

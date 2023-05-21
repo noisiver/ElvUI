@@ -27,7 +27,7 @@ end
 
 function S:Ace3_SkinDropdown()
 	if self and self.obj then
-		local pullout = self.obj.dropdown -- Don"t ask questions.. Just FUCKING ACCEPT IT
+		local pullout = self.obj.dropdown -- Don't ask questions.. Just FUCKING ACCEPT IT
 		if pullout then
 			if pullout.frame then
 				pullout.frame:SetTemplate(nil, true)
@@ -263,16 +263,16 @@ function S:Ace3_RegisterAsWidget(widget)
 	elseif TYPE == "EditBox" then
 		local frame = widget.editbox
 		local button = widget.button
-		S:HandleEditBox(frame)
+		-- S:HandleEditBox(frame)
 		S:HandleButton(button)
 
-		button:Point("RIGHT", frame.backdrop, "RIGHT", -2, 0)
+		-- button:Point("RIGHT", frame.backdrop, "RIGHT", -2, 0)
 
 		hooksecurefunc(frame, "SetTextInsets", S.Ace3_EditBoxSetTextInsets)
 		hooksecurefunc(frame, "SetPoint", S.Ace3_EditBoxSetPoint)
 
-		frame.backdrop:Point("TOPLEFT", 0, -2)
-		frame.backdrop:Point("BOTTOMRIGHT", -1, 1)
+		-- frame.backdrop:Point("TOPLEFT", 0, -2)
+		-- frame.backdrop:Point("BOTTOMRIGHT", -1, 1)
 	elseif TYPE == "Button" or TYPE == "Button-ElvUI" then
 		local frame = widget.frame
 		S:HandleButton(frame, true)

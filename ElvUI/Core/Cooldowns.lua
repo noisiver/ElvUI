@@ -9,7 +9,7 @@ local GetTime = GetTime
 local CreateFrame = CreateFrame
 local hooksecurefunc = hooksecurefunc
 
-local ICON_SIZE = 36 --the normal size for an icon (don"t change this)
+local ICON_SIZE = 36 --the normal size for an icon (don't change this)
 local FONT_SIZE = 20 --the base font size to use at a scale of 1
 local MIN_SCALE = 0.5 --the minimum scale we want to show cooldown counts at, anything below this will be hidden
 local MIN_DURATION = 1.5 --the minimum duration to show cooldown text for
@@ -393,7 +393,7 @@ do
 		HEX(db.hhmmColorIndicator),
 		HEX(ab.targetAuraIndicator),
 		HEX(ab.expiringAuraIndicator),
-		dummy9th -- this shouldn"t happen but ya know :)
+		dummy9th -- this shouldn't happen but ya know :)
 	end
 end
 

@@ -77,7 +77,7 @@ function E:SetupChat(noDisplayMsg)
 		ChatFrame_AddMessageGroup(ChatFrame1, v)
 	end
 
-	-- keys taken from `ChatTypeGroup` which weren"t added above to ChatFrame1
+	-- keys taken from `ChatTypeGroup` which weren't added above to ChatFrame1
 	chatGroup = {"COMBAT_XP_GAIN", "COMBAT_HONOR_GAIN", "COMBAT_FACTION_CHANGE", "COMBAT_GUILD_XP_GAIN", "SKILL", "LOOT", "CURRENCY", "MONEY"}
 	ChatFrame_RemoveAllMessageGroups(rightChatFrame)
 	for _, v in ipairs(chatGroup) do
@@ -306,7 +306,7 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 			end
 		--Tooltip
 			E.db.tooltip.healthBar.height = 12
-			E.db.movers.TooltipMover = nil --ensure that this mover gets completely reset.. yes E:ResetMover call above doesn"t work.
+			E.db.movers.TooltipMover = nil --ensure that this mover gets completely reset.. yes E:ResetMover call above doesn't work.
 			E.db.tooltip.healthBar.font = "PT Sans Narrow"
 			E.db.tooltip.healthBar.fontOutline = "NONE"
 			E.db.tooltip.healthBar.fontSize = 12

@@ -474,7 +474,7 @@ local function SetImportedProfile(profileType, profileKey, profileData, force)
 
 		if not ElvDB.profiles[profileKey] or force then
 			if force and E.data.keys.profile == profileKey then
-				--Overwriting an active profile doesn"t update when calling SetProfile
+				--Overwriting an active profile doesn't update when calling SetProfile
 				--So make it look like we use a different profile
 				E.data.keys.profile = profileKey.."_Temp"
 			end

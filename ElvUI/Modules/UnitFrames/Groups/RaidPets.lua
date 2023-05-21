@@ -49,7 +49,7 @@ function UF:Construct_RaidpetFrames()
 	return self
 end
 
---I don"t know if this function is needed or not? But the error I pm'ed you about was because of the missing OnEvent so I just added it.
+--I don't know if this function is needed or not? But the error I pm'ed you about was because of the missing OnEvent so I just added it.
 function UF:RaidPetsSmartVisibility(event)
 	if not self.db or (self.db and not self.db.enable) or (UF.db and not UF.db.smartRaidFilter) or self.isForced then return end
 	if event == "PLAYER_REGEN_ENABLED" then self:UnregisterEvent("PLAYER_REGEN_ENABLED") end

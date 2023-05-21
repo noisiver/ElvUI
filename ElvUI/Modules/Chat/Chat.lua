@@ -245,7 +245,7 @@ function CH:GetSmileyReplacementText(msg)
 			endpos = endpos or origlen
 
 			if startpos < endpos then
-				outstr = outstr .. strsub(msg, startpos, endpos) --don"t run replacement on this bit
+				outstr = outstr .. strsub(msg, startpos, endpos) --don't run replacement on this bit
 				startpos = endpos + 1
 			end
 		end
@@ -862,7 +862,7 @@ function CH:FindChatWindows()
 				end
 			end
 
-			-- if both are found just return now, don"t wait
+			-- if both are found just return now, don't wait
 			if left and right then
 				return left, right
 			end
@@ -1293,7 +1293,7 @@ function CH:GetColoredName(event, _, arg2, _, _, _, _, _, arg8, _, _, _, arg12)
 	return arg2
 end
 
--- Clone of FCFManager_GetChatTarget as it doesn"t exist on Classic ERA
+-- Clone of FCFManager_GetChatTarget as it doesn't exist on Classic ERA
 function CH:FCFManager_GetChatTarget(chatGroup, playerTarget, channelTarget)
 	local chatTarget
 	if chatGroup == "CHANNEL" then
@@ -1347,7 +1347,7 @@ function CH:ChatFrame_MessageEventHandler(frame, event, arg1, arg2, arg3, arg4, 
 			if arg1 == "WRONG_PASSWORD" then
 				local staticPopup = _G[StaticPopup_Visible("CHAT_CHANNEL_PASSWORD") or ""]
 				if staticPopup and strupper(staticPopup.data) == strupper(arg9) then
-					-- Don"t display invalid password messages if we"re going to prompt for a password (bug 102312)
+					-- Don't display invalid password messages if we"re going to prompt for a password (bug 102312)
 					return
 				end
 			end
@@ -1687,8 +1687,8 @@ function CH:SetupChat()
 
 		local allowHooks = not ignoreChats[id]
 		if allowHooks and not frame.OldAddMessage then
-			--Don"t add timestamps to combat log, they don"t work.
-			--This usually taints, but LibChatAnims should make sure it doesn"t.
+			--Don't add timestamps to combat log, they don't work.
+			--This usually taints, but LibChatAnims should make sure it doesn't.
 			frame.OldAddMessage = frame.AddMessage
 			frame.AddMessage = CH.AddMessage
 		end
@@ -2460,7 +2460,7 @@ function CH:FCF_Close(fallback)
 	ChatFrame_RemoveAllMessageGroups(self)
 	ChatFrame_ReceiveAllPrivateMessages(self)
 
-	CH:PostChatClose(self) -- also call this since it won"t call from blizzard in this case
+	CH:PostChatClose(self) -- also call this since it won't call from blizzard in this case
 end
 
 --Same reason as CH.FCF_Close

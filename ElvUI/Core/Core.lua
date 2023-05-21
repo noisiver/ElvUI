@@ -1,5 +1,5 @@
 local ElvUI = select(2, ...)
-ElvUI[2] = ElvUI[1].Libs.ACL:GetLocale("ElvUI", ElvUI[1]:GetLocale()) -- Locale doesn"t exist yet, make it exist.
+ElvUI[2] = ElvUI[1].Libs.ACL:GetLocale("ElvUI", ElvUI[1]:GetLocale()) -- Locale doesn't exist yet, make it exist.
 local E, L, V, P, G = unpack(ElvUI)
 local LCS = E.Libs.LCS
 
@@ -201,7 +201,7 @@ function E:GrabColorPickerValues(r, g, b)
 	return r, g, b
 end
 
---Basically check if another class border is being used on a class that doesn"t match. And then return true if a match is found.
+--Basically check if another class border is being used on a class that doesn't match. And then return true if a match is found.
 function E:CheckClassColor(r, g, b)
 	r, g, b = E:GrabColorPickerValues(r, g, b)
 
@@ -861,7 +861,7 @@ do	--The code in this function is from WeakAuras, credit goes to Mirrored and th
 	end
 end
 
-do	--Split string by multi-character delimiter (the strsplit / string.split function provided by WoW doesn"t allow multi-character delimiter)
+do	--Split string by multi-character delimiter (the strsplit / string.split function provided by WoW doesn't allow multi-character delimiter)
 	local splitTable = {}
 	function E:SplitString(str, delim)
 		assert(type (delim) == "string" and strlen(delim) > 0, "bad delimiter")

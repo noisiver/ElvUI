@@ -628,7 +628,7 @@ function TT:GameTooltip_OnTooltipSetItem(data)
 	local itemID, bagCount, bankCount
 	local modKey = TT:IsModKeyDown()
 
-	if self.GetItem then -- Some tooltips don"t have this func. Example - compare tooltip
+	if self.GetItem then -- Some tooltips don't have this func. Example - compare tooltip
 		local _, link = self:GetItem()
 		if not link then return end
 

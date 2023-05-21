@@ -125,7 +125,7 @@ function AFK:OnEvent(event, arg1)
 		return
 	elseif UnitCastingInfo("player") then
 		AFK:ScheduleTimer("OnEvent", 30)
-		return -- Don"t activate afk if player is crafting stuff, check back in 30 seconds
+		return -- Don't activate afk if player is crafting stuff, check back in 30 seconds
 	end
 
 	AFK:SetAFK(UnitIsAFK("player"))

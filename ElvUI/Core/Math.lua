@@ -489,6 +489,6 @@ function E:FormatMoney(amount, style, textonly)
 		end
 	end
 
-	-- Shouldn"t be here; punt
+	-- Shouldn't be here; punt
 	return self:FormatMoney(amount, "SMART")
 end

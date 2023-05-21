@@ -1,6 +1,6 @@
 local E, L, V, P, G = unpack(select(2, ...))
 
-local CopyTable = CopyTable -- Our function doesn"t exist yet.
+local CopyTable = CopyTable -- Our function doesn't exist yet.
 local next = next
 
 P.gridSize = 64
@@ -4522,13 +4522,13 @@ do -- cooldown stuff
 	P.nameplates.cooldown.override = true
 	P.unitframe.cooldown.override = true
 
-	-- auras doesn"t have a reverse option
+	-- auras doesn't have a reverse option
 	P.actionbar.cooldown.reverse = false
 	P.nameplates.cooldown.reverse = false
 	P.unitframe.cooldown.reverse = false
 	P.bags.cooldown.reverse = false
 
-	-- auras don"t have override font settings
+	-- auras don't have override font settings
 	P.auras.cooldown.fonts = nil
 
 	-- we gonna need this on by default :3

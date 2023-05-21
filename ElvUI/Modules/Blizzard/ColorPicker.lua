@@ -118,7 +118,7 @@ local function onColorSelect(frame, r, g, b)
 		return -- prevent error from E:GrabColorPickerValues, better note in that function
 	elseif r ~= last.r or g ~= last.g or b ~= last.b then
 		last.r, last.g, last.b = r, g, b
-	else -- colors match so we don"t need to update, most likely mouse is held down
+	else -- colors match so we don't need to update, most likely mouse is held down
 		return
 	end
 
@@ -137,7 +137,7 @@ local function onValueChanged(_, value)
 	local alpha = alphaValue(value)
 	if last.a ~= alpha then
 		last.a = alpha
-	else -- alpha matched so we don"t need to update
+	else -- alpha matched so we don't need to update
 		return
 	end
 
