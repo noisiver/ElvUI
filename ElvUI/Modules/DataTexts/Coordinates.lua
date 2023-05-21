@@ -1,36 +1,45 @@
-local E, L, V, P, G = unpack(select(2, ...))
+local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
 
---Lua functions
-local join = string.join
---WoW API / Variables
-local GetPlayerMapPosition = GetPlayerMapPosition
-local ToggleFrame = ToggleFrame
+local _G = _G
+local strjoin = strjoin
+local InCombatLockdown = InCombatLockdown
+
+local NOT_APPLICABLE = NOT_APPLICABLE
 
 local displayString = ""
-local x, y = 0, 0
-
-local timeSinceUpdate = 0
+local inRestrictedArea = false
+local mapInfo = E.MapInfo
 
 local function Update(self, elapsed)
-	timeSinceUpdate = timeSinceUpdate + elapsed
+	if inRestrictedArea or not mapInfo.coordsWatching then return end
+	print(mapInfo)
 
-	if timeSinceUpdate > 0.03333 then
-		timeSinceUpdate = 0
+	self.timeSinceUpdate = (self.timeSinceUpdate or 0) + elapsed
 
-		x, y = GetPlayerMapPosition("player")
+	if self.timeSinceUpdate > 0.1 then
+		self.text:SetFormattedText(displayString, mapInfo.xText or 0, mapInfo.yText or 0)
+		self.timeSinceUpdate = 0
+	end
+end
 
-		self.text:SetFormattedText(displayString, x * 100, y * 100)
+local function OnEvent(self)
+	if mapInfo.x and mapInfo.y then
+		inRestrictedArea = false
+		self.text:SetFormattedText(displayString, mapInfo.xText or 0, mapInfo.yText or 0)
+	else
+		inRestrictedArea = true
+		self.text:SetText(NOT_APPLICABLE)
 	end
 end
 
 local function Click()
-	ToggleFrame(WorldMapFrame)
+	if InCombatLockdown() then _G.UIErrorsFrame:AddMessage(E.InfoColor.._G.ERR_NOT_IN_COMBAT) return end
+	_G.ToggleFrame(_G.WorldMapFrame)
 end
 
-local function ValueColorUpdate(hex)
-	displayString = join("", hex, "%.2f|r", " , ", hex, "%.2f|r")
+local function ApplySettings(_, hex)
+	displayString = strjoin("", hex, "%.2f|r", " | ", hex, "%.2f|r")
 end
-E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("Coords", nil, {"LOADING_SCREEN_DISABLED", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA"}, nil, Update, Click, nil, nil, L["Coords"], ValueColorUpdate)
+DT:RegisterDatatext("Coords", nil, {"LOADING_SCREEN_DISABLED", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA"}, OnEvent, Update, Click, nil, nil, L["Coords"], mapInfo, ApplySettings)

@@ -563,6 +563,35 @@ function E:GetAverageItemLevel()
 	end
 end
 
+function E:GetItemLevelColor(unit)
+	if not unit then unit = "player" end
+
+	local i = 0
+	local sumR, sumG, sumB = 0, 0, 0
+	for slotName in pairs(slots) do
+		local slotID = GetInventorySlotInfo(slotName)
+		if GetInventoryItemTexture(unit, slotID) then
+			local itemLink = GetInventoryItemLink(unit, slotID)
+			if itemLink then
+				local quality = select(3, GetItemInfo(itemLink))
+				if quality then
+					i = i + 1
+					local r, g, b = GetItemQualityColor(quality)
+					sumR = sumR + r
+					sumG = sumG + g
+					sumB = sumB + b
+				end
+			end
+		end
+	end
+
+	if i > 0 then
+		return (sumR / i), (sumG / i), (sumB / i)
+	else
+		return 1, 1, 1
+	end
+end
+
 function E:PLAYER_LEVEL_UP(_, level)
 	E.mylevel = level
 end

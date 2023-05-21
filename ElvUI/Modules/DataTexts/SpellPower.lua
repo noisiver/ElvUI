@@ -1,34 +1,50 @@
-local E, L, V, P, G = unpack(select(2, ...))
-local DT = E:GetModule("DataTexts")
+local E, L, V, P, G = unpack(ElvUI)
+local DT = E:GetModule('DataTexts')
 
---Lua functions
-local join = string.join
---WoW API / Variables
+local _G = _G
+local min = min
+local strjoin = strjoin
+
 local GetSpellBonusDamage = GetSpellBonusDamage
-local GetSpellBonusHealing = GetSpellBonusHealing
-
-local displayNumberString = ""
-local lastPanel
+local STAT_CATEGORY_ENHANCEMENTS = STAT_CATEGORY_ENHANCEMENTS
+local MAX_SPELL_SCHOOLS = MAX_SPELL_SCHOOLS or 7
+local displayString, db = ''
 
 local function OnEvent(self)
-	local spellDamage = GetSpellBonusDamage(7)
-	local spellHealing = GetSpellBonusHealing()
+	local minSpellPower
 
-	if spellHealing > spellDamage then
-		self.text:SetFormattedText(displayNumberString, L["HP"], spellHealing)
+	if db.school == 0 then
+		minSpellPower = GetSpellBonusDamage(2) or 0
+
+		for i = 3, MAX_SPELL_SCHOOLS do
+			minSpellPower = min(minSpellPower, GetSpellBonusDamage(i) or 0)
+		end
 	else
-		self.text:SetFormattedText(displayNumberString, L["SP"], spellDamage)
+		minSpellPower = GetSpellBonusDamage(db.school)
 	end
-	lastPanel = self
+
+	self.text:SetFormattedText(displayString, L["SP"], minSpellPower or 0)
 end
 
-local function ValueColorUpdate(hex)
-	displayNumberString = join("", "%s: ", hex, "%d|r")
+local icon = [[Interface\PaperDollInfoFrame\SpellSchoolIcon]]
+local function OnEnter()
+	DT.tooltip:ClearLines()
 
-	if lastPanel ~= nil then
-		OnEvent(lastPanel)
+	for i = 2, MAX_SPELL_SCHOOLS do
+		local value = GetSpellBonusDamage(i) or 0
+		DT.tooltip:AddDoubleLine(_G['DAMAGE_SCHOOL'..i], value)
+		DT.tooltip:AddTexture(icon..i)
 	end
-end
-E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("Spell/Heal Power", {"PLAYER_DAMAGE_DONE_MODS"}, OnEvent, nil, nil, nil, nil, L["Spell/Heal Power"])
+	DT.tooltip:Show()
+end
+
+local function ApplySettings(self, hex)
+	if not db then
+		db = E.global.datatexts.settings[self.name]
+	end
+
+	displayString = strjoin('', '%s: ', hex, '%d|r')
+end
+
+DT:RegisterDatatext('SpellPower', STAT_CATEGORY_ENHANCEMENTS, { 'UNIT_STATS', 'UNIT_AURA' }, OnEvent, nil, nil, OnEnter, nil, L["Spell Power"], nil, ApplySettings)

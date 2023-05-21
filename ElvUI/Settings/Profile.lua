@@ -1244,6 +1244,7 @@ P.chat = {
 
 --Datatexts
 P.datatexts = {
+
 	font = "PT Sans Narrow",
 	fontSize = 12,
 	fontOutline = "NONE",
@@ -1251,60 +1252,50 @@ P.datatexts = {
 	panels = {
 		LeftChatDataPanel = {
 			enable = true,
+			battleground = true,
 			backdrop = true,
 			border = true,
 			panelTransparency = false,
 			"ElvUI",
 			"Durability",
-			"Mail",
+			"Mail"
 		},
 		RightChatDataPanel = {
 			enable = true,
+			battleground = true,
 			backdrop = true,
 			border = true,
 			panelTransparency = false,
 			"System",
 			"Time",
-			"Gold",
+			"Gold"
 		},
 		MinimapPanel = {
 			enable = true,
+			battleground = false,
 			backdrop = true,
 			border = true,
 			panelTransparency = false,
 			numPoints = 2,
 			"Guild",
 			"Friends"
-		},
+		}
 	},
-	battleground = true,
+	battlePanel = {
+		LeftChatDataPanel = {
+			"PvP: Kills",
+			"PvP: Honorable Kills",
+			"PvP: Deaths",
+		},
+		RightChatDataPanel = {
+			"PvP: Damage Done",
+			"PvP: Heals",
+			"PvP: Honor Gained",
+		},
+		MinimapPanel = {}
+	},
 	noCombatClick = false,
 	noCombatHover = false,
-
-	--Datatext Options
-	---General
-	goldFormat = "BLIZZARD",
-	goldCoins = true,
-	---Time
-	realmTime = false,
-	timeFormat = "%I:%M",
-	dateFormat = "",
-	---Friends
-	friends = {
-		--status
-		hideAFK = false,
-		hideDND = false,
-	},
-	--Enabled/Disabled Panels
-	minimapPanels = true,
-	leftChatPanel = true,
-	rightChatPanel = true,
-	minimapTop = false,
-	minimapTopLeft = false,
-	minimapTopRight = false,
-	minimapBottom = false,
-	minimapBottomLeft = false,
-	minimapBottomRight = false
 }
 
 --Tooltip

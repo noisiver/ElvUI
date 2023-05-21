@@ -93,10 +93,6 @@ E.FrameLocks = {}
 E.VehicleLocks = {}
 E.CreditsList = {}
 E.ReverseTimer = {} -- Spells that we want to show the duration backwards (oUF_RaidDebuffs, ???)
-
-E.ModuleCallbacks = {["CallPriority"] = {}}
-E.InitialModuleCallbacks = {["CallPriority"] = {}}
-
 E.InversePoints = {
 	BOTTOM = "TOP",
 	BOTTOMLEFT = "TOPLEFT",
@@ -108,7 +104,6 @@ E.InversePoints = {
 	TOPLEFT = "BOTTOMLEFT",
 	TOPRIGHT = "BOTTOMRIGHT"
 }
-
 E.InverseAnchors = {
 	BOTTOM = "TOP",
 	BOTTOMLEFT = "TOPRIGHT",
@@ -120,6 +115,9 @@ E.InverseAnchors = {
 	TOPLEFT = "BOTTOMRIGHT",
 	TOPRIGHT = "BOTTOMLEFT"
 }
+
+E.ModuleCallbacks = {["CallPriority"] = {}}
+E.InitialModuleCallbacks = {["CallPriority"] = {}}
 
 E.HealingClasses = {
 	PALADIN = 1,
@@ -176,24 +174,6 @@ do
 	function E:StripMyRealm(name)
 		return gsub(name, a3, a1)
 	end
-end
-
-local colorizedName
-function E:ColorizedName(name, arg2)
-	local length = strlen(name)
-	for i = 1, length do
-		local letter = sub(name, i, i)
-		if i == 1 then
-			colorizedName = format("|cffff7000%s", letter)
-		elseif i == 2 then
-			colorizedName = format("%s|r|cffC4C4C4%s", colorizedName, letter)
-		elseif i == length and arg2 then
-			colorizedName = format("%s%s|r|cffff7000:|r", colorizedName, letter)
-		else
-			colorizedName = colorizedName..letter
-		end
-	end
-	return colorizedName
 end
 
 function E:Print(...)
@@ -392,7 +372,9 @@ end
 
 function E:ValueFuncCall()
 	local hex, r, g, b = E.media.hexvaluecolor, unpack(E.media.rgbvaluecolor)
-	for func in pairs(E.valueColorUpdateFuncs) do func(hex, r, g, b) end
+	for obj, func in pairs(E.valueColorUpdateFuncs) do
+		func(obj, hex, r, g, b)
+	end
 end
 
 function E:UpdateFrameTemplates()
@@ -621,14 +603,17 @@ do
 	end
 end
 
-function E:CopyTable(current, default)
+function E:CopyTable(current, default, merge)
 	if type(current) ~= "table" then
 		current = {}
 	end
 
 	if type(default) == "table" then
 		for option, value in pairs(default) do
-			current[option] = (type(value) == "table" and E:CopyTable(current[option], value)) or value
+			local isTable = type(value) == "table"
+			if not merge or (isTable or current[option] == nil) then
+				current[option] = (isTable and E:CopyTable(current[option], value, merge)) or value
+			end
 		end
 	end
 
@@ -1353,13 +1338,12 @@ function E:UpdateTooltip()
 end
 
 function E:UpdateBags(skipCallback)
-	-- Bags:SizeAndPositionBagBar()
+	Bags:SizeAndPositionBagBar()
 	Bags:UpdateItemDisplay()
 	-- Bags:UpdateLayouts()
 
-	Bags:Layout()
+	-- Bags:Layout()
 	Bags:Layout(true)
-	Bags:SizeAndPositionBagBar()
 	Bags:UpdateCountDisplay()
 
 	if not skipCallback then
@@ -1688,14 +1672,12 @@ function E:CallLoadedModule(obj, silent, object, index)
 
 	if not module then return end
 	if func and type(func) == "string" then
-		E:RegisterCallback(name, module[func], module)
+		E:CallLoadFunc(module[func], module)
 	elseif func and type(func) == "function" then
-		E:RegisterCallback(name, func, module)
+		E:CallLoadFunc(func, module)
 	elseif module.Initialize then
-		E:RegisterCallback(name, module.Initialize, module)
+		E:CallLoadFunc(module.Initialize, module)
 	end
-
-	E.callbacks:Fire(name)
 
 	if object and index then object[index] = nil end
 end
@@ -1816,7 +1798,10 @@ function E:Initialize()
 	twipe(E.private)
 
 
-	E.myguid = UnitGUID("player")
+	local playerGUID = UnitGUID('player')
+	local _, serverID = strsplit('-', playerGUID)
+	E.serverID = tonumber(serverID)
+	E.myguid = playerGUID
 
 	E.data = E.Libs.AceDB:New("ElvDB", E.DF, true)
 	E.data.RegisterCallback(E, "OnProfileChanged", "StaggeredUpdateAll")

@@ -1,28 +1,20 @@
-local E, L, V, P, G = unpack(select(2, ...))
-local DT = E:GetModule("DataTexts")
+local E, L, V, P, G = unpack(ElvUI)
+local DT = E:GetModule('DataTexts')
 
---Lua functions
-local select = select
-local time = time
-local max = math.max
-local join = string.join
---WoW API / Variables
+local time, max, strjoin = time, max, strjoin
+local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
 local UnitGUID = UnitGUID
 
-local events = {SPELL_HEAL = true, SPELL_PERIODIC_HEAL = true}
-local playerID, petID
-local healTotal, lastHealAmount = 0, 0
-local combatTime = 0
-local timeStamp = 0
-local lastSegment = 0
-local lastPanel
-local displayString = ""
+local lastSegment, petGUID = 0
+local timeStamp, combatTime, healTotal = 0, 0, 0
+local displayString = ''
+local events = {
+	SPELL_HEAL = true,
+	SPELL_PERIODIC_HEAL = true
+}
 
 local function Reset()
-	timeStamp = 0
-	combatTime = 0
-	healTotal = 0
-	lastHealAmount = 0
+	timeStamp, combatTime, healTotal = 0, 0, 0
 end
 
 local function GetHPS(self)
@@ -32,39 +24,28 @@ local function GetHPS(self)
 	else
 		hps = healTotal / combatTime
 	end
-	self.text:SetFormattedText(displayString, E:ShortValue(hps))
+	self.text:SetFormattedText(displayString, L["HPS"], E:ShortValue(hps))
 end
 
-local function OnEvent(self, event, ...)
-	lastPanel = self
-
-	if event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_LEAVE_COMBAT" then
+local function OnEvent(self, event)
+	if event == 'UNIT_PET' then
+		petGUID = UnitGUID('pet')
+	elseif event == 'PLAYER_REGEN_DISABLED' or event == 'PLAYER_LEAVE_COMBAT' then
 		local now = time()
 		if now - lastSegment > 20 then
 			Reset()
 		end
 		lastSegment = now
-	elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
-		if not events[select(2, ...)] then return end
+	elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
+		local timestamp, Event, _, sourceGUID, _, _, _, _, _, _, _, _, _, _, lastHealAmount, overHeal = CombatLogGetCurrentEventInfo()
+		if not events[Event] then return end
 
-		local id = select(3, ...)
-		if id == playerID or id == petID then
-			if timeStamp == 0 then
-				timeStamp = ...
-			end
-
+		if sourceGUID == E.myguid or sourceGUID == petGUID then
+			if timeStamp == 0 then timeStamp = timestamp end
 			lastSegment = timeStamp
-			combatTime = (...) - timeStamp
-
-			local overHeal = select(13, ...)
-			lastHealAmount = select(12, ...)
+			combatTime = timestamp - timeStamp
 			healTotal = healTotal + max(0, lastHealAmount - overHeal)
 		end
-	elseif event == "UNIT_PET" then
-		petID = UnitGUID("pet")
-	elseif event == "PLAYER_ENTERING_WORLD" then
-		playerID = E.myguid
-		self:UnregisterEvent(event)
 	end
 
 	GetHPS(self)
@@ -75,13 +56,8 @@ local function OnClick(self)
 	GetHPS(self)
 end
 
-local function ValueColorUpdate(hex)
-	displayString = join("", L["HPS"], ": ", hex, "%s")
-
-	if lastPanel ~= nil then
-		OnEvent(lastPanel)
-	end
+local function ApplySettings(_, hex)
+	displayString = strjoin('', '%s: ', hex, '%s')
 end
-E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("HPS", {"PLAYER_ENTERING_WORLD", "COMBAT_LOG_EVENT_UNFILTERED", "PLAYER_LEAVE_COMBAT", "PLAYER_REGEN_DISABLED", "UNIT_PET"}, OnEvent, nil, OnClick, nil, nil, L["HPS"])
+DT:RegisterDatatext('HPS', nil, {'UNIT_PET', 'COMBAT_LOG_EVENT_UNFILTERED', 'PLAYER_LEAVE_COMBAT', 'PLAYER_REGEN_DISABLED'}, OnEvent, nil, OnClick, nil, nil, L["HPS"], nil, ApplySettings)

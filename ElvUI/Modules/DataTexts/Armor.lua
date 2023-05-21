@@ -1,7 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
 
-local select = select
 local format = format
 local strjoin = strjoin
 local UnitArmor = UnitArmor
@@ -9,7 +8,7 @@ local UnitLevel = UnitLevel
 local ARMOR = ARMOR
 
 local chanceString = "%.2f%%"
-local displayString, lastPanel, effectiveArmor = ""
+local displayString, db, effectiveArmor, _ = ""
 
 local function GetArmorReduction(armor, attackerLevel)
 	local levelModifier = attackerLevel
@@ -26,15 +25,13 @@ local function GetArmorReduction(armor, attackerLevel)
 end
 
 local function OnEvent(self)
-	effectiveArmor = select(2, UnitArmor("player"))
+	_, effectiveArmor = UnitArmor("player")
 
-	if E.global.datatexts.settings.Armor.NoLabel then
+	if db.NoLabel then
 		self.text:SetFormattedText(displayString, effectiveArmor)
 	else
-		self.text:SetFormattedText(displayString, E.global.datatexts.settings.Armor.Label ~= "" and E.global.datatexts.settings.Armor.Label or ARMOR..": ", effectiveArmor)
+		self.text:SetFormattedText(displayString, db.Label ~= "" and db.Label or ARMOR..": ", effectiveArmor)
 	end
-
-	lastPanel = self
 end
 
 local function OnEnter()
@@ -59,13 +56,12 @@ local function OnEnter()
 	DT.tooltip:Show()
 end
 
-local function ValueColorUpdate(hex)
-	displayString = strjoin("", E.global.datatexts.settings.Armor.NoLabel and "" or "%s", hex, "%d|r")
-
-	if lastPanel ~= nil then
-		OnEvent(lastPanel)
+local function ApplySettings(self, hex)
+	if not db then
+		db = E.global.datatexts.settings[self.name]
 	end
-end
-E.valueColorUpdateFuncs[ValueColorUpdate] = true
 
-DT:RegisterDatatext("Armor", L["Attributes"], {"UNIT_STATS", "UNIT_RESISTANCES"}, OnEvent, nil, nil, OnEnter, nil, ARMOR, nil, ValueColorUpdate)
+	displayString = strjoin("", db.NoLabel and "" or "%s", hex, "%d|r")
+end
+
+DT:RegisterDatatext("Armor", L["Attributes"], {"UNIT_STATS", "UNIT_RESISTANCES"}, OnEvent, nil, nil, OnEnter, nil, ARMOR, nil, ApplySettings)

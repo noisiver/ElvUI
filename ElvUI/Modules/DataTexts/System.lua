@@ -1,25 +1,26 @@
-local E, L, V, P, G = unpack(select(2, ...))
+local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
 
 local collectgarbage = collectgarbage
 local tremove, tinsert, sort, wipe, type = tremove, tinsert, sort, wipe, type
 local ipairs, pairs, floor, format, strmatch = ipairs, pairs, floor, format, strmatch
+
 local GetAddOnCPUUsage = GetAddOnCPUUsage
 local GetAddOnInfo = GetAddOnInfo
 local GetAddOnMemoryUsage = GetAddOnMemoryUsage
-local SetCVar = SetCVar
 local GetCVar = GetCVar
-local ReloadUI = ReloadUI
 local GetFramerate = GetFramerate
 local GetNetStats = GetNetStats
 local GetNumAddOns = GetNumAddOns
+local InCombatLockdown = InCombatLockdown
 local IsAddOnLoaded = IsAddOnLoaded
-local IsShiftKeyDown = IsShiftKeyDown
 local IsControlKeyDown = IsControlKeyDown
+local IsShiftKeyDown = IsShiftKeyDown
+local ReloadUI = ReloadUI
 local ResetCPUUsage = ResetCPUUsage
+local SetCVar = SetCVar
 local UpdateAddOnCPUUsage = UpdateAddOnCPUUsage
 local UpdateAddOnMemoryUsage = UpdateAddOnMemoryUsage
-local InCombatLockdown = InCombatLockdown
 
 local statusColors = {
 	"|cff0CD809",
@@ -28,9 +29,7 @@ local statusColors = {
 	"|cffD80909"
 }
 
-local enteredFrame = false
-local bandwidthString = "%.2f Mbps"
-local percentageString = "%.2f%%"
+local enteredFrame, db = false
 local homeLatencyString = "%d ms"
 local kiloByteString = "%d kb"
 local megaByteString = "%.2f mb"
@@ -48,11 +47,10 @@ local CombineAddOns = {
 }
 
 local function formatMem(memory)
-	local mult = 10^1
 	if memory >= 1024 then
-		return format(megaByteString, ((memory/1024) * mult) / mult)
+		return format(megaByteString, memory / 1024)
 	else
-		return format(kiloByteString, (memory * mult) / mult)
+		return format(kiloByteString, memory)
 	end
 end
 
@@ -74,14 +72,13 @@ local function BuildAddonList()
 end
 
 local function OnClick()
-	if IsShiftKeyDown() then
-		if IsControlKeyDown() then
-			SetCVar("scriptProfile", 1)
-			ReloadUI()
-		else
-			collectgarbage("collect")
-			ResetCPUUsage()
-		end
+	local shiftDown, ctrlDown = IsShiftKeyDown(), IsControlKeyDown()
+	if shiftDown and ctrlDown then
+		SetCVar("scriptProfile", GetCVar("scriptProfile"))
+		ReloadUI()
+	elseif shiftDown and not ctrlDown then
+		collectgarbage("collect")
+		ResetCPUUsage()
 	end
 end
 
@@ -109,8 +106,7 @@ local function OnEnter(_, slow)
 	DT.tooltip:ClearLines()
 	enteredFrame = true
 
-	local _, homePing, worldPing = GetNetStats()
-	DT.tooltip:AddDoubleLine(L["Home Latency:"], format(homeLatencyString, homePing), .69, .31, .31, .84, .75, .65)
+	local _, _, worldPing = GetNetStats()
 	DT.tooltip:AddDoubleLine(L["World Latency:"], format(homeLatencyString, worldPing), .69, .31, .31, .84, .75, .65)
 
 	if slow == 1 or not slow then
@@ -144,7 +140,7 @@ local function OnEnter(_, slow)
 			count = count + 1
 			infoDisplay[count] = data
 
-			if data.name == "ElvUI" or data.name == "ElvUI_OptionUI" or data.name == "ElvUI_Libraries" then
+			if data.name == "ElvUI" or data.name == "ElvUI_Options" or data.name == "ElvUI_Libraries" then
 				infoTable[data.name] = data
 			end
 		end
@@ -156,7 +152,7 @@ local function OnEnter(_, slow)
 	end
 
 	DT.tooltip:AddLine(" ")
-	if not E.global.datatexts.settings.System.ShowOthers then
+	if not db.ShowOthers then
 		displayData(infoTable.ElvUI, totalMEM, totalCPU)
 		displayData(infoTable.ElvUI_Options, totalMEM, totalCPU)
 		displayData(infoTable.ElvUI_Libraries, totalMEM, totalCPU)
@@ -239,12 +235,12 @@ local function OnUpdate(self, elapsed)
 		wait = 1
 
 		local framerate = floor(GetFramerate())
-		local _, homePing, worldPing = GetNetStats()
-		local latency = E.global.datatexts.settings.System.latency == "HOME" and homePing or worldPing
+		local _, _, worldPing = GetNetStats()
+		local latency = db.latency == "WORLD" and worldPing
 
 		local fps = framerate >= 30 and 1 or (framerate >= 20 and framerate < 30) and 2 or (framerate >= 10 and framerate < 20) and 3 or 4
 		local ping = latency < 150 and 1 or (latency >= 150 and latency < 300) and 2 or (latency >= 300 and latency < 500) and 3 or 4
-		self.text:SetFormattedText(E.global.datatexts.settings.System.NoLabel and "%s%d|r | %s%d|r" or "FPS: %s%d|r MS: %s%d|r", statusColors[fps], framerate, statusColors[ping], latency)
+		self.text:SetFormattedText(db.NoLabel and "%s%d|r | %s%d|r" or "FPS: %s%d|r MS: %s%d|r", statusColors[fps], framerate, statusColors[ping], latency)
 
 		if not enteredFrame then return end
 
@@ -262,4 +258,10 @@ local function OnUpdate(self, elapsed)
 	end
 end
 
-DT:RegisterDatatext("System", nil, nil, BuildAddonList, OnUpdate, OnClick, OnEnter, OnLeave, L["System"])
+local function ApplySettings(self)
+	if not db then
+		db = E.global.datatexts.settings[self.name]
+	end
+end
+
+DT:RegisterDatatext("System", nil, nil, BuildAddonList, OnUpdate, OnClick, OnEnter, OnLeave, L["System"], nil, ApplySettings)

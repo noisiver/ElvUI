@@ -56,17 +56,6 @@ G.datatexts = {
 			--status
 			hideAFK = false,
 			hideDND = false,
-			--clients
-			hideWoW = false,
-			hideD3 = false,
-			hideVIPR = false,
-			hideWTCG = false, --Hearthstone
-			hideHero = false, --Heros of the Storm
-			hidePro = false, --Overwatch
-			hideS1 = false,
-			hideS2 = false,
-			hideBSAp = false, --Mobile
-			hideApp = false, --Launcher
 		},
 		Gold = { goldFormat = "BLIZZARD", goldCoins = true },
 		Guild = { Label = "", NoLabel = false },

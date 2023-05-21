@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...))
+local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
 
 local _G = _G
@@ -17,19 +17,20 @@ local tooltipString = "%d%%"
 local totalDurability = 0
 local invDurability = {}
 local totalRepairCost
+local db
 
 local slots = {
-	[1] = INVTYPE_HEAD,
-	[3] = INVTYPE_SHOULDER,
-	[5] = INVTYPE_CHEST,
-	[6] = INVTYPE_WAIST,
-	[7] = INVTYPE_LEGS,
-	[8] = INVTYPE_FEET,
-	[9] = INVTYPE_WRIST,
-	[10] = INVTYPE_HAND,
-	[16] = INVTYPE_WEAPONMAINHAND,
-	[17] = INVTYPE_WEAPONOFFHAND,
-	[18] = INVTYPE_RANGED,
+	[1] = _G.INVTYPE_HEAD,
+	[3] = _G.INVTYPE_SHOULDER,
+	[5] = _G.INVTYPE_CHEST,
+	[6] = _G.INVTYPE_WAIST,
+	[7] = _G.INVTYPE_LEGS,
+	[8] = _G.INVTYPE_FEET,
+	[9] = _G.INVTYPE_WRIST,
+	[10] = _G.INVTYPE_HAND,
+	[16] = _G.INVTYPE_WEAPONMAINHAND,
+	[17] = _G.INVTYPE_WEAPONOFFHAND,
+	[18] = _G.INVTYPE_RANGED,
 }
 
 local function OnEvent(self)
@@ -48,7 +49,7 @@ local function OnEvent(self)
 				totalDurability = perc
 			end
 
-			if E.ScanTooltip.GetTooltipData then
+			if E.Retail and E.ScanTooltip.GetTooltipData then
 				E.ScanTooltip:SetInventoryItem("player", index)
 				E.ScanTooltip:Show()
 
@@ -65,13 +66,13 @@ local function OnEvent(self)
 	local r, g, b = E:ColorGradient(totalDurability * .01, 1, .1, .1, 1, 1, .1, .1, 1, .1)
 	local hex = E:RGBToHex(r, g, b)
 
-	if E.global.datatexts.settings.Durability.NoLabel then
+	if db.NoLabel then
 		self.text:SetFormattedText("%s%d%%|r", hex, totalDurability)
 	else
-		self.text:SetFormattedText("%s%s%d%%|r", E.global.datatexts.settings.Durability.Label ~= "" and E.global.datatexts.settings.Durability.Label or (DURABILITY..": "), hex, totalDurability)
+		self.text:SetFormattedText("%s%s%d%%|r", db.Label ~= "" and db.Label or (DURABILITY..": "), hex, totalDurability)
 	end
 
-	if totalDurability <= E.global.datatexts.settings.Durability.percThreshold then
+	if totalDurability <= db.percThreshold then
 		E:Flash(self, 0.53, true)
 	else
 		E:StopFlash(self)
@@ -79,7 +80,7 @@ local function OnEvent(self)
 end
 
 local function Click()
-	if InCombatLockdown() then UIErrorsFrame:AddMessage(E.InfoColor..ERR_NOT_IN_COMBAT) return end
+	if InCombatLockdown() then _G.UIErrorsFrame:AddMessage(E.InfoColor.._G.ERR_NOT_IN_COMBAT) return end
 	ToggleCharacter("PaperDollFrame")
 end
 
@@ -98,4 +99,10 @@ local function OnEnter()
 	DT.tooltip:Show()
 end
 
-DT:RegisterDatatext("Durability", nil, {"UPDATE_INVENTORY_DURABILITY", "MERCHANT_SHOW"}, OnEvent, nil, Click, OnEnter, nil, DURABILITY)
+local function ApplySettings(self)
+	if not db then
+		db = E.global.datatexts.settings[self.name]
+	end
+end
+
+DT:RegisterDatatext("Durability", nil, {"UPDATE_INVENTORY_DURABILITY", "MERCHANT_SHOW"}, OnEvent, nil, Click, OnEnter, nil, DURABILITY, nil, ApplySettings)
