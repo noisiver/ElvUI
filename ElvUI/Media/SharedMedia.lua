@@ -107,7 +107,8 @@ E.Media = {
 		StopRunningSlimeBall = M..[[Sounds\StopRunningSlimeBall.ogg]],
 		Warning = M..[[Sounds\Warning.ogg]],
 		Whisper = M..[[Sounds\Whisper.ogg]],
-		YankieBangBang = M..[[Sounds\YankieBangBang.ogg]]
+		YankieBangBang = M..[[Sounds\YankieBangBang.ogg]],
+		Resurrect = M..[[Sounds\Resurrect.ogg]]
 	},
 	ChatEmojis = {
 		Angry = M..[[ChatEmojis\Angry.tga]],
@@ -242,6 +243,7 @@ LSM:Register("sound", "Runaway Fast", E.Media.Sounds.RunFast)
 LSM:Register("sound", "Stop Running", E.Media.Sounds.StopRunningSlimeBall)
 LSM:Register("sound", "Warning", E.Media.Sounds.Warning)
 LSM:Register("sound", "Whisper Alert", E.Media.Sounds.Whisper)
+LSM:Register("sound", "Resurrect", E.Media.Sounds.Resurrect)
 LSM:Register("statusbar", "Melli", E.Media.Textures.Melli)
 LSM:Register("statusbar", "ElvUI Gloss", E.Media.Textures.NormTex)
 LSM:Register("statusbar", "ElvUI Norm", E.Media.Textures.NormTex2)

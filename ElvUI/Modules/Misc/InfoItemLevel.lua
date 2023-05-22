@@ -90,7 +90,7 @@ function M:ClearPageInfo(frame, which)
 			inspectItem.enchantText:SetText("")
 			inspectItem.iLvlText:SetText("")
 
-			for y=1, 10 do
+			for y = 1, 10 do
 				inspectItem["textureSlot"..y]:SetTexture()
 				inspectItem["textureSlotBackdrop"..y]:Hide()
 			end
@@ -259,7 +259,7 @@ function M:CreateSlotStrings(frame, which)
 			slot.enchantText:FontTemplate(LSM:Fetch("font", itemLevelFont), itemLevelFontSize, itemLevelFontOutline)
 
 			if i == 16 or i == 17 then
-				slot.enchantText:Point(i==16 and "BOTTOMRIGHT" or "BOTTOMLEFT", slot, i==16 and -40 or 40, 3)
+				slot.enchantText:Point(i==16 and "BOTTOMRIGHT" or "BOTTOMLEFT", slot, i == 16 and -40 or 40, 3)
 			else
 				slot.enchantText:Point(justify, slot, x + (justify == "BOTTOMLEFT" and 5 or -5), z)
 			end
