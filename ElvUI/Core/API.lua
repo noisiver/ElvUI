@@ -7,6 +7,7 @@ local format, select, type, ipairs, pairs = format, select, type, ipairs, pairs
 local strmatch, strfind, tonumber, tostring = strmatch, strfind, tonumber, tostring
 local tinsert, tremove = table.insert, table.remove
 
+local CalendarGetDate = CalendarGetDate
 local GetInventorySlotInfo = GetInventorySlotInfo
 local GetItemQualityColor = GetItemQualityColor
 local GetInventoryItemTexture = GetInventoryItemTexture
@@ -642,6 +643,24 @@ function E:BreakUpLargeNumbers(number)
 
 	-- Return the formatted number
 	return formattedNumber
+end
+
+function E:GetCurrentCalendarTime()
+	local dateTable = {}
+	local weekday, month, monthDay, year  = CalendarGetDate()
+	dateTable.weekday = weekday
+	dateTable.month = month
+	dateTable.monthDay = monthDay
+	dateTable.year = year
+
+	local timeInSeconds = time()
+	local timeInMinutes = math.floor(timeInSeconds / 60)
+	local timeInHours = math.floor(timeInMinutes / 60)
+	local timeInDays = math.floor(timeInHours / 24)
+	dateTable.minute = timeInMinutes % 60
+	dateTable.hour = timeInHours % 24
+
+	return dateTable
 end
 
 function E:LoadAPI()
