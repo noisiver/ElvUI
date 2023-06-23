@@ -1797,11 +1797,7 @@ function E:Initialize()
 	twipe(E.global)
 	twipe(E.private)
 
-
-	local playerGUID = UnitGUID('player')
-	local _, serverID = strsplit('-', playerGUID)
-	E.serverID = tonumber(serverID)
-	E.myguid = playerGUID
+	E.myguid = UnitGUID("player")
 
 	E.data = E.Libs.AceDB:New("ElvDB", E.DF, true)
 	E.data.RegisterCallback(E, "OnProfileChanged", "StaggeredUpdateAll")
