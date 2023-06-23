@@ -1,28 +1,30 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
 
-local strjoin = string.join
+local strjoin = strjoin
 local IsFalling = IsFalling
 local IsFlying = IsFlying
 local IsSwimming = IsSwimming
 local GetUnitSpeed = GetUnitSpeed
+
+local STAT_CATEGORY_ENHANCEMENTS = STAT_CATEGORY_ENHANCEMENTS
 
 local displayString, db = ""
 local beforeFalling, wasFlying
 
 local delayed
 local function DelayUpdate(self)
-	local unitSpeed = GetUnitSpeed("player")
+	local _, runSpeed, flightSpeed, swimSpeed = GetUnitSpeed("player")
 	local speed
 
 	if IsSwimming() then
-		speed = unitSpeed
+		speed = swimSpeed
 		wasFlying = false
 	elseif IsFlying() then
-		speed = unitSpeed
+		speed = flightSpeed
 		wasFlying = true
 	else
-		speed = unitSpeed
+		speed = runSpeed
 		wasFlying = false
 	end
 
@@ -44,7 +46,7 @@ end
 
 local function OnEvent(self)
 	if not delayed then
-		delayed = E:ScheduleRepeatingTimer(DelayUpdate, 0.5, self)
+		delayed = E:Delay(0.05, DelayUpdate, self)
 	end
 end
 
@@ -56,4 +58,4 @@ local function ApplySettings(self, hex)
 	displayString = strjoin("", db.NoLabel and "" or "%s: ", hex, "%."..db.decimalLength.."f%%|r")
 end
 
-DT:RegisterDatatext("MovementSpeed", L["Enhancements"], { "UNIT_STATS", "UNIT_AURA", "UNIT_SPELL_HASTE" }, OnEvent, nil, nil, nil, nil, L["Movement Speed"], nil, ApplySettings)
+DT:RegisterDatatext("MovementSpeed", L["Enhancements"], { "UNIT_STATS", "UNIT_AURA", "UNIT_SPELL_HASTE" }, OnEvent, nil, nil, nil, nil, _G.STAT_MOVEMENT_SPEED, nil, ApplySettings)
