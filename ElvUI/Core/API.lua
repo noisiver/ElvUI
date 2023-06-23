@@ -2,11 +2,16 @@ local E, L, V, P, G = unpack(select(2, ...))
 local LCS = E.Libs.LCS
 
 local _G = _G
-local wipe, date = wipe, date
+local select, wipe, date = select, wipe, date
 local format, select, type, ipairs, pairs = format, select, type, ipairs, pairs
 local strmatch, strfind, tonumber, tostring = strmatch, strfind, tonumber, tostring
 local tinsert, tremove = table.insert, table.remove
 
+local GetInventorySlotInfo = GetInventorySlotInfo
+local GetItemQualityColor = GetItemQualityColor
+local GetInventoryItemTexture = GetInventoryItemTexture
+local GetInventoryItemLink = GetInventoryItemLink
+local GetItemInfo = GetItemInfo
 local GetActiveTalentGroup = GetActiveTalentGroup
 local GetCVarBool = GetCVarBool
 local GetFunctionCPUUsage = GetFunctionCPUUsage
@@ -481,7 +486,10 @@ function E:GetUnitBattlefieldFaction(unit)
 end
 
 function E:PositionGameMenuButton()
-	GameMenuFrame:Height(GameMenuFrame:GetHeight() + GameMenuButtonLogout:GetHeight() + 1)
+	local button = GameMenuFrame[E.name]
+	local buttonHeight = GameMenuButtonLogout:GetHeight()
+
+	GameMenuFrame:Height(GameMenuFrame:GetHeight() + buttonHeight + 1)
 
 	GameMenuButtonRatings:HookScript("OnShow", function(self)
 		GameMenuFrame:Height(GameMenuFrame:GetHeight() + self:GetHeight())
@@ -490,7 +498,6 @@ function E:PositionGameMenuButton()
 		GameMenuFrame:Height(GameMenuFrame:GetHeight() - self:GetHeight())
 	end)
 
-	local button = GameMenuFrame[E.name]
 	button:SetFormattedText("%s%s|r", E.media.hexvaluecolor, E.name)
 
 	local _, relTo, _, _, offY = GameMenuButtonLogout:GetPoint()
@@ -543,10 +550,12 @@ function E:GetAverageItemLevel()
 				if itemLevel then
 					ilvl = ilvl + itemLevel
 
+					local color = qualityColors[quality]
+					sumR = sumR + color[1]
+					sumG = sumG + color[2]
+					sumB = sumB + color[3]
+
 					colorCount = colorCount + 1
-					sumR = sumR + qualityColors[quality][1]
-					sumG = sumG + qualityColors[quality][2]
-					sumB = sumB + qualityColors[quality][3]
 
 					if slotID == INVSLOT_MAINHAND and (itemEquipLoc ~= "INVTYPE_2HWEAPON" or titanGrip) then
 						items = 17
@@ -559,18 +568,27 @@ function E:GetAverageItemLevel()
 	if colorCount == 0 then
 		return ilvl / items, 1, 1, 1
 	else
-		return ilvl / items, (sumR / colorCount), (sumG / colorCount), (sumB / colorCount)
+		return ilvl / items, sumR / colorCount, sumG / colorCount, sumB / colorCount
 	end
 end
 
 function E:GetItemLevelColor(unit)
-	if not unit then unit = "player" end
+	if not unit then
+		unit = "player"
+	end
 
-	local i = 0
-	local sumR, sumG, sumB = 0, 0, 0
-	for slotName in pairs(slots) do
+	local slots = {
+		"HeadSlot", "NeckSlot", "ShoulderSlot", "BackSlot", "ChestSlot", "WristSlot",
+		"HandsSlot", "WaistSlot", "LegsSlot", "FeetSlot", "Finger0Slot", "Finger1Slot",
+		"Trinket0Slot", "Trinket1Slot", "MainHandSlot", "SecondaryHandSlot"
+	}
+
+	local i, sumR, sumG, sumB = 0, 0, 0, 0
+
+	for _, slotName in ipairs(slots) do
 		local slotID = GetInventorySlotInfo(slotName)
-		if GetInventoryItemTexture(unit, slotID) then
+		local texture = GetInventoryItemTexture(unit, slotID)
+		if texture then
 			local itemLink = GetInventoryItemLink(unit, slotID)
 			if itemLink then
 				local quality = select(3, GetItemInfo(itemLink))
@@ -586,14 +604,44 @@ function E:GetItemLevelColor(unit)
 	end
 
 	if i > 0 then
-		return (sumR / i), (sumG / i), (sumB / i)
+		return sumR / i, sumG / i, sumB / i
 	else
 		return 1, 1, 1
 	end
 end
 
+
 function E:PLAYER_LEVEL_UP(_, level)
 	E.mylevel = level
+end
+
+function E:BreakUpLargeNumbers(number)
+	-- Convert the number to a string
+	local strNumber = tostring(number)
+
+	-- Find the decimal point position
+	local decimalPos = string.find(strNumber, "%.")
+
+	-- Remove the decimal portion of the number
+	if decimalPos then
+		strNumber = string.sub(strNumber, 1, decimalPos - 1)
+	end
+
+	-- Insert commas to separate thousands
+	local formattedNumber = ""
+	local numDigits = string.len(strNumber)
+	local counter = 0
+
+	for i = numDigits, 1, -1 do
+		counter = counter + 1
+		formattedNumber = string.sub(strNumber, i, i) .. formattedNumber
+		if counter % 3 == 0 and i > 1 then
+			formattedNumber = "," .. formattedNumber
+		end
+	end
+
+	-- Return the formatted number
+	return formattedNumber
 end
 
 function E:LoadAPI()
