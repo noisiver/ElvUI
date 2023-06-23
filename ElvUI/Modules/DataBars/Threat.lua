@@ -91,11 +91,7 @@ function DB:ThreatBar_Update()
 		bar.showBar = false
 	end
 
-    if bar.db.displayText then
-        bar.text:Show()
-    else
-        bar.text:Hide()
-    end
+	bar.text:SetShown(bar.db.displayText)
 
 	DB:SetVisibility(bar) -- lower visibility because of using showBar variable
 

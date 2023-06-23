@@ -61,11 +61,7 @@ function B:SizeAndPositionBagBar()
 		ElvUIBags:SetAlpha(1)
 	end
 
-	if showBackdrop then
-		ElvUIBags.backdrop:Show()
-	else
-		ElvUIBags.backdrop:Hide()
-	end
+	ElvUIBags.backdrop:SetShown(showBackdrop)
 
 	ElvUIKeyRingButton:Size(bagBarSize)
 	ElvUIKeyRingButton:ClearAllPoints()

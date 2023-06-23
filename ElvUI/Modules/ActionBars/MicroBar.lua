@@ -154,11 +154,7 @@ function AB:UpdateMicroButtons()
 	local db = AB.db.microbar
 	microBar.db = db
 
-	if db.backdrop then
-		microBar.backdrop:Show()
-	else
-		microBar.backdrop:Hide()
-	end
+	microBar.backdrop:SetShown(db.backdrop)
 	microBar.backdrop:ClearAllPoints()
 
 	AB:MoverMagic(microBar)

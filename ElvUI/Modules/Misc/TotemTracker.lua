@@ -17,11 +17,7 @@ function T:UpdateButton(button, totem)
 
 	local haveTotem, _, startTime, duration, icon = GetTotemInfo(totem.slot)
 
-	if haveTotem and duration > 0 then
-		button:Show()
-	else
-		button:Hide()
-	end
+	button:SetShown(haveTotem and duration > 0)
 
 	if haveTotem then
 		button.iconTexture:SetTexture(icon)

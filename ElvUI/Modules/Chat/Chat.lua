@@ -936,11 +936,7 @@ end
 
 function CH:ToggleChatButton(button)
 	if button then
-		if not CH.db.hideCopyButton then
-			button:Show()
-		else
-			button:Hide()
-		end
+		button:SetShown(not CH.db.hideCopyButton)
 	end
 end
 
@@ -953,18 +949,8 @@ end
 function CH:RefreshToggleButtons()
 	LeftChatToggleButton:SetAlpha(E.db.LeftChatPanelFaded and CH.db.fadeChatToggles and 0 or 1)
 	RightChatToggleButton:SetAlpha(E.db.RightChatPanelFaded and CH.db.fadeChatToggles and 0 or 1)
-
-	if not CH.db.hideChatToggles and E.db.datatexts.panels.LeftChatDataPanel.enable then
-		LeftChatToggleButton:Show()
-	else
-		LeftChatToggleButton:Hide()
-	end
-
-	if not CH.db.hideChatToggles and E.db.datatexts.panels.RightChatDataPanel.enable then
-		RightChatToggleButton:Show()
-	else
-		RightChatToggleButton:Hide()
-	end
+	LeftChatToggleButton:SetShown(not CH.db.hideChatToggles and E.db.datatexts.panels.LeftChatDataPanel.enable)
+	RightChatToggleButton:SetShown(not CH.db.hideChatToggles and E.db.datatexts.panels.RightChatDataPanel.enable)
 end
 
 function CH:IsUndocked(chat, docker)

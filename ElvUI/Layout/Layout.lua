@@ -34,12 +34,7 @@ function LO:Initialize()
 end
 
 function LO:UpdateBottomPanel()
-	if E.db.general.bottomPanel then
-		LO.BottomPanel:Show()
-	else
-		LO.BottomPanel:Hide()
-	end
-
+	LO.BottomPanel:SetShown(E.db.general.bottomPanel)
 	LO.BottomPanel:Point("BOTTOM", 0, -E.Border)
 
 	local SPACING = E.Border * 2
@@ -50,11 +45,7 @@ function LO:UpdateBottomPanel()
 end
 
 function LO:UpdateTopPanel()
-	if E.db.general.topPanel then
-		LO.TopPanel:Show()
-	else
-		LO.TopPanel:Hide()
-	end
+	LO.TopPanel:SetShown(E.db.general.topPanel)
 	LO.TopPanel:Point("TOP", 0, E.Border)
 
 	local SPACING = E.Border * 2
@@ -147,12 +138,8 @@ do
 		panel:SetTemplate(db.backdrop and (db.panelTransparency and "Transparent" or "Default") or "NoBackdrop", true)
 
 		if db.border ~= nil then
-			if panel.iborder then
-				if db.border then panel.iborder:Show() else panel.iborder:Hide() end
-			end
-			if panel.oborder then
-				if db.border then panel.oborder:Show() else panel.oborder:Hide() end
-			end
+			if panel.iborder then panel.iborder:SetShown(db.border) end
+			if panel.oborder then panel.oborder:SetShown(db.border) end
 		end
 	end
 
@@ -258,28 +245,12 @@ function LO:ToggleChatPanels()
 	local showRightPanel = E.db.datatexts.panels.RightChatDataPanel.enable
 	local showLeftPanel = E.db.datatexts.panels.LeftChatDataPanel.enable
 
-	if showRightPanel then
-		RightChatDataPanel:Show()
-	else
-		RightChatDataPanel:Hide()
-	end
-	if showLeftPanel then
-		LeftChatDataPanel:Show()
-	else
-		LeftChatDataPanel:Hide()
-	end
+	RightChatDataPanel:SetShown(showRightPanel)
+	LeftChatDataPanel:SetShown(showLeftPanel)
 
 	local showToggles = not E.db.chat.hideChatToggles
-	if showToggles and showLeftPanel then
-		LeftChatToggleButton:Show()
-	else
-		LeftChatToggleButton:Hide()
-	end
-	if showToggles and showRightPanel then
-		RightChatToggleButton:Show()
-	else
-		RightChatToggleButton:Hide()
-	end
+	LeftChatToggleButton:SetShown(showToggles and showLeftPanel)
+	RightChatToggleButton:SetShown(showToggles and showRightPanel)
 
 	LO:RefreshChatMovers()
 

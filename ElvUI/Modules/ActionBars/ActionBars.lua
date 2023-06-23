@@ -242,11 +242,7 @@ function AB:PositionAndSizeBar(barName)
 
 	AB:FadeBarBlings(bar, bar.mouseover and 0 or db.alpha)
 
-	if db.backdrop then
-		bar.backdrop:Show()
-	else
-		bar.backdrop:Hide()
-	end
+	bar.backdrop:SetShown(db.backdrop)
 	bar.backdrop:SetFrameStrata(db.frameStrata or "LOW")
 	bar.backdrop:SetFrameLevel(db.frameLevel - 1)
 	bar.backdrop:ClearAllPoints()
@@ -752,7 +748,7 @@ function AB:FadeParent_OnEvent()
 	end
 end
 
-local noops = { "ClearAllPoints", "SetPoint", "SetScale" }
+local noops = { "ClearAllPoints", "SetPoint", "SetScale", "SetShown" }
 function AB:SetNoopsi(frame)
 	if not frame then return end
 	for _, func in pairs(noops) do
@@ -1006,11 +1002,8 @@ do
 
 		local font, size, flags, anchor, offsetX, offsetY, justify, color, show = AB:GetHotkeyConfig(button:GetParent().db)
 
-		if show then
-			hotkey:Show()
-		else
-			hotkey:Hide()
-		end
+		hotkey:SetShown(show)
+
 		local text = hotkey:GetText()
 		if text == RANGE_INDICATOR then
 			hotkey:SetFont(stockFont, stockFontSize, stockFontOutline)

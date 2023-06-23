@@ -87,6 +87,14 @@ local function Size(frame, width, height, ...)
 	frame:SetSize(w, (height and E:Scale(height)) or w, ...)
 end
 
+local function SetShown(frame, shown, ...)
+	if shown then
+		frame:Show()
+	else
+		frame:Hide()
+	end
+end
+
 local function Width(frame, width, ...)
 	frame:SetWidth(E:Scale(width), ...)
 end
@@ -452,6 +460,7 @@ end
 local function addapi(object)
 	local mk = getmetatable(object).__index
 
+	if not object.SetShown then mk.SetShown = SetShown end
 	if not object.Size then mk.Size = Size end
 	if not object.Point then mk.Point = Point end
 	if not object.SetOutside then mk.SetOutside = SetOutside end

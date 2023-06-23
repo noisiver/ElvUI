@@ -164,11 +164,7 @@ end
 
 local function OnMouseUp(_, button)
 	if button == "LeftButton" and not isDragging then
-		if not ElvUIMoverNudgeWindow:IsShown() then
-			ElvUIMoverNudgeWindow:Show()
-		else
-			ElvUIMoverNudgeWindow:Hide()
-		end
+		ElvUIMoverNudgeWindow:SetShown(not _G.ElvUIMoverNudgeWindow:IsShown())
 	end
 end
 
@@ -370,11 +366,7 @@ function E:ToggleMovers(show, which)
 	local upperText = strupper(which)
 	for _, holder in pairs(E.CreatedMovers) do
 		local isName = (holder.mover.name == which) or strupper(holder.mover.textString) == upperText
-		if show and (isName or holder.types[upperText]) then
-			holder.mover:Show()
-		else
-			holder.mover:Hide()
-		end
+		holder.mover:SetShown(show and (isName or holder.types[upperText]))
 	end
 end
 

@@ -77,11 +77,7 @@ function DB:UpdateBarBubbles(bar)
 
 	for i, bubble in ipairs(bar.bubbles) do
 		bubble:ClearAllPoints()
-		if bar.db.showBubbles then
-			bubble:Show()
-		else
-			bubble:Hide()
-		end
+		bubble:SetShown(bar.db.showBubbles)
 		bubble:Size(bubbleWidth, bubbleHeight)
 
 		if vertical then
@@ -91,6 +87,7 @@ function DB:UpdateBarBubbles(bar)
 		end
 	end
 end
+
 function DB:UpdateAll()
 	local texture = DB.db.customTexture and LSM:Fetch("statusbar", DB.db.statusbar) or E.media.normTex
 
@@ -144,28 +141,18 @@ end
 
 function DB:SetVisibility(bar)
 	if bar.showBar ~= nil then
-		if bar.showBar then
-			bar:Show()
-			bar.holder:Show()
-		else
-			bar:Hide()
-			bar.holder:Hide()
-		end
+		bar:SetShown(bar.showBar)
+		bar.holder:SetShown(bar.showBar)
 	elseif bar.db.enable then
 		local hideBar = (bar == DB.StatusBars.Threat or bar.db.hideInCombat) and UnitAffectingCombat("player")
 		or (bar.db.hideOutsidePvP and (select(2, GetInstanceInfo()) ~= "pvp"))
 		or (bar.ShouldHide and bar:ShouldHide())
 
-		if not hideBar then
-			bar:Show()
-			bar.holder:Show()
-		else
-			bar:Hide()
-			bar.holder:Hide()
-		end
+		bar:SetShown(not hideBar)
+		bar.holder:SetShown(not hideBar)
 	else
-		bar:Hide()
-		bar.holder:Hide()
+		bar:SetShown(false)
+		bar.holder:SetShown(false)
 	end
 end
 

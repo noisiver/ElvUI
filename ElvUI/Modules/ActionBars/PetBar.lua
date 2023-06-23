@@ -136,11 +136,7 @@ function AB:PositionAndSizeBarPet()
 	bar:SetAlpha(bar.mouseover and 0 or db.alpha)
 	AB:FadeBarBlings(bar, bar.mouseover and 0 or db.alpha)
 
-	if db.backdrop then
-		bar.backdrop:Show()
-	else
-		bar.backdrop:Hide()
-	end
+	bar.backdrop:SetShown(db.backdrop)
 	bar.backdrop:ClearAllPoints()
 
 	AB:MoverMagic(bar)

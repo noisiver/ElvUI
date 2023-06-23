@@ -314,11 +314,7 @@ function A:ConfigureAuras(header, auraTable, weaponPosition)
 			button.statusBar:Hide()
 		end
 
-		if A.db.showDuration then
-			button.text:Show()
-		else
-			button.text:Hide()
-		end
+		button.text:SetShown(A.db.showDuration)
 
 		if buffInfo.filter == "HARMFUL" then
 			local color = DebuffTypeColor[buffInfo.dispelType or ""]

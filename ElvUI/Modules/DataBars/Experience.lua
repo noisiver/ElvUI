@@ -108,11 +108,7 @@ function DB:ExperienceBar_Update()
 		end
 
 		RestedQuestLayering()
-		if isRested then
-			bar.Rested:Show()
-		else
-			bar.Rested:Hide()
-		end
+		bar.Rested:SetShown(isRested)
 	end
 
 	bar.text:SetText(displayString)
