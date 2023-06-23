@@ -1,7 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
 
-local _G = _G
 local format = format
 local strjoin = strjoin
 
@@ -15,7 +14,7 @@ local GetContainerNumSlots = GetContainerNumSlots
 local ContainerIDToInventoryID = ContainerIDToInventoryID
 
 local MAX_WATCHED_TOKENS = MAX_WATCHED_TOKENS or 3
-local NUM_BAG_SLOTS = NUM_BAG_SLOTS + (E.Retail and 1 or 0) -- add the profession bag
+local NUM_BAG_SLOTS = NUM_BAG_SLOTS
 local CURRENCY = CURRENCY
 
 local displayString, db = ""
@@ -48,7 +47,7 @@ local function OnEvent(self)
 end
 
 local function OnClick()
-	_G.OpenAllBags()
+	OpenAllBags()
 end
 
 local function OnEnter()
@@ -78,20 +77,18 @@ local function OnEnter()
 		end
 	end
 
-	if E.Retail or E.Wrath then
-		for i = 1, MAX_WATCHED_TOKENS do
-			local info, name = DT:BackpackCurrencyInfo(i)
-			if not name then break end
+	for i = 1, MAX_WATCHED_TOKENS do
+		local info, name = DT:BackpackCurrencyInfo(i)
+		if not name then break end
 
-			if i == 1 then
-				DT.tooltip:AddLine(" ")
-				DT.tooltip:AddLine(CURRENCY)
-				DT.tooltip:AddLine(" ")
-			end
+		if i == 1 then
+			DT.tooltip:AddLine(" ")
+			DT.tooltip:AddLine(CURRENCY)
+			DT.tooltip:AddLine(" ")
+		end
 
-			if info.quantity then
-				DT.tooltip:AddDoubleLine(format(iconString, info.iconFileID, name), info.quantity, 1, 1, 1, 1, 1, 1)
-			end
+		if info.quantity then
+			DT.tooltip:AddDoubleLine(format(iconString, info.iconFileID, name), info.quantity, 1, 1, 1, 1, 1, 1)
 		end
 	end
 
@@ -106,4 +103,4 @@ local function ApplySettings(self, hex)
 	displayString = strjoin("", db.NoLabel and "" or (db.Label ~= "" and db.Label) or strjoin("", L["Bags"], ": "), hex, (db.textFormat == "FREE" or db.textFormat == "USED") and "%d|r" or "%d/%d|r")
 end
 
-DT:RegisterDatatext("Bags", nil, { "BAG_UPDATE" }, OnEvent, nil, OnClick, OnEnter, nil, L["Bags"], nil, ApplySettings)
+DT:RegisterDatatext("Bags", nil, {"BAG_UPDATE"}, OnEvent, nil, OnClick, OnEnter, nil, L["Bags"], nil, ApplySettings)

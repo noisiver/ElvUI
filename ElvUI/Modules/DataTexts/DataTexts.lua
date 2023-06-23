@@ -5,33 +5,32 @@ local LDB = E.Libs.LDB
 local LSM = E.Libs.LSM
 local LCS = E.Libs.LCS
 
---Lua functions
-local tostring, format, type, pcall, unpack = tostring, format, type, pcall, unpack
+local format, type, pcall, unpack = format, type, pcall, unpack
 local tinsert, ipairs, pairs, wipe, sort = tinsert, ipairs, pairs, wipe, sort
 local next, strfind, strlen, strsplit = next, strfind, strlen, strsplit
 local hooksecurefunc = hooksecurefunc
---WoW API / Variables
+
 local CloseDropDownMenus = CloseDropDownMenus
 local CreateFrame = CreateFrame
 local EasyMenu = EasyMenu
 local GetBackpackCurrencyInfo = GetBackpackCurrencyInfo
 local GetCurrencyListSize = GetCurrencyListSize
-local GetCurrencyInfo = GetCurrencyInfo
 local GetCurrencyListInfo = GetCurrencyListInfo
+local ExpandCurrencyList = ExpandCurrencyList
 local GetClassID = LCS.GetClassID
 local GetNumSpecializations = LCS.GetNumSpecializationsForClassID
 local GetSpecializationInfo = LCS.GetSpecializationInfo
 local InCombatLockdown = InCombatLockdown
 local IsInInstance = IsInInstance
-local MISCELLANEOUS = MISCELLANEOUS
 local MouseIsOver = MouseIsOver
 local RegisterStateDriver = RegisterStateDriver
 local UnregisterStateDriver = UnregisterStateDriver
 
-local LFG_TYPE_DUNGEON = LFG_TYPE_DUNGEON
 local MISCELLANEOUS = MISCELLANEOUS
-
+local LFG_TYPE_DUNGEON = LFG_TYPE_DUNGEON
+local expansion = _G["EXPANSION_NAME"..GetExpansionLevel()]
 local QuickList = {}
+local iconString = '|T%s:16:16:0:0:64:64:4:60:4:60|t'
 
 DT.tooltip = CreateFrame("GameTooltip", "DataTextTooltip", E.UIParent, "GameTooltipTemplate")
 
@@ -50,7 +49,6 @@ DT.PanelPool = {
 DT.FontStrings = {}
 DT.AssignedDatatexts = {}
 DT.UnitEvents = {
-	PLAYER_MONEY = true,
 	UNIT_AURA = true,
 	UNIT_RESISTANCES = true,
 	UNIT_STATS = true,
@@ -208,43 +206,59 @@ function DT:BuildPanelFunctions(name, obj)
 		end
 	end
 
-	local function UpdateText(_, Name, _, Value)
-		if not Value or (strlen(Value) >= 3) or (Value == Name or LDBna[Value]) then
-			panel.text:SetText((not LDBna[Value] and Value) or Name)
+	local function UpdateText(_, _, _, _, data)
+		local db = E.global.datatexts.settings['LDB_'..name]
+		local icon = db.icon and data.icon
+		local label = db.label and data.label
+		local value = db.text and data.text
+
+		local str = ''
+
+		if label then
+			str = (db.customLabel ~= '' and db.customLabel) or label
+		end
+
+		if value then
+			local color = (db.useValueColor and hex) or '|cFFFFFFFF'
+			str = str .. (label and ': ' or '') .. (color .. value .. '|r')
+		end
+
+		panel.text:SetText(str)
+		panel.icon:SetShown(icon)
+		panel.icon:SetTexture(icon)
+		panel.icon:SetTexCoord(unpack(data.iconCoords or E.TexCoords))
+	end
+
+	local function UpdateColor(_, Hex)
+		hex = Hex
+		LDB.callbacks:Fire('LibDataBroker_AttributeChanged_'..name, name, nil, obj.text, obj)
+	end
+
+	local function OnEvent(dt, event)
+		if event == 'ELVUI_REMOVE' then
+			LDB.UnregisterCallback(dt, 'LibDataBroker_AttributeChanged_'..name)
 		else
-			panel.text:SetFormattedText("%s: %s%s|r", Name, LDBhex, Value)
+			panel = dt
+			LDB.RegisterCallback(dt, 'LibDataBroker_AttributeChanged_'..name, UpdateText)
+			UpdateColor(dt, hex)
 		end
 	end
 
-	local function OnCallback(Hex)
-		if name and obj then
-			LDBhex = Hex
-			LDB.callbacks:Fire("LibDataBroker_AttributeChanged_"..name.."_text", name, nil, obj.text, obj)
-		end
-	end
-
-	local function OnEvent(dt)
-		panel = dt
-		LDB:RegisterCallback("LibDataBroker_AttributeChanged_"..name.."_text", UpdateText)
-		LDB:RegisterCallback("LibDataBroker_AttributeChanged_"..name.."_value", UpdateText)
-		OnCallback(LDBhex)
-	end
-
-	return OnEnter, OnLeave, OnClick, OnCallback, OnEvent, UpdateText
+	return OnEvent, OnClick, OnEnter, OnLeave, UpdateColor, UpdateText
 end
 
 function DT:SetupObjectLDB(name, obj)
-	if obj.type == 'data source' or obj.type == 'launcher' then
-		local ldbName = 'LDB_'..name
+	if obj.type == "data source" or obj.type == "launcher" then
+		local ldbName = "LDB_"..name
 		if DT.RegisteredDataTexts[ldbName] then return end
 
 		local onEvent, onClick, onEnter, onLeave, updateColor = DT:BuildPanelFunctions(name, obj)
-		local data = DT:RegisterDatatext(ldbName, 'Data Broker', nil, onEvent, nil, onClick, onEnter, onLeave, 'LDB: '..name, nil, updateColor)
+		local data = DT:RegisterDatatext(ldbName, "Data Broker", nil, onEvent, nil, onClick, onEnter, onLeave, "LDB: "..name, nil, updateColor)
 		data.isLDB = true
 
 		if not obj.label then obj.label = name end
 
-		local defaults = { customLabel = '', label = obj.type == 'launcher', text = obj.type == 'data source', icon = false, useValueColor = false }
+		local defaults = { customLabel = "", label = obj.type == "launcher", text = obj.type == "data source", icon = false, useValueColor = false }
 
 		G.datatexts.settings[ldbName] = defaults
 		E.global.datatexts.settings[ldbName] = E:CopyTable(E.global.datatexts.settings[ldbName], defaults, true)
@@ -263,15 +277,15 @@ end
 
 function DT:GetDataPanelPoint(panel, i, numPoints, vertical)
 	if numPoints == 1 then
-		return "CENTER", panel, "CENTER"
+		return 'CENTER', panel, 'CENTER'
 	else
-		local point, relativePoint, xOffset, yOffset = "LEFT", i == 1 and "LEFT" or "RIGHT", 4, 0
+		local point, relativePoint, xOffset, yOffset = 'LEFT', i == 1 and 'LEFT' or 'RIGHT', 4, 0
 		if vertical then
-			point, relativePoint, xOffset, yOffset = "TOP", i == 1 and "TOP" or "BOTTOM", 0, -4
+			point, relativePoint, xOffset, yOffset = 'TOP', i == 1 and 'TOP' or 'BOTTOM', 0, -4
 		end
 
-		local lastPanel = (i == 1 and panel) or panel.dataPanels[i - 1]
-		return point, lastPanel, relativePoint, xOffset, yOffset
+		local previous = (i == 1 and panel) or panel.dataPanels[i - 1]
+		return point, previous, relativePoint, xOffset, yOffset
 	end
 end
 
@@ -280,6 +294,8 @@ function DT:SetupTooltip(panel)
 	DT.tooltip:SetOwner(panel, parent.anchor, parent.xOff, parent.yOff)
 
 	GameTooltip:Hide()
+
+	return panel, parent.anchor, parent.xOff, parent.yOff
 end
 
 function DT:RegisterPanel(panel, numPoints, anchor, xOff, yOff, vertical)
@@ -325,8 +341,8 @@ do
 
 		-- global number of datatext slots for the profile
 		for i = 1, (E.global.datatexts.customPanels[name].numPoints or 1) do
-			if not panelDB[i] then panelDB[i] = '' end
-			if not DT.db.battlePanel[name][i] then DT.db.battlePanel[name][i] = '' end
+			if not panelDB[i] then panelDB[i] = "" end
+			if not DT.db.battlePanel[name][i] then DT.db.battlePanel[name][i] = "" end
 		end
 
 		-- pass the table back
@@ -354,9 +370,9 @@ function DT:AssignPanelToDataText(dt, data, event, ...)
 						E:RegisterEventForObject(ev, data.objectEvent, dt.objectEventFunc)
 					end
 				elseif DT.UnitEvents[ev] then
-					pcall(dt.RegisterUnitEvent, dt, ev, 'player')
+					pcall(dt.RegisterUnitEvent, dt, ev, "player")
 				else
-					if ev == 'MODIFIER_STATE_CHANGED' then
+					if ev == "MODIFIER_STATE_CHANGED" then
 						dt.watchModKey = true
 					else
 						pcall(dt.RegisterEvent, dt, ev)
@@ -370,21 +386,21 @@ function DT:AssignPanelToDataText(dt, data, event, ...)
 		data.applySettings(dt, E.media.hexvaluecolor)
 	end
 
-	local ev = event or 'ELVUI_FORCE_UPDATE'
+	local ev = event or "ELVUI_FORCE_UPDATE"
 	if data.eventFunc then
 		if not data.objectEvent then
-			dt:SetScript('OnEvent', data.eventFunc)
+			dt:SetScript("OnEvent", data.eventFunc)
 		end
 		data.eventFunc(dt, ev, ...)
 	end
 
 	if data.onUpdate then
-		dt:SetScript('OnUpdate', data.onUpdate)
+		dt:SetScript("OnUpdate", data.onUpdate)
 		data.onUpdate(dt, 20000)
 	end
 
 	if data.onClick then
-		dt:SetScript('OnClick', function(p, button)
+		dt:SetScript("OnClick", function(p, button)
 			if E.db.datatexts.noCombatClick and InCombatLockdown() then return end
 			data.onClick(p, button)
 			DT.tooltip:Hide()
@@ -407,7 +423,7 @@ function DT:ForceUpdate_DataText(name) -- This is suppose to fire separately.
 				dtInfo.applySettings(dtSlot, hex, r, g, b)
 			end
 			if dtInfo.eventFunc then
-				dtInfo.eventFunc(dtSlot, 'ELVUI_FORCE_UPDATE')
+				dtInfo.eventFunc(dtSlot, "ELVUI_FORCE_UPDATE")
 			end
 		end
 	end
@@ -418,7 +434,7 @@ function DT:UpdateHexColors(hex, r, g, b) -- This will fire both together.
 		if dtInfo.applySettings then
 			dtInfo.applySettings(dtSlot, hex, r, g, b)
 			if dtInfo.eventFunc then
-				dtInfo.eventFunc(dtSlot, 'ELVUI_FORCE_UPDATE')
+				dtInfo.eventFunc(dtSlot, "ELVUI_FORCE_UPDATE")
 			end
 		end
 	end
@@ -444,7 +460,7 @@ function DT:UpdatePanelInfo(panelName, panel, ...)
 	local info = DT.LoadedInfo
 	local font, fontSize, fontOutline = info.font, info.fontSize, info.fontOutline
 	if db and db.fonts and db.fonts.enable then
-		font, fontSize, fontOutline = LSM:Fetch('font', db.fonts.font), db.fonts.fontSize, db.fonts.fontOutline
+		font, fontSize, fontOutline = LSM:Fetch("font", db.fonts.font), db.fonts.fontSize, db.fonts.fontOutline
 	end
 
 	local battlePanel = info.isInBattle and (not DT.ForceHideBGStats and E.db.datatexts.panels[panelName].battleground)
@@ -460,19 +476,19 @@ function DT:UpdatePanelInfo(panelName, panel, ...)
 	for i = 1, numPoints do
 		local dt = panel.dataPanels[i]
 		if not dt then
-			dt = CreateFrame('Button', panelName..'_DataText'..i, panel)
+			dt = CreateFrame("Button", panelName.."_DataText"..i, panel)
 			dt.MouseEnters = {}
 			dt.MouseLeaves = {}
-			dt:RegisterForClicks('AnyUp')
+			dt:RegisterForClicks("AnyUp")
 
-			local text = dt:CreateFontString(nil, 'ARTWORK')
+			local text = dt:CreateFontString(nil, "ARTWORK")
 			text:SetAllPoints()
-			text:SetJustifyV('MIDDLE')
+			text:SetJustifyV("MIDDLE")
 			dt.text = text
 
-			local icon = dt:CreateTexture(nil, 'ARTWORK')
+			local icon = dt:CreateTexture(nil, "ARTWORK")
 			icon:Hide()
-			icon:Point('RIGHT', text, 'LEFT', -4, 0)
+			icon:Point("RIGHT", text, "LEFT", -4, 0)
 			icon:SetTexCoord(unpack(E.TexCoords))
 
 			dt.icon = icon
@@ -485,37 +501,29 @@ function DT:UpdatePanelInfo(panelName, panel, ...)
 
 	--Note: some plugins dont have db.border, we need the nil checks
 	panel.forcedBorderColors = (db.border == false and {0,0,0,0}) or nil
-	panel:SetTemplate(db.backdrop and (db.panelTransparency and 'Transparent' or 'Default') or 'NoBackdrop', true)
+	panel:SetTemplate(db.backdrop and (db.panelTransparency and "Transparent" or "Default") or "NoBackdrop", true)
 
 	--Show Border option
 	if db.border ~= nil then
-		if panel.iborder then
-			if db.border then panel.iborder:Show() else panel.iborder:Hide() end
-		end
-		if panel.oborder then
-			if db.border then panel.oborder:Show() else panel.oborder:Hide() end
-		end
+		if panel.iborder then panel.iborder:SetShown(db.border) end
+		if panel.oborder then panel.oborder:SetShown(db.border) end
 	end
 
 	--Restore Panels
 	for i, dt in ipairs(panel.dataPanels) do
 		local assigned = DT.AssignedDatatexts[dt]
 
-		if i <= numPoints then
-			dt:Show()
-		else
-			dt:Hide()
-		end
+		dt:SetShown(i <= numPoints)
 		dt:SetSize(width, height)
 		dt:ClearAllPoints()
 		dt:SetPoint(DT:GetDataPanelPoint(panel, i, numPoints, vertical))
 		dt:UnregisterAllEvents()
 		dt:EnableMouseWheel(false)
-		dt:SetScript('OnUpdate', nil)
-		dt:SetScript('OnEvent', nil)
-		dt:SetScript('OnClick', nil)
-		dt:SetScript('OnEnter', DT.OnEnter)
-		dt:SetScript('OnLeave', DT.OnLeave)
+		dt:SetScript("OnUpdate", nil)
+		dt:SetScript("OnEvent", nil)
+		dt:SetScript("OnClick", nil)
+		dt:SetScript("OnEnter", DT.OnEnter)
+		dt:SetScript("OnLeave", DT.OnLeave)
 		wipe(dt.MouseEnters)
 		wipe(dt.MouseLeaves)
 
@@ -530,7 +538,7 @@ function DT:UpdatePanelInfo(panelName, panel, ...)
 		E:StopFlash(dt)
 
 		dt.text:FontTemplate(font, fontSize, fontOutline)
-		dt.text:SetJustifyH(db.textJustify or 'CENTER')
+		dt.text:SetJustifyH(db.textJustify or "CENTER")
 		dt.text:SetWordWrap(DT.db.wordWrap)
 		dt.text:SetText()
 
@@ -543,7 +551,7 @@ function DT:UpdatePanelInfo(panelName, panel, ...)
 		end
 
 		if assigned and assigned.isLDB and assigned.eventFunc then
-			assigned.eventFunc(dt, 'ELVUI_REMOVE')
+			assigned.eventFunc(dt, "ELVUI_REMOVE")
 		end
 
 		local data = DT.RegisteredDataTexts[ (battlePanel and DT.db.battlePanel or DT.db.panels)[panelName][i] ]
@@ -553,11 +561,11 @@ function DT:UpdatePanelInfo(panelName, panel, ...)
 		if dt.icon:IsShown() then
 			dt.text:ClearAllPoints()
 
-			if db.textJustify == 'LEFT' then
-				dt.text:Point('LEFT', dt, 'LEFT', iconSize + 4, 0)
-				dt.text:Point('RIGHT')
+			if db.textJustify == "LEFT" then
+				dt.text:Point("LEFT", dt, "LEFT", iconSize + 4, 0)
+				dt.text:Point("RIGHT")
 			else
-				dt.text:Point(db.textJustify or 'CENTER')
+				dt.text:Point(db.textJustify or "CENTER")
 			end
 		else
 			dt.text:SetAllPoints()
@@ -609,7 +617,7 @@ function DT:UpdatePanelAttributes(name, db, fromLoad)
 	Panel.xOff = db.tooltipXOffset
 	Panel.yOff = db.tooltipYOffset
 	Panel.anchor = db.tooltipAnchor
-	Panel.vertical = db.growth == 'VERTICAL'
+	Panel.vertical = db.growth == "VERTICAL"
 	Panel:SetSize(db.width, db.height)
 	Panel:SetFrameStrata(db.frameStrata)
 	Panel:SetFrameLevel(db.frameLevel)
@@ -619,7 +627,7 @@ function DT:UpdatePanelAttributes(name, db, fromLoad)
 	local panelDB = DT.db.panels[name]
 	if panelDB and panelDB.enable then
 		E:EnableMover(Panel.moverName)
-		RegisterStateDriver(Panel, 'visibility', db.visibility)
+		RegisterStateDriver(Panel, "visibility", db.visibility)
 
 		if not fromLoad then
 			DT:UpdatePanelInfo(name, Panel)
@@ -678,18 +686,18 @@ do
 
 			if not hasName(QuickList[category].menuList, info.localizedName or name) then
 				tinsert(QuickList[category].menuList, {
-					text = gsub(info.localizedName or name, '^LDB: ', ''),
+					text = gsub(info.localizedName or name, "^LDB: ", ""),
 					checked = function() return E.EasyMenu.MenuGetItem(DT.SelectedDatatext, name) end,
 					func = function() E.EasyMenu.MenuSetItem(DT.SelectedDatatext, name) end
 				})
 			end
 		end
 
-		tinsert(QuickList, { order = 99, text = ' ', notCheckable = true, isTitle = true })
+		tinsert(QuickList, { order = 99, text = " ", notCheckable = true, isTitle = true })
 		tinsert(QuickList, {
 			order = 100, text = L["None"],
-			checked = function() return E.EasyMenu.MenuGetItem(DT.SelectedDatatext, '') end,
-			func = function() E.EasyMenu.MenuSetItem(DT.SelectedDatatext, '') end
+			checked = function() return E.EasyMenu.MenuGetItem(DT.SelectedDatatext, "") end,
+			func = function() E.EasyMenu.MenuSetItem(DT.SelectedDatatext, "") end
 		})
 
 		DT:SortMenuList(QuickList)
@@ -697,20 +705,21 @@ do
 end
 
 function DT:PopulateData(currencyOnly)
-	local Collapsed = {}
 	local listSize, i = GetCurrencyListSize(), 1
 
 	while listSize >= i do
 		local info = DT:CurrencyListInfo(i)
+		if info.isHeader and not info.isHeaderExpanded then
+			ExpandCurrencyList(i, true)
+			Collapsed[info.name] = true
+		end
 		if info.isHeader then
-			G.datatexts.settings.Currencies.tooltipData[i] = { info.name, nil, nil, info.name == MISCELLANEOUS or strfind(info.name, LFG_TYPE_DUNGEON) }
+			G.datatexts.settings.Currencies.tooltipData[i] = { info.name, nil, nil, (info.name == expansion or info.name == MISCELLANEOUS) or strfind(info.name, LFG_TYPE_DUNGEON) }
 			E.global.datatexts.settings.Currencies.tooltipData[i] = { info.name, nil, nil, E.global.datatexts.settings.Currencies.headers }
 		end
 
 		i = i + 1
 	end
-
-	wipe(Collapsed)
 
 	if not currencyOnly then
 		for index = 1, GetNumSpecializations(GetClassID()) do
@@ -724,8 +733,13 @@ function DT:PopulateData(currencyOnly)
 	end
 end
 
-function DT:PLAYER_MONEY()
-	DT:PopulateData()
+function DT:CURRENCY_DISPLAY_UPDATE(_, currencyID)
+	if currencyID and not DT.CurrencyList[tostring(currencyID)] then
+		local name = DT:GetCurrencyListInfo(currencyID)
+		if name then
+			DT:PopulateData(true)
+		end
+	end
 end
 
 function DT:CurrencyListInfo(index)
@@ -736,8 +750,8 @@ function DT:CurrencyListInfo(index)
 end
 
 function DT:BackpackCurrencyInfo(index)
-	local info = GetBackpackCurrencyInfo(index) or {}
-	info.name, info.quantity, info.iconFileID, info.currencyTypesID = GetBackpackCurrencyInfo(index)
+	local info = {}
+	info.name, info.quantity, _, info.iconFileID, info.currencyTypesID = GetBackpackCurrencyInfo(index)
 
 	return info, info and info.name
 end
@@ -760,10 +774,6 @@ function DT:BuildTables()
 	if not db.faction then db.faction = {} end
 	db.faction[E.myrealm] = db.faction[E.myrealm] or {}
 	db.faction[E.myrealm][E.myname] = E.myfaction
-
-	if not db.serverID then db.serverID = {} end
-	db.serverID[E.serverID] = db.serverID[E.serverID] or {}
-	db.serverID[E.serverID][E.myrealm] = true
 end
 
 function DT:Initialize()
@@ -798,25 +808,25 @@ function DT:Initialize()
 	LDB.RegisterCallback(E, "LibDataBroker_DataObjectCreated", DT.SetupObjectLDB)
 	DT:RegisterLDB() -- LibDataBroker
 
-	DT:RegisterCustomCurrencyDT() -- Register all the user created currency datatexts from the "CustomCurrency" DT.
+	-- DT:RegisterCustomCurrencyDT() -- Register all the user created currency datatexts from the "CustomCurrency" DT.
 
 	hooksecurefunc("SetCurrencyBackpack", function() DT:ForceUpdate_DataText("Currencies") end)
 
 	DT:PopulateData()
-	DT:RegisterEvent("PLAYER_MONEY")
+	DT:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
 
 	for name in pairs(E.global.datatexts.customPanels) do
 		DT:BuildPanelFrame(name, true)
 	end
 
-	LDB.RegisterCallback(E, 'LibDataBroker_DataObjectCreated', DT.SetupObjectLDB)
+	LDB.RegisterCallback(E, "LibDataBroker_DataObjectCreated", DT.SetupObjectLDB)
 
 	DT:RegisterLDB() -- LibDataBroker
 	DT:UpdateQuickDT()
 
-	-- DT:RegisterEvent('UPDATE_BATTLEFIELD_SCORE')
-	DT:RegisterEvent('MODIFIER_STATE_CHANGED', 'QuickDTMode')
-	DT:RegisterEvent('PLAYER_ENTERING_WORLD')
+	DT:RegisterEvent("UPDATE_BATTLEFIELD_SCORE")
+	DT:RegisterEvent("MODIFIER_STATE_CHANGED", "QuickDTMode")
+	DT:RegisterEvent("PLAYER_ENTERING_WORLD")
 end
 
 --[[
@@ -836,39 +846,39 @@ end
 ]]
 function DT:RegisterDatatext(name, category, events, onEvent, onUpdate, onClick, onEnter, onLeave, localizedName, objectEvent, applySettings)
 	if not name then return end
-	if type(category) ~= 'string' and category ~= nil then return E:Print(format('%s is an invalid DataText.', name)) end
+	if type(category) ~= "string" and category ~= nil then return E:Print(format("%s is an invalid DataText.", name)) end
 
 	local data = { name = name, category = category }
 
-	if type(events) == 'function' then
-		return E:Print(format('%s is an invalid DataText. Events must be registered as a table or a string.', name))
+	if type(events) == "function" then
+		return E:Print(format("%s is an invalid DataText. Events must be registered as a table or a string.", name))
 	else
-		data.events = type(events) == 'string' and { strsplit('[, ]', events) } or events
+		data.events = type(events) == "string" and { strsplit("[, ]", events) } or events
 		data.eventFunc = onEvent
 		data.objectEvent = objectEvent
 	end
 
-	if onUpdate and type(onUpdate) == 'function' then
+	if onUpdate and type(onUpdate) == "function" then
 		data.onUpdate = onUpdate
 	end
 
-	if onClick and type(onClick) == 'function' then
+	if onClick and type(onClick) == "function" then
 		data.onClick = onClick
 	end
 
-	if onEnter and type(onEnter) == 'function' then
+	if onEnter and type(onEnter) == "function" then
 		data.onEnter = onEnter
 	end
 
-	if onLeave and type(onLeave) == 'function' then
+	if onLeave and type(onLeave) == "function" then
 		data.onLeave = onLeave
 	end
 
-	if localizedName and type(localizedName) == 'string' then
+	if localizedName and type(localizedName) == "string" then
 		data.localizedName = localizedName
 	end
 
-	if applySettings and type(applySettings) == 'function' then
+	if applySettings and type(applySettings) == "function" then
 		data.applySettings = applySettings
 	end
 
