@@ -3,8 +3,6 @@ local M = E:GetModule("Misc")
 local LSM = E.Libs.LSM
 
 local _G = _G
-local rad = rad
-local gsub = gsub
 local wipe = wipe
 local next = next
 local pairs = pairs
@@ -16,22 +14,20 @@ local InspectItems = {
     "HeadSlot",
     "NeckSlot",
     "ShoulderSlot",
-    "BackSlot",
+	'',
     "ChestSlot",
-    "ShirtSlot",
-    "TabardSlot",
-    "WristSlot",
-    "HandsSlot",
     "WaistSlot",
     "LegsSlot",
     "FeetSlot",
+    "WristSlot",
+    "HandsSlot",
     "Finger0Slot",
     "Finger1Slot",
     "Trinket0Slot",
     "Trinket1Slot",
+    "BackSlot",
     "MainHandSlot",
     "SecondaryHandSlot",
-    "RangedSlot"
 }
 
 local whileOpenEvents = {
@@ -66,18 +62,18 @@ function M:GetInspectPoints(id)
 end
 
 function M:UpdateInspectInfo(_, arg1)
-	M:UpdatePageInfo(_G.InspectFrame, "Inspect", arg1)
+	M:UpdatePageInfo(InspectFrame, "Inspect", arg1)
 end
 
 function M:UpdateCharacterInfo(event)
 	if (not E.db.general.itemLevel.displayCharacterInfo)
-	or (whileOpenEvents[event] and not _G.CharacterFrame:IsShown()) then return end
+	or (whileOpenEvents[event] and not CharacterFrame:IsShown()) then return end
 
-	M:UpdatePageInfo(_G.CharacterFrame, "Character", nil, event)
+	M:UpdatePageInfo(CharacterFrame, "Character", nil, event)
 end
 
 function M:UpdateCharacterItemLevel()
-	M:UpdateAverageString(_G.CharacterFrame, "Character")
+	M:UpdateAverageString(CharacterFrame, "Character")
 end
 
 function M:ClearPageInfo(frame, which)
@@ -100,7 +96,7 @@ end
 
 function M:ToggleItemLevelInfo(setupCharacterPage)
 	if setupCharacterPage then
-		M:CreateSlotStrings(_G.CharacterFrame, "Character")
+		M:CreateSlotStrings(CharacterFrame, "Character")
 	end
 
 	if E.db.general.itemLevel.displayCharacterInfo then
@@ -108,11 +104,11 @@ function M:ToggleItemLevelInfo(setupCharacterPage)
 		M:RegisterEvent("UPDATE_INVENTORY_DURABILITY", "UpdateCharacterInfo")
 		M:RegisterEvent("PLAYER_AVG_ITEM_LEVEL_UPDATE", "UpdateCharacterItemLevel")
 
-		_G.CharacterAttributesFrame:Hide()
+		CharacterAttributesFrame:Hide()
 
-		if not _G.CharacterFrame.CharacterInfoHooked then
-			_G.CharacterFrame:HookScript("OnShow", M.UpdateCharacterInfo)
-			_G.CharacterFrame.CharacterInfoHooked = true
+		if not CharacterFrame.CharacterInfoHooked then
+			CharacterFrame:HookScript("OnShow", M.UpdateCharacterInfo)
+			CharacterFrame.CharacterInfoHooked = true
 		end
 
 		if not setupCharacterPage then
@@ -123,16 +119,16 @@ function M:ToggleItemLevelInfo(setupCharacterPage)
 		M:UnregisterEvent("UPDATE_INVENTORY_DURABILITY")
 		M:UnregisterEvent("PLAYER_AVG_ITEM_LEVEL_UPDATE")
 
-		_G.CharacterAttributesFrame:Show()
+		CharacterAttributesFrame:Show()
 
-		M:ClearPageInfo(_G.CharacterFrame, "Character")
+		M:ClearPageInfo(CharacterFrame, "Character")
 	end
 
 	if E.db.general.itemLevel.displayInspectInfo then
 		M:RegisterEvent("INSPECT_TALENT_READY", "UpdateInspectInfo")
 	else
 		M:UnregisterEvent("INSPECT_TALENT_READY")
-		M:ClearPageInfo(_G.InspectFrame, "Inspect")
+		M:ClearPageInfo(InspectFrame, "Inspect")
 	end
 end
 
@@ -172,7 +168,7 @@ function M:UpdateAverageString(frame, which, iLevelDB)
 	if AvgItemLevel then
 		if isCharPage then
 			frame.ItemLevelText:SetText(AvgItemLevel)
-			-- frame.ItemLevelText:SetTextColor(_G.CharacterAttributesFrame:GetTextColor())
+			-- frame.ItemLevelText:SetTextColor(CharacterAttributesFrame:GetTextColor())
 		else
 			frame.ItemLevelText:SetFormattedText(L["Item level: %.2f"], AvgItemLevel)
 		end
@@ -239,11 +235,11 @@ function M:CreateSlotStrings(frame, which)
 	local itemLevelFontOutline = E.db.general.itemLevel.itemLevelFontOutline or "OUTLINE"
 
 	if which == "Inspect" then
-		frame.ItemLevelText = _G.InspectPaperDollItemsFrame:CreateFontString(nil, "ARTWORK")
+		frame.ItemLevelText = InspectPaperDollFrame:CreateFontString(nil, "ARTWORK")
 		frame.ItemLevelText:Point("BOTTOMLEFT", 6, 6)
 	else
-		frame.ItemLevelText = _G.CharacterAttributesFrame:CreateFontString(nil, "ARTWORK")
-		frame.ItemLevelText:Point("BOTTOM", _G.CharacterAttributesFrame, "BOTTOM", 0, 0)
+		frame.ItemLevelText = CharacterAttributesFrame:CreateFontString(nil, "ARTWORK")
+		frame.ItemLevelText:Point("BOTTOM", CharacterAttributesFrame, "BOTTOM", 0, 0)
 	end
 	frame.ItemLevelText:FontTemplate(nil, which == "Inspect" and 12 or 20)
 
@@ -274,7 +270,7 @@ function M:CreateSlotStrings(frame, which)
 end
 
 function M:SetupInspectPageInfo()
-	local frame = _G.InspectFrame
+	local frame = InspectFrame
 	if frame and not frame.ItemLevelText then
 		M:CreateSlotStrings(frame, "Inspect")
 	end
