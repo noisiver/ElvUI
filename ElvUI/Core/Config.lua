@@ -69,13 +69,14 @@ function E:ToggleMoveMode(which)
 
 	if not which or which == "" then
 		E.ConfigurationMode = mode
-		which = "ALL"
+		which = "all"
 	else
+		E.ConfigurationMode = true
 		mode = true
-		which = strupper(which)
 	end
 
-	self:ToggleMovers(mode, which)
+	E:ToggleMovers(mode, which)
+
 	if mode then
 		E:Grid_Show()
 		ElvUIGrid:SetAlpha(0.4)
@@ -85,7 +86,7 @@ function E:ToggleMoveMode(which)
 		end
 
 		ElvUIMoverPopupWindow:Show()
-		UIDropDownMenu_SetSelectedValue(ElvUIMoverPopupWindowDropDown, which)
+		UIDropDownMenu_SetSelectedValue(ElvUIMoverPopupWindowDropDown, strupper(which))
 
 		if IsAddOnLoaded("ElvUI_OptionsUI") then
 			E:Config_CloseWindow()
@@ -121,41 +122,44 @@ function E:Grid_Create()
 		grid:SetFrameStrata("BACKGROUND")
 	else
 		grid.regionCount = 0
-		local numRegions = grid:GetNumRegions()
-		for i = 1, numRegions do
-			local region = select(i, grid:GetRegions())
-			if region and region.IsObjectType and region:IsObjectType("Texture") then
+		for _, region in next, { grid:GetRegions() } do
+			if region.IsObjectType and region:IsObjectType("Texture") then
 				grid.regionCount = grid.regionCount + 1
 				region:SetAlpha(0)
 			end
 		end
 	end
 
-	local size = E.mult
 	local width, height = E.UIParent:GetSize()
+	local size, half = E.mult * 0.5, height * 0.5
+
+	local gSize = E.db.gridSize
+	local gHalf = gSize * 0.5
 
 	local ratio = width / height
-	local hStepheight = height * ratio
-	local wStep = width / E.db.gridSize
-	local hStep = hStepheight / E.db.gridSize
+	local hHeight = height * ratio
+	local wStep = width / gSize
+	local hStep = hHeight / gSize
 
-	grid.boxSize = E.db.gridSize
-	grid:Point("CENTER", E.UIParent)
+	grid.boxSize = gSize
+	grid:SetPoint("CENTER", E.UIParent)
 	grid:Size(width, height)
 	grid:Show()
 
-	for i = 0, E.db.gridSize do
+	for i = 0, gSize do
 		local tx = E:Grid_GetRegion()
-		if i == E.db.gridSize / 2 then
+		if i == gHalf then
 			tx:SetTexture(1, 0, 0)
 			tx:SetDrawLayer("BACKGROUND", 1)
 		else
 			tx:SetTexture(0, 0, 0)
 			tx:SetDrawLayer("BACKGROUND", 0)
 		end
+
+		local iwStep = i*wStep
 		tx:ClearAllPoints()
-		tx:Point("TOPLEFT", grid, "TOPLEFT", i * wStep - (size / 2), 0)
-		tx:Point("BOTTOMRIGHT", grid, "BOTTOMLEFT", i * wStep + (size / 2), 0)
+		tx:SetPoint("TOPLEFT", grid, "TOPLEFT", iwStep - size, 0)
+		tx:SetPoint("BOTTOMRIGHT", grid, "BOTTOMLEFT", iwStep + size, 0)
 	end
 
 	do
@@ -163,24 +167,27 @@ function E:Grid_Create()
 		tx:SetTexture(1, 0, 0)
 		tx:SetDrawLayer("BACKGROUND", 1)
 		tx:ClearAllPoints()
-		tx:Point("TOPLEFT", grid, "TOPLEFT", 0, -(height / 2) + (size / 2))
-		tx:Point("BOTTOMRIGHT", grid, "TOPRIGHT", 0, -(height / 2 + size / 2))
+		tx:SetPoint("TOPLEFT", grid, "TOPLEFT", 0, -half + size)
+		tx:SetPoint("BOTTOMRIGHT", grid, "TOPRIGHT", 0, -(half + size))
 	end
 
-	for i = 1, floor((height / 2) / hStep) do
+	local hSteps = floor((height*0.5)/hStep)
+	for i = 1, hSteps do
+		local ihStep = i*hStep
+
 		local tx = E:Grid_GetRegion()
 		tx:SetTexture(0, 0, 0)
 		tx:SetDrawLayer("BACKGROUND", 0)
 		tx:ClearAllPoints()
-		tx:Point("TOPLEFT", grid, "TOPLEFT", 0, -(height / 2 + i * hStep) + (size / 2))
-		tx:Point("BOTTOMRIGHT", grid, "TOPRIGHT", 0, -(height / 2 + i * hStep + size / 2))
+		tx:SetPoint("TOPLEFT", grid, "TOPLEFT", 0, -(half+ihStep) + size)
+		tx:SetPoint("BOTTOMRIGHT", grid, "TOPRIGHT", 0, -(half+ihStep + size))
 
 		tx = E:Grid_GetRegion()
 		tx:SetTexture(0, 0, 0)
 		tx:SetDrawLayer("BACKGROUND", 0)
 		tx:ClearAllPoints()
-		tx:Point("TOPLEFT", grid, "TOPLEFT", 0, -(height/ 2 - i * hStep) + (size / 2))
-		tx:Point("BOTTOMRIGHT", grid, "TOPRIGHT", 0, -(height / 2 - i * hStep + size / 2))
+		tx:SetPoint("TOPLEFT", grid, "TOPLEFT", 0, -(half-ihStep) + size)
+		tx:SetPoint("BOTTOMRIGHT", grid, "TOPRIGHT", 0, -(half-ihStep + size))
 	end
 end
 
@@ -389,7 +396,7 @@ function E:CreateMoverPopup()
 
 	ElvUIMoverPopupWindow:HookScript("OnHide", function() ElvUIMoverNudgeWindow:Hide() end)
 
-	desc = nudgeFrame:CreateFontString("ARTWORK")
+	desc = nudgeFrame:CreateFontString(nil, "ARTWORK")
 	desc:SetFontObject("GameFontHighlight")
 	desc:SetJustifyV("TOP")
 	desc:SetJustifyH("LEFT")
@@ -406,7 +413,7 @@ function E:CreateMoverPopup()
 	header:SetScript("OnShow", E.MoverNudgeOnShow)
 	nudgeFrame.header = header
 
-	title = header:CreateFontString("OVERLAY")
+	title = header:CreateFontString(nil, "OVERLAY")
 	title:FontTemplate()
 	title:Point("CENTER", header, "CENTER")
 	title:SetText(L["Nudge"])
@@ -434,7 +441,7 @@ function E:CreateMoverPopup()
 	xOffset:SetScript("OnEditFocusLost", function(eb)
 		eb:SetText(E:Round(xOffset.currentValue))
 	end)
-	xOffset:SetScript("OnEditFocusGained", xOffset.HighlightText)
+	xOffset:SetScript("OnEditFocusGained", EditBox_HighlightText)
 	xOffset:SetScript("OnShow", function(eb)
 		EditBox_ClearFocus(eb)
 		eb:SetText(E:Round(xOffset.currentValue))
@@ -469,7 +476,7 @@ function E:CreateMoverPopup()
 	yOffset:SetScript("OnEditFocusLost", function(eb)
 		eb:SetText(E:Round(yOffset.currentValue))
 	end)
-	yOffset:SetScript("OnEditFocusGained", yOffset.HighlightText)
+	yOffset:SetScript("OnEditFocusGained", EditBox_HighlightText)
 	yOffset:SetScript("OnShow", function(eb)
 		EditBox_ClearFocus(eb)
 		eb:SetText(E:Round(yOffset.currentValue))
@@ -546,8 +553,12 @@ function E:Config_UpdateSize(reset)
 	if not frame then return end
 
 	local maxWidth, maxHeight = self.UIParent:GetSize()
-	frame:SetMinResize(850, 653)
-	frame:SetMaxResize(maxWidth - 50, maxHeight - 50)
+	if frame.SetResizeBounds then
+		frame:SetResizeBounds(800, 600, maxWidth-50, maxHeight-50)
+	else
+		frame:SetMinResize(800, 600)
+		frame:SetMaxResize(maxWidth-50, maxHeight-50)
+	end
 
 	self.Libs.AceConfigDialog:SetDefaultSize(E.name, E:Config_GetDefaultSize())
 
@@ -658,6 +669,8 @@ function E:Config_CreateSeparatorLine(frame, lastButton)
 end
 
 function E:Config_SetButtonColor(btn, disabled)
+	-- btn:SetEnabled(not disabled)
+
 	if disabled then
 		btn:Disable()
 		btn:GetFontString():SetTextColor(1, 1, 1)
@@ -809,7 +822,7 @@ function E:Config_CreateLeftButtons(frame, unskinned, options)
 		local info = opt[3]
 		local key = opt[2]
 
-		if --[[ not (order ~= nil) and  ]](order == 2 or order == 5) and order < opt[1] then
+		if (order == 2 or order == 5) and order < opt[1] then
 			last = E:Config_CreateSeparatorLine(frame, last)
 		end
 
@@ -842,7 +855,9 @@ end
 
 function E:Config_CloseWindow()
 	local ACD = E.Libs.AceConfigDialog
-	if ACD then ACD:Close("ElvUI") end
+	if ACD then
+		ACD:Close("ElvUI")
+	end
 
 	ConfigTooltip:Hide()
 end
@@ -937,14 +952,14 @@ function E:Config_WindowOpened(frame)
 end
 
 function E:Config_CreateBottomButtons(frame, unskinned)
-	local Loc = E.Libs.ACL:GetLocale("ElvUI", E.global.general.locale or "enUS")
-	local last
+	local L = E.Libs.ACL:GetLocale("ElvUI", E.global.general.locale or "enUS")
 
+	local last
 	for _, info in ipairs({
 		{
 			var = "ToggleAnchors",
-			name = Loc["Toggle Anchors"],
-			desc = Loc["Unlock various elements of the UI to be repositioned."],
+			name = L["Toggle Anchors"],
+			desc = L["Unlock various elements of the UI to be repositioned."],
 			func = function()
 				E:ToggleMoveMode()
 				E.ConfigurationToggled = true
@@ -952,20 +967,20 @@ function E:Config_CreateBottomButtons(frame, unskinned)
 		},
 		{
 			var = "ResetAnchors",
-			name = Loc["Reset Anchors"],
-			desc = Loc["Reset all frames to their original positions."],
+			name = L["Reset Anchors"],
+			desc = L["Reset all frames to their original positions."],
 			func = function() E:ResetUI() end
 		},
 		{
 			var = "RepositionWindow",
-			name = Loc["Reposition Window"],
-			desc = Loc["Reset the size and position of this frame."],
+			name = L["Reposition Window"],
+			desc = L["Reset the size and position of this frame."],
 			func = function() E:Config_UpdateSize(true) end
 		},
 		{
 			var = "Install",
-			name = Loc["Install"],
-			desc = Loc["Run the installation process."],
+			name = L["Install"],
+			desc = L["Run the installation process."],
 			func = function()
 				E:Install()
 				E:ToggleOptionsUI()
@@ -973,7 +988,7 @@ function E:Config_CreateBottomButtons(frame, unskinned)
 		},
 		{
 			var = "ToggleTutorials",
-			name = Loc["Toggle Tutorials"],
+			name = L["Toggle Tutorials"],
 			func = function()
 				E:Tutorials(true)
 				E:ToggleOptionsUI()
@@ -981,8 +996,8 @@ function E:Config_CreateBottomButtons(frame, unskinned)
 		},
 		{
 			var = "ShowStatusReport",
-			name = Loc["ElvUI Status"],
-			desc = Loc["Shows a frame with needed info for support."],
+			name = L["ElvUI Status"],
+			desc = L["Shows a frame with needed info for support."],
 			func = function()
 				E:ShowStatusReport()
 				E:ToggleOptionsUI()
@@ -1060,30 +1075,28 @@ end
 
 function E:ToggleOptionsUI(msg)
 	if InCombatLockdown() then
-		self:Print(ERR_NOT_IN_COMBAT)
+		E:Print(ERR_NOT_IN_COMBAT)
 		self.ShowOptions = true
 		return
 	end
 
 	if not IsAddOnLoaded("ElvUI_OptionsUI") then
-		local noConfig
-		local _, _, _, _, reason = GetAddOnInfo("ElvUI_OptionsUI")
+		local _, _, _, _, _, reason = GetAddOnInfo("ElvUI_OptionsUI")
 
-		if reason ~= "MISSING" then
+		if reason == "MISSING" then
+			E:Print("|cffff0000Error|r -- Addon 'ElvUI_OptionsUI' not found.")
+			return
+		else
 			EnableAddOn("ElvUI_OptionsUI")
 			LoadAddOn("ElvUI_OptionsUI")
 
-			-- version check elvui options if it"s actually enabled
-			if GetAddOnMetadata("ElvUI_OptionsUI", "Version") ~= "1.09" then
-				self:StaticPopup_Show("CLIENT_UPDATE_REQUEST")
+			-- version check if it's actually enabled
+			local config = E.Config and E.Config[1]
+			if not config or (E.version ~= config.version) then
+				E.updateRequestTriggered = true
+				E:StaticPopup_Show("UPDATE_REQUEST")
+				return
 			end
-		else
-			noConfig = true
-		end
-
-		if noConfig then
-			self:Print("|cffff0000Error -- Addon \"ElvUI_OptionsUI\" not found.|r")
-			return
 		end
 	end
 
@@ -1130,6 +1143,13 @@ function E:ToggleOptionsUI(msg)
 			end
 
 			local unskinned = not E.private.skins.ace3Enable
+			if unskinned then
+				for _, region in next, { frame:GetRegions() } do
+					if region:IsObjectType("Texture") and region:GetTexture() == 131080 then
+						region:SetAlpha(0)
+					end
+				end
+			end
 
 			local bottom = CreateFrame("Frame", nil, frame)
 			bottom:Point("BOTTOMLEFT", 2, 2)
