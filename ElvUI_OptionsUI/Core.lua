@@ -2,8 +2,13 @@ local E = unpack(ElvUI)
 local D = E:GetModule("Distributor")
 local S = E:GetModule('Skins')
 
-local L = E.Libs.ACL:GetLocale('ElvUI', E.global.general.locale)
-local C = { Blank = function() return '' end }
+local GetAddOnMetadata = GetAddOnMetadata
+
+local L = E.Libs.ACL:GetLocale("ElvUI", E.global.general.locale)
+local C = {
+	version = tonumber(GetAddOnMetadata("ElvUI_Options", "Version")),
+	Blank = function() return "" end
+}
 
 E.Config = select(2, ...)
 E.Config[1] = C

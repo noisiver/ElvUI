@@ -780,6 +780,8 @@ function DT:Initialize()
 	DT.Initialized = true
 	DT.db = E.db.datatexts
 
+	DT:BuildTables()
+
 	E.EasyMenu:SetClampedToScreen(true)
 	E.EasyMenu:EnableMouse(true)
 	E.EasyMenu.MenuSetItem = function(dt, value)

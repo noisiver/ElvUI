@@ -26,7 +26,7 @@ function UF:CombobarDetachedUpdate()
 				if (event == "UNIT_ENTERED_VEHICLE" or event == "UNIT_EXITING_VEHICLE") and unit ~= "player" then return end
 
 				if event == "PLAYER_ENTERING_WORLD" then
-					E:ShapeshiftDelayedUpdate(ElvUF_Target.ComboPoints.Override, ElvUF_Target)
+					E:DelayedUpdate(ElvUF_Target.ComboPoints.Override, ElvUF_Target)
 				end
 
 				ElvUF_Target.ComboPoints.Override(ElvUF_Target, event, unit)
@@ -64,7 +64,7 @@ function UF:Construct_Combobar(frame)
 		frame:RegisterEvent("UPDATE_SHAPESHIFT_FORM", UF.UpdateComboDisplay)
 
 		frame:RegisterEvent("PLAYER_ENTERING_WORLD", function()
-			E:ShapeshiftDelayedUpdate(ElvUF_Target.ComboPoints.Override, ElvUF_Target)
+			E:DelayedUpdate(ElvUF_Target.ComboPoints.Override, ElvUF_Target)
 		end)
 
 		self:CombobarDetachedUpdate()

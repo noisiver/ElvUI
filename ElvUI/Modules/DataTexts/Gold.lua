@@ -1,10 +1,12 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
 local B = E:GetModule("Bags")
+-- GLOBALS: ElvDB
 
 local type, wipe, pairs, ipairs, sort = type, wipe, pairs, ipairs, sort
 local format, strjoin, tinsert = format, strjoin, tinsert
 
+local _G = _G
 local EasyMenu = EasyMenu
 local GetMoney = GetMoney
 local IsLoggedIn = IsLoggedIn
@@ -58,8 +60,8 @@ local function updateGold(self, updateAll, goldChange)
 		tinsert(menuList, { text = "", isTitle = true, notCheckable = true })
 		tinsert(menuList, { text = "Delete Character", isTitle = true, notCheckable = true })
 
-
 		for name in pairs(ElvDB.gold[E.myrealm]) do
+			local faction = ElvDB.faction[E.myrealm][name]
 			local gold = ElvDB.gold[E.myrealm][name]
 
 			if gold then

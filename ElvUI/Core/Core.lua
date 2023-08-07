@@ -1777,7 +1777,7 @@ end
 
 local delayedTimer
 local delayedFuncs = {}
-function E:ShapeshiftDelayedUpdate(func, ...)
+function E:DelayedUpdate(func, ...)
 	delayedFuncs[func] = {...}
 
 	if delayedTimer then return end

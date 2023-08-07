@@ -64,7 +64,7 @@ local function BuildAddonList()
 	wipe(infoTable)
 
 	for i = 1, addOnCount do
-		local name, title, _, loadable, reason = GetAddOnInfo(i)
+		local name, title, _, _, loadable, reason = GetAddOnInfo(i)
 		if loadable or reason == "DEMAND_LOADED" then
 			tinsert(infoTable, {name = name, index = i, title = title})
 		end
@@ -140,7 +140,7 @@ local function OnEnter(_, slow)
 			count = count + 1
 			infoDisplay[count] = data
 
-			if data.name == "ElvUI" or data.name == "ElvUI_Options" or data.name == "ElvUI_Libraries" then
+			if data.name == "ElvUI" or data.name == "ElvUI_OptionsUI" or data.name == "ElvUI_Libraries" then
 				infoTable[data.name] = data
 			end
 		end
@@ -154,8 +154,8 @@ local function OnEnter(_, slow)
 	DT.tooltip:AddLine(" ")
 	if not db.ShowOthers then
 		displayData(infoTable.ElvUI, totalMEM, totalCPU)
-		displayData(infoTable.ElvUI_Options, totalMEM, totalCPU)
-		displayData(infoTable.ElvUI_Libraries, totalMEM, totalCPU)
+		displayData(infoTable.ElvUI_OptionsUI, totalMEM, totalCPU)
+		-- displayData(infoTable.ElvUI_Libraries, totalMEM, totalCPU)
 		DT.tooltip:AddLine(" ")
 	else
 		for addon, searchString in pairs(CombineAddOns) do

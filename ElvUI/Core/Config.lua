@@ -2,7 +2,7 @@ local E, L, V, P, G = unpack(select(2, ...))
 local S = E:GetModule("Skins")
 
 local _G = _G
-local strsplit = strsplit
+local next, strsplit = next, strsplit
 local unpack, sort, gsub, wipe = unpack, sort, gsub, wipe
 local strupper, ipairs, tonumber = strupper, ipairs, tonumber
 local floor, select, type, min = floor, select, type, min
@@ -11,7 +11,6 @@ local pairs, tinsert, tContains = pairs, tinsert, tContains
 local hooksecurefunc = hooksecurefunc
 local EnableAddOn = EnableAddOn
 local LoadAddOn = LoadAddOn
-local GetAddOnMetadata = GetAddOnMetadata
 local GetAddOnInfo = GetAddOnInfo
 local CreateFrame = CreateFrame
 local IsAddOnLoaded = IsAddOnLoaded
@@ -22,6 +21,7 @@ local EditBox_HighlightText = EditBox_HighlightText
 local EditBox_ClearFocus = EditBox_ClearFocus
 local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
 local RESET = RESET
+-- GLOBALS: ElvUIMoverPopupWindow, ElvUIMoverNudgeWindow, ElvUIMoverPopupWindowDropDown
 
 local ConfigTooltip = CreateFrame("GameTooltip", "ElvUIConfigTooltip", E.UIParent, "GameTooltipTemplate")
 
@@ -105,10 +105,8 @@ function E:Grid_GetRegion()
 	if grid then
 		if grid.regionCount and grid.regionCount > 0 then
 			local line = select(grid.regionCount, grid:GetRegions())
-
 			grid.regionCount = grid.regionCount - 1
 			line:SetAlpha(1)
-
 			return line
 		else
 			return grid:CreateTexture()
@@ -216,7 +214,7 @@ function E:NudgeMover(nudgeX, nudgeY)
 	local x, y, point = E:CalculateMoverPoints(mover, nudgeX, nudgeY)
 
 	mover:ClearAllPoints()
-	mover:Point(point, E.UIParent, point, x, y)
+	mover:SetPoint(point, E.UIParent, point, x, y)
 	E:SaveMoverPosition(mover.name)
 
 	--Update coordinates in Nudge Window
@@ -403,14 +401,13 @@ function E:CreateMoverPopup()
 	desc:Point("TOPLEFT", 18, -15)
 	desc:Point("BOTTOMRIGHT", -18, 28)
 	desc:SetJustifyH("CENTER")
-	nudgeFrame.title = desc
+	nudgeFrame.desc = desc
 
 	header = CreateFrame("Button", nil, nudgeFrame)
 	header:SetTemplate(nil, true)
 	header:Size(100, 25)
-	header:Point("CENTER", nudgeFrame, "TOP")
+	header:SetPoint("CENTER", nudgeFrame, "TOP")
 	header:SetFrameLevel(header:GetFrameLevel() + 2)
-	header:SetScript("OnShow", E.MoverNudgeOnShow)
 	nudgeFrame.header = header
 
 	title = header:CreateFontString(nil, "OVERLAY")
@@ -486,7 +483,6 @@ function E:CreateMoverPopup()
 	yOffset.text:Point("RIGHT", yOffset, "LEFT", -4, 0)
 	yOffset.text:SetText("Y:")
 	yOffset:Point("BOTTOMLEFT", nudgeFrame, "CENTER", 16, 8)
-	nudgeFrame.yOffset = yOffset
 	S:HandleEditBox(yOffset)
 	nudgeFrame.yOffset = yOffset
 
@@ -587,7 +583,7 @@ end
 function E:Config_GetDefaultSize()
 	local width, height = E:Config_GetSize()
 	local maxWidth, maxHeight = E.UIParent:GetSize()
-	width, height = min(maxWidth - 50, width), min(maxHeight - 50, height)
+	width, height = min(maxWidth-50, width), min(maxHeight-50, height)
 	return width, height
 end
 
@@ -630,21 +626,21 @@ local function Config_SortButtons(a,b)
 	end
 end
 
-local function ConfigSliderOnMouseWheel(self, offset)
-	local _, maxValue = self:GetMinMaxValues()
+local function ConfigSliderOnMouseWheel(frame, offset)
+	local _, maxValue = frame:GetMinMaxValues()
 	if maxValue == 0 then return end
 
-	local newValue = self:GetValue() - offset
+	local newValue = frame:GetValue() - offset
 	if newValue < 0 then newValue = 0 end
 	if newValue > maxValue then return end
 
-	self:SetValue(newValue)
-	self.buttons:Point("TOPLEFT", 0, newValue * 36)
+	frame:SetValue(newValue)
+	frame.buttons:Point("TOPLEFT", 0, newValue * 36)
 end
 
-local function ConfigSliderOnValueChanged(self, value)
-	self:SetValue(value)
-	self.buttons:Point("TOPLEFT", 0, value * 36)
+local function ConfigSliderOnValueChanged(frame, value)
+	frame:SetValue(value)
+	frame.buttons:Point("TOPLEFT", 0, value * 36)
 end
 
 function E:Config_SetButtonText(btn, noColor)
@@ -669,8 +665,6 @@ function E:Config_CreateSeparatorLine(frame, lastButton)
 end
 
 function E:Config_SetButtonColor(btn, disabled)
-	-- btn:SetEnabled(not disabled)
-
 	if disabled then
 		btn:Disable()
 		btn:GetFontString():SetTextColor(1, 1, 1)
@@ -1008,7 +1002,7 @@ function E:Config_CreateBottomButtons(frame, unskinned)
 		local btn = E:Config_CreateButton(info, frame, unskinned, "Button", nil, frame.bottomHolder, "UIPanelButtonTemplate")
 		local offset = unskinned and 14 or 8
 
-		btn:Size(btn:GetTextWidth() + 60, 22)
+		btn:Size(btn:GetTextWidth() + 32, 22)
 
 		if not last then
 			btn:Point("BOTTOMLEFT", frame.bottomHolder, "BOTTOMLEFT", unskinned and 24 or offset, offset)
@@ -1046,12 +1040,12 @@ function E:Config_GetToggleMode(frame, msg)
 						mainSel = main and main.status and main.status.groups and main.status.groups.selected
 						mainSelStr = mainSel and ("^"..E:EscapeString(mainSel).."\001")
 						mainNode = main and main.children and main.children[pages[i]]
-						pageNodes[index + 1], pageNodes[index + 2] = main, mainNode
+						pageNodes[index+1], pageNodes[index+2] = main, mainNode
 					else
 						sub = pages[i] and pageNodes[i] and ((i == pageCount and pageNodes[i]) or pageNodes[i].children[pages[i]])
 						subSel = sub and sub.status and sub.status.groups and sub.status.groups.selected
 						subNode = (mainSelStr and msgStr:match(mainSelStr..E:EscapeString(pages[i]).."$") and (subSel and subSel == pages[i])) or ((i == pageCount and not subSel) and mainSel and mainSel == msgStr)
-						pageNodes[index + 1], pageNodes[index + 2] = sub, subNode
+						pageNodes[index+1], pageNodes[index+2] = sub, subNode
 					end
 					index = index + 2
 				end
@@ -1081,22 +1075,23 @@ function E:ToggleOptionsUI(msg)
 	end
 
 	if not IsAddOnLoaded("ElvUI_OptionsUI") then
-		local _, _, _, _, _, reason = GetAddOnInfo("ElvUI_OptionsUI")
-
-		if reason == "MISSING" then
-			E:Print("|cffff0000Error|r -- Addon 'ElvUI_OptionsUI' not found.")
+		local _, _, _, _, _, reason = GetAddOnInfo('ElvUI_OptionsUI')
+		if reason == 'MISSING' then
+			E:Print('|cffff0000Error|r -- Addon "ElvUI_OptionsUI" not found.')
 			return
 		else
-			EnableAddOn("ElvUI_OptionsUI")
-			LoadAddOn("ElvUI_OptionsUI")
+			EnableAddOn('ElvUI_OptionsUI')
+			LoadAddOn('ElvUI_OptionsUI')
 
-			-- version check if it's actually enabled
-			local config = E.Config and E.Config[1]
-			if not config or (E.version ~= config.version) then
-				E.updateRequestTriggered = true
-				E:StaticPopup_Show("UPDATE_REQUEST")
-				return
-			end
+			E:Delay(0.05, function() -- not sure why we need this, but it works for now
+				-- version check if it's actually enabled
+				local config = E.Config and E.Config[1]
+				if not config or (E.version ~= config.version) then
+					E.updateRequestTriggered = true
+					E:StaticPopup_Show('UPDATE_REQUEST')
+					return
+				end
+			end)
 		end
 	end
 
@@ -1125,13 +1120,10 @@ function E:ToggleOptionsUI(msg)
 			E:Config_UpdateSize()
 		end
 
-		if frame.bottomHolder then
-			E:Config_WindowOpened(frame)
-		else -- window was released or never opened
+		if not frame.bottomHolder then -- window was released or never opened
 			frame:HookScript("OnHide", E.Config_WindowClosed)
 
-			for i = 1, frame:GetNumChildren() do
-				local child = select(i, frame:GetChildren())
+			for _, child in next, { frame:GetChildren() } do
 				if child:IsObjectType("Button") and child:GetText() == CLOSE then
 					frame.originalClose = child
 					child:Hide()
@@ -1194,6 +1186,7 @@ function E:ToggleOptionsUI(msg)
 			buttonsHolder:Point("BOTTOMLEFT", bottom, "TOPLEFT", 0, 1)
 			buttonsHolder:Point("TOPLEFT", left, "TOPLEFT", 0, -70)
 			buttonsHolder:Point("BOTTOMRIGHT")
+			-- buttonsHolder:SetClipsChildren(true)
 			left.buttonsHolder = buttonsHolder
 
 			local buttons = CreateFrame("Frame", nil, buttonsHolder)
@@ -1204,10 +1197,10 @@ function E:ToggleOptionsUI(msg)
 
 			local slider = CreateFrame("Slider", nil, frame)
 			slider:SetThumbTexture(E.Media.Textures.White8x8)
+			slider:EnableMouseWheel(true)
 			slider:SetScript("OnMouseWheel", ConfigSliderOnMouseWheel)
 			slider:SetScript("OnValueChanged", ConfigSliderOnValueChanged)
 			slider:SetOrientation("VERTICAL")
-			slider:SetFrameLevel(4)
 			slider:SetValueStep(1)
 			slider:SetValue(0)
 			slider:Width(192)
@@ -1219,7 +1212,7 @@ function E:ToggleOptionsUI(msg)
 			local thumb = slider:GetThumbTexture()
 			thumb:Point("LEFT", left, "RIGHT", 2, 0)
 			thumb:SetVertexColor(1, 1, 1, 0.5)
-			thumb:SetSize(8, 12)
+			thumb:Size(8, 12)
 			left.slider.thumb = thumb
 
 			if not unskinned then
