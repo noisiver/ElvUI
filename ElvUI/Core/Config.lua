@@ -1075,20 +1075,20 @@ function E:ToggleOptionsUI(msg)
 	end
 
 	if not IsAddOnLoaded("ElvUI_OptionsUI") then
-		local _, _, _, _, _, reason = GetAddOnInfo('ElvUI_OptionsUI')
+		local _, _, _, _, _, reason = GetAddOnInfo("ElvUI_OptionsUI")
 		if reason == 'MISSING' then
 			E:Print('|cffff0000Error|r -- Addon "ElvUI_OptionsUI" not found.')
 			return
 		else
-			EnableAddOn('ElvUI_OptionsUI')
-			LoadAddOn('ElvUI_OptionsUI')
+			EnableAddOn("ElvUI_OptionsUI")
+			LoadAddOn("ElvUI_OptionsUI")
 
 			E:Delay(0.05, function() -- not sure why we need this, but it works for now
 				-- version check if it's actually enabled
 				local config = E.Config and E.Config[1]
 				if not config or (E.version ~= config.version) then
 					E.updateRequestTriggered = true
-					E:StaticPopup_Show('UPDATE_REQUEST')
+					E:StaticPopup_Show("UPDATE_REQUEST")
 					return
 				end
 			end)
@@ -1182,20 +1182,30 @@ function E:ToggleOptionsUI(msg)
 			LogoTop:Size(128, 64)
 			left.LogoTop = LogoTop
 
-			local buttonsHolder = CreateFrame("Frame", nil, left)
+			local buttonsHolder = CreateFrame("Frame", "ButtonsHolder", left)
 			buttonsHolder:Point("BOTTOMLEFT", bottom, "TOPLEFT", 0, 1)
 			buttonsHolder:Point("TOPLEFT", left, "TOPLEFT", 0, -70)
 			buttonsHolder:Point("BOTTOMRIGHT")
-			-- buttonsHolder:SetClipsChildren(true)
 			left.buttonsHolder = buttonsHolder
 
-			local buttons = CreateFrame("Frame", nil, buttonsHolder)
+			local buttonsScrollFrame = CreateFrame("ScrollFrame", "ButtonsHolderScroll", buttonsHolder)
+			buttonsScrollFrame:SetPoint("TOPLEFT", buttonsHolder, "TOPLEFT", 0, 0)
+			buttonsScrollFrame:SetPoint("BOTTOMRIGHT", buttonsHolder, "BOTTOMRIGHT", 0, 0)
+			left.buttonsScrollFrame = buttonsScrollFrame
+
+			local buttonsScrollFrameChild = CreateFrame("Frame", nil, buttonsScrollFrame)
+			buttonsScrollFrameChild:SetWidth(buttonsHolder:GetWidth())
+			buttonsScrollFrameChild:SetHeight(1)
+			buttonsScrollFrame:SetScrollChild(buttonsScrollFrameChild)
+			left.buttonsScrollFrameChild = buttonsScrollFrameChild
+
+			local buttons = CreateFrame("Frame", nil, buttonsScrollFrameChild)
 			buttons:Point("BOTTOMLEFT", bottom, "TOPLEFT", 0, 1)
 			buttons:Point("BOTTOMRIGHT")
 			buttons:Point("TOPLEFT", 0, 0)
 			left.buttons = buttons
 
-			local slider = CreateFrame("Slider", nil, frame)
+			local slider = CreateFrame("Slider", nil, buttonsScrollFrame)
 			slider:SetThumbTexture(E.Media.Textures.White8x8)
 			slider:EnableMouseWheel(true)
 			slider:SetScript("OnMouseWheel", ConfigSliderOnMouseWheel)
