@@ -277,7 +277,7 @@ function lib:SendPluginVersionCheck(message)
 		local splitMessage
 		for _ = 1, ceil(msgLength / maxChar) do
 			splitMessage = strmatch(strsub(message, 1, maxChar), ".+;")
-			if splitMessage then -- incase the string is over 250 but doesnt contain `;`
+			if splitMessage then -- incase the string is over 250 but doesn't contain `;`
 				message = gsub(message, "^" .. E:EscapeString(splitMessage), "")
 				E:Delay(delay, SendAddonMessage, lib.prefix, splitMessage, ChatType)
 				delay = delay + 1
