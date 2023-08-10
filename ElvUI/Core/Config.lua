@@ -1194,7 +1194,7 @@ function E:ToggleOptionsUI(msg)
 			left.buttonsScrollFrame = buttonsScrollFrame
 
 			local buttonsScrollFrameChild = CreateFrame("Frame", nil, buttonsScrollFrame)
-			buttonsScrollFrameChild:SetWidth(buttonsHolder:GetWidth())
+			buttonsScrollFrameChild:SetWidth(buttonsHolder:GetWidth() + 1)
 			buttonsScrollFrameChild:SetHeight(1)
 			buttonsScrollFrame:SetScrollChild(buttonsScrollFrameChild)
 			left.buttonsScrollFrameChild = buttonsScrollFrameChild
