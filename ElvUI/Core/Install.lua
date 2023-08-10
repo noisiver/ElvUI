@@ -575,17 +575,8 @@ function E:SetPage(PageNum)
 	InstallStatus.anim.progress:Play()
 	InstallStatus.text:SetText(CURRENT_PAGE.." / "..MAX_PAGE)
 
-	if PageNum == MAX_PAGE then
-		InstallNextButton:Disable()
-	else
-		InstallNextButton:Enable()
-	end
-
-	if PageNum == 1 then
-		InstallPrevButton:Disable()
-	else
-		InstallPrevButton:Enable()
-	end
+	InstallNextButton:SetEnabled(PageNum ~= MAX_PAGE)
+	InstallPrevButton:SetEnabled(PageNum ~= 1)
 
 	local f = ElvUIInstallFrame
 	local InstallOption1Button = InstallOption1Button

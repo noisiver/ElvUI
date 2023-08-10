@@ -122,17 +122,8 @@ function PI:SetPage(PageNum, PrevPage)
 	local r, g, b = E:ColorGradient(f.CurrentPage / f.MaxPage, 1, 0, 0, 1, 1, 0, 0, 1, 0)
 	f.Status:SetStatusBarColor(r, g, b)
 
-	if PageNum == f.MaxPage then
-		f.Next:Disable()
-	else
-		f.Next:Enable()
-	end
-
-	if PageNum == 1 then
-		f.Prev:Disable()
-	else
-		f.Prev:Enable()
-	end
+	f.Next:SetEnabled(PageNum ~= f.MaxPage)
+	f.Prev:SetEnabled(PageNum ~= 1)
 
 	f.Pages[f.CurrentPage]()
 	f.Status.text:SetFormattedText("%d / %d", f.CurrentPage, f.MaxPage)

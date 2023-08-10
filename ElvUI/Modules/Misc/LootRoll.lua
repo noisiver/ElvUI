@@ -159,13 +159,13 @@ local function buttonOnClick(self)
 end
 
 local function toggleLootButton(self, state, reason, reasonValue)
+	self:SetEnabled(state)
+
 	if state then
-		self:Enable()
 		self:SetAlpha(1)
 		self.reason = nil
 		SetDesaturation(self:GetNormalTexture(), false)
 	else
-		self:Disable()
 		self:SetAlpha(0.2)
 		self.reason = reasonValue and format(reasons[reason], reasonValue) or reasons[reason]
 		SetDesaturation(self:GetNormalTexture(), true)

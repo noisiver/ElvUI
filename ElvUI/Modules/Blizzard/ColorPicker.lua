@@ -287,13 +287,7 @@ function B:EnhanceColorPicker()
 	defaultButton:Point("TOPLEFT", "ColorPPClass", "BOTTOMLEFT", 0, -7)
 	defaultButton:Disable() -- enable when something has been copied
 	defaultButton:SetScript("OnHide", function(btn) if btn.colors then wipe(btn.colors) end end)
-	defaultButton:SetScript("OnShow", function(btn)
-		if btn.colors then
-			btn:Enable()
-		else
-			btn:Disable()
-		end
-	end)
+	defaultButton:SetScript('OnShow', function(btn) btn:SetEnabled(btn.colors) end)
 	S:HandleButton(defaultButton)
 
 	-- paste color on button click, updating frame components

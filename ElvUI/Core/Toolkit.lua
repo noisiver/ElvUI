@@ -95,6 +95,14 @@ local function SetShown(frame, shown, ...)
 	end
 end
 
+local function SetEnabled(frame, enabled, ...)
+	if enabled then
+		frame:Enable()
+	else
+		frame:Disable()
+	end
+end
+
 local function Width(frame, width, ...)
 	frame:SetWidth(E:Scale(width), ...)
 end
@@ -461,6 +469,7 @@ local function addapi(object)
 	local mk = getmetatable(object).__index
 
 	if not object.SetShown then mk.SetShown = SetShown end
+	if not object.SetEnabled then mk.SetEnabled = SetEnabled end
 	if not object.Size then mk.Size = Size end
 	if not object.Point then mk.Point = Point end
 	if not object.SetOutside then mk.SetOutside = SetOutside end

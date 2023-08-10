@@ -665,8 +665,9 @@ function E:Config_CreateSeparatorLine(frame, lastButton)
 end
 
 function E:Config_SetButtonColor(btn, disabled)
+	btn:SetEnabled(not disabled)
+
 	if disabled then
-		btn:Disable()
 		btn:GetFontString():SetTextColor(1, 1, 1)
 		E:Config_SetButtonText(btn, true)
 
@@ -675,7 +676,6 @@ function E:Config_SetButtonColor(btn, disabled)
 			btn:SetBackdropBorderColor(1, .82, 0, 1)
 		end
 	else
-		btn:Enable()
 		btn:GetFontString():SetTextColor(1, .82, 0)
 		E:Config_SetButtonText(btn)
 

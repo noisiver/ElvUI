@@ -1478,20 +1478,8 @@ function B:ToggleBackpack()
 end
 
 function B:ToggleSortButtonState(isBank)
-	local button, disable
-	if isBank and B.BankFrame then
-		button = B.BankFrame.sortButton
-		disable = E.db.bags.disableBankSort
-	elseif not isBank and B.BagFrame then
-		button = B.BagFrame.sortButton
-		disable = E.db.bags.disableBagSort
-	end
-
-	if button and disable then
-		button:Disable()
-	elseif button and not disable then
-		button:Enable()
-	end
+	local button = (isBank and B.BankFrame.sortButton) or B.BagFrame.sortButton
+	button:SetEnabled(not B.db[isBank and "disableBankSort" or "disableBagSort"])
 end
 
 function B:OpenBags()
