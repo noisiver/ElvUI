@@ -65,7 +65,7 @@ local function BuildAddonList()
 
 	for i = 1, addOnCount do
 		local name, title, _, _, loadable, reason = GetAddOnInfo(i)
-		if loadable or reason == "DEMAND_LOADED" then
+		if loadable then
 			tinsert(infoTable, {name = name, index = i, title = title})
 		end
 	end
