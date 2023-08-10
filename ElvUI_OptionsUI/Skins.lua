@@ -11,7 +11,7 @@ E.Options.args.skins = Skins
 Skins.args.intro = ACH:Description(L["SKINS_DESC"], 0)
 Skins.args.general = ACH:MultiSelect(L["General"], nil, 1, nil, nil, nil, function(_, key) if key == 'blizzardEnable' then return E.private.skins.blizzard.enable else return E.private.skins[key] end end, function(_, key, value) if key == 'blizzardEnable' then E.private.skins.blizzard.enable = value else E.private.skins[key] = value end E.ShowPopup = true end)
 Skins.args.general.sortByValue = true
-Skins.args.general.values = { ace3Enable = 'Ace3', blizzardEnable = L["Blizzard"], checkBoxSkin = L["CheckBox Skin"], parchmentRemoverEnable = L["Parchment Remover"] }
+Skins.args.general.values = { ace3Enable = "Ace3", libDropdown = L["Library Dropdown"], blizzardEnable = L["Blizzard"], checkBoxSkin = L["CheckBox Skin"], parchmentRemoverEnable = L["Parchment Remover"] }
 
 local function ToggleSkins(value)
 	for key in pairs(E.private.skins.blizzard) do

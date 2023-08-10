@@ -1,15 +1,14 @@
 local E, L, V, P, G = unpack(select(2, ...))
 local S = E:GetModule("Skins")
+local LibStub = LibStub
 
---Lua functions
 local _G = _G
 local tinsert, xpcall, next, ipairs, pairs = tinsert, xpcall, next, ipairs, pairs
 local unpack, assert, type, strfind = unpack, assert, type, strfind
---WoW API / Variables
+local hooksecurefunc = hooksecurefunc
 local IsAddOnLoaded = IsAddOnLoaded
 local UIPanelWindows = UIPanelWindows
 local UpdateUIPanelPositions = UpdateUIPanelPositions
-local hooksecurefunc = hooksecurefunc
 
 S.allowBypass = {}
 S.addonCallbacks = {}
@@ -954,8 +953,7 @@ do
 	end
 end
 
-function S:HandleSliderFrame(frame)
-	assert(frame, "doesnt exist!")
+function S:HandleSliderFrame(frame, template, frameLevel)
 	assert(frame, "doesn't exist!")
 
 	local orientation = frame:GetOrientation()
@@ -969,7 +967,7 @@ function S:HandleSliderFrame(frame)
 	frame:SetThumbTexture(E.Media.Textures.Melli)
 
 	if not frame.backdrop then
-		frame:SetTemplate()
+		frame:CreateBackdrop(template, nil, nil, nil, nil, nil, nil, true, frameLevel)
 	end
 
 	local thumb = frame:GetThumbTexture()
@@ -1448,7 +1446,7 @@ function S:Initialize()
 			S:Ace3_SkinTooltip(LibStub(n, true))
 		end
 	end
-	if S.EarlyDropdowns then
+	if E.private.skins.libDropdown and S.EarlyDropdowns then
 		for _, n in next, S.EarlyDropdowns do
 			S:SkinLibDropDownMenu(n)
 		end

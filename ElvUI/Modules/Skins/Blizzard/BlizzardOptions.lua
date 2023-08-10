@@ -9,7 +9,7 @@ local InCombatLockdown = InCombatLockdown
 local hooksecurefunc = hooksecurefunc
 
 S:AddCallback("Skin_BlizzardOptions", function()
-	if not E.private.skins.blizzard.enable or not E.private.skins.blizzard.BlizzardOptions then return end
+	if not E.private.skins.blizzard.enable or not E.private.skins.blizzard.blizzardOptions then return end
 
 	-- Game Menu Interface/Tabs
 	for i = 1, 2 do
