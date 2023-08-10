@@ -446,7 +446,7 @@ function AceHook:Unhook(obj, method)
 		registry[self][obj][method] = nil
 		registry[self][obj] = next(registry[self][obj]) and registry[self][obj] or nil
 
-		-- if the hook reference doesnt exist, then its a secure hook, just bail out and dont do any unhooking
+		-- if the hook reference doesn't exist, then its a secure hook, just bail out and dont do any unhooking
 		if not self.hooks[obj] or not self.hooks[obj][method] then return true end
 
 		if scripts[uid] and obj:GetScript(method) == uid then  -- unhooks scripts

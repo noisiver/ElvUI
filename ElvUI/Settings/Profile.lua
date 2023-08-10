@@ -1550,11 +1550,11 @@ P.unitframe = {
 			},
 			fader = {
 				enable = false,
-				--range = true, [player doesnt get this option]
+				--range = true, [player doesn't get this option]
 				hover = true,
 				combat = true,
 				playertarget = true,
-				--unittarget = false, [player doesnt get this option]
+				--unittarget = false, [player doesn't get this option]
 				focus = false,
 				health = true,
 				power = true,

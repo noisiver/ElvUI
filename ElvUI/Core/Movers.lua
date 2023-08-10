@@ -381,7 +381,7 @@ function E:DisableMover(name)
 
 	local holder = self.CreatedMovers[name]
 	if not holder then
-		error(format("mover %s doesnt exist", name or "nil"))
+		error(format("mover %s doesn't exist", name or "nil"))
 	end
 
 	self.DisabledMovers[name] = {}
@@ -401,7 +401,7 @@ function E:EnableMover(name)
 
 	local holder = self.DisabledMovers[name]
 	if not holder then
-		error(format("mover %s doesnt exist", name or "nil"))
+		error(format("mover %s doesn't exist", name or "nil"))
 	end
 
 	self.CreatedMovers[name] = {}
