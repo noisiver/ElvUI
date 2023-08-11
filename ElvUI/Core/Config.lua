@@ -556,7 +556,7 @@ function E:Config_UpdateSize(reset)
 		frame:SetMaxResize(maxWidth-50, maxHeight-50)
 	end
 
-	self.Libs.AceConfigDialog:SetDefaultSize(E.name, E:Config_GetDefaultSize())
+	self.Libs.AceConfigDialog:SetDefaultSize("ElvUI", E:Config_GetDefaultSize())
 
 	local status = frame.obj and frame.obj.status
 	if status then
@@ -865,7 +865,7 @@ end
 
 function E:Config_GetWindow()
 	local ACD = E.Libs.AceConfigDialog
-	local ConfigOpen = ACD and ACD.OpenFrames and ACD.OpenFrames[E.name]
+	local ConfigOpen = ACD and ACD.OpenFrames and ACD.OpenFrames.ElvUI
 	return ConfigOpen and ConfigOpen.frame
 end
 
@@ -1105,7 +1105,7 @@ function E:ToggleOptionsUI(msg)
 			ACD.OpenHookedElvUI = true
 		end
 
-		ACD[mode](ACD, E.name)
+		ACD[mode](ACD, "ElvUI")
 	end
 
 	if not frame then
@@ -1239,7 +1239,7 @@ function E:ToggleOptionsUI(msg)
 		end
 
 		if ACD and pages then
-			ACD:SelectGroup(E.name, unpack(pages))
+			ACD:SelectGroup('ElvUI', unpack(pages))
 		end
 	end
 end
