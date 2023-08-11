@@ -54,7 +54,7 @@ local setmetatable, getmetatable, rawset, rawget = setmetatable, getmetatable, r
 -- GLOBALS: LibStub, IsLoggedIn, geterrorhandler
 
 --[[
-	 xpcall safecall implementation
+	xpcall safecall implementation
 ]]
 local xpcall = xpcall
 
@@ -69,10 +69,10 @@ local function CreateDispatcher(argCount)
 		local function call() return method(ARGS) end
 
 		local function dispatch(func, ...)
-			 method = func
-			 if not method then return end
-			 ARGS = ...
-			 return xpcall(call, eh)
+			method = func
+			if not method then return end
+			ARGS = ...
+			return xpcall(call, eh)
 		end
 
 		return dispatch
@@ -632,10 +632,17 @@ function AceAddon:IterateAddonStatus() return pairs(self.statuses) end
 function AceAddon:IterateEmbedsOnAddon(addon) return pairs(self.embeds[addon]) end
 function AceAddon:IterateModulesOfAddon(addon) return pairs(addon.modules) end
 
+-- Blizzard AddOns which can load very early in the loading process and mess with Ace3 addon loading
+local BlizzardEarlyLoadAddons = {
+	Blizzard_DebugTools = true,
+	Blizzard_TimeManager = true,
+	Blizzard_CombatLog = true,
+}
+
 -- Event Handling
 local function onEvent(this, event, arg1)
 	-- 2011-08-17 nevcairiel - ignore the load event of Blizzard_DebugTools, so a potential startup error isn't swallowed up
-	if (event == "ADDON_LOADED"  and arg1 ~= "Blizzard_DebugTools") or event == "PLAYER_LOGIN" then
+	if (event == "ADDON_LOADED" and (arg1 == nil or not BlizzardEarlyLoadAddons[arg1])) or event == "PLAYER_LOGIN" then
 		-- if a addon loads another addon, recursion could happen here, so we need to validate the table on every iteration
 		while(#AceAddon.initializequeue > 0) do
 			local addon = tremove(AceAddon.initializequeue, 1)
