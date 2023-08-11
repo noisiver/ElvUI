@@ -283,7 +283,7 @@ end
 -- Despooling logic
 -- Reminder:
 -- - We have 3 Priorities, each containing a "Ring" construct ...
--- - ... made up of N "Pipe"s (1 for each destination/pipename)
+-- - ... made up of N "Pipe's (1 for each destination/pipename)
 -- - and each pipe contains messages
 
 function ChatThrottleLib:Despool(Prio)

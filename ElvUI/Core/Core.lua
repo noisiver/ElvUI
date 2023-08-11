@@ -658,7 +658,7 @@ function E:RemoveTableDuplicates(cleanTable, checkTable, generatedKeys)
 		local default, genTable, genOption = checkTable[option]
 		if keyed then genTable = generatedKeys[option] else genOption = generatedKeys end
 
-		-- we only want to add settings which are existing in the default table, unless it"s allowed by generatedKeys
+		-- we only want to add settings which are existing in the default table, unless it's allowed by generatedKeys
 		if default ~= nil or (genTable or genOption ~= nil) then
 			if type(value) == "table" and type(default) == "table" then
 				if genOption ~= nil then

@@ -532,7 +532,7 @@ function TT:GameTooltip_OnTooltipSetUnit(data)
 	if unit and not isPlayerUnit and TT:IsModKeyDown() then
 		local guid = (data and data.guid) or UnitGUID(unit) or ""
 		local id = tonumber(strmatch(guid, "%-(%d-)%-%x-$"), 10)
-		if id then -- NPC ID"s
+		if id then -- NPC ID's
 			self:AddLine(format(IDLine, ID, id))
 		end
 	end

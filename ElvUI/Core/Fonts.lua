@@ -61,7 +61,7 @@ function E:UpdateBlizzardFonts()
 	if db.replaceBlizzFonts then
 		local size, style, stock = E.db.general.fontSize, E.db.general.fontStyle, not db.unifiedBlizzFonts
 		if lastFont.font == NORMAL and lastFont.size == size and lastFont.style == style and lastFont.stock == stock then
-			return -- only execute this when needed as it"s excessive to reset all of these
+			return -- only execute this when needed as it's excessive to reset all of these
 		end
 
 		UNIT_NAME_FONT		= NAMEFONT

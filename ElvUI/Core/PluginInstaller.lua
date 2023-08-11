@@ -25,9 +25,9 @@
 
 	E:GetModule("PluginInstaller"):Queue(addon)
 
-	* Title is wat displayed on top of the window. By default it"s "ElvUI Plugin Installation"
+	* Title is wat displayed on top of the window. By default it's "ElvUI Plugin Installation"
 	* Name is how your installation will be showin in "pending list", Default is "Unknown"
-	* tutorialImage is a path to your own texture to use in frame. if not specified, then it will use ElvUI"s one
+	* tutorialImage is a path to your own texture to use in frame. if not specified, then it will use ElvUI's one
 	* Pages is a table to set up pages of your install where numbers are representing actual pages" order and function is what previously was used to set layout. For example
 
 	function function1()

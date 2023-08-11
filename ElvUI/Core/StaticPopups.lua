@@ -641,7 +641,7 @@ function E:StaticPopup_EditBoxOnEnterPressed()
 		if parent.which then
 			which = parent.which
 			dialog = parent
-		elseif owner and owner.which then -- This is needed if this is a money input frame since it"s nested deeper than a normal edit box
+		elseif owner and owner.which then -- This is needed if this is a money input frame since it's nested deeper than a normal edit box
 			which = owner.which
 			dialog = owner
 		end
@@ -815,7 +815,7 @@ function E:StaticPopup_Show(which, text_arg1, text_arg2, data)
 			end
 		end
 
-		--If dialog not found and there"s a preferredIndex then try to find an available frame before the preferredIndex
+		--If dialog not found and there's a preferredIndex then try to find an available frame before the preferredIndex
 		if not dialog and info.preferredIndex then
 			for i = 1, info.preferredIndex do
 				local frame = _G["ElvUI_StaticPopup"..i]

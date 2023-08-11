@@ -1914,7 +1914,7 @@ function CH:UpdateChatKeywords()
 end
 
 function CH:PostChatClose(chat)
-	-- clear these off when it"s closed, used by FCFTab_UpdateColors
+	-- clear these off when it's closed, used by FCFTab_UpdateColors
 	local tab = CH:GetTab(chat)
 	tab.whisperName = nil
 	tab.classColor = nil
@@ -1993,7 +1993,7 @@ function CH:DelayGuildMOTD()
 		if msg and msg ~= "" then
 			registerGuildEvents(msg)
 			df:SetScript("OnUpdate", nil)
-		else -- 5 seconds can be too fast for the API response. let"s try once every 5 seconds (max 5 checks).
+		else -- 5 seconds can be too fast for the API response. let's try once every 5 seconds (max 5 checks).
 			delay, checks = 0, checks + 1
 			if checks >= 5 then
 				registerGuildEvents()
@@ -2151,10 +2151,10 @@ function CH:DefaultSmileys()
 	CH:AddSmiley(":stuck_out_tongue:", E:TextureString(E.Media.ChatEmojis.StuckOutTongue,x))
 	CH:AddSmiley(":stuck_out_tongue_closed_eyes:", E:TextureString(E.Media.ChatEmojis.StuckOutTongueClosedEyes,x))
 
-	-- Darth"s keys
+	-- Darth's keys
 	CH:AddSmiley(":meaw:", E:TextureString(E.Media.ChatEmojis.Meaw, x))
 
-	-- Simpy"s keys
+	-- Simpy's keys
 	CH:AddSmiley(">:%(", E:TextureString(E.Media.ChatEmojis.Rage, x))
 	CH:AddSmiley(":%$", E:TextureString(E.Media.ChatEmojis.Blush, x))
 	CH:AddSmiley("<\\3", E:TextureString(E.Media.ChatEmojis.BrokenHeart, x))
@@ -2493,7 +2493,7 @@ function CH:Initialize()
 	CH.db = E.db.chat
 	if not E.private.chat.enable then
 		-- if the chat module is off we still need to spawn the dts for the panels
-		-- if we are going to have the panels show even when it"s disabled
+		-- if we are going to have the panels show even when it's disabled
 		CH:PositionChats()
 		CH:Panels_ColorUpdate()
 		return

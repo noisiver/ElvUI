@@ -23,7 +23,7 @@ local DEFENSE  = DEFENSE
 
 local displayString, targetlv, playerlv, db
 local basemisschance, misschance, baseDef, armorDef, leveldifference, dodge, parry, block, unhittable
-local AVD_DECAY_RATE, chanceString = .2, "%.2f%%"	--According to Light"s Club discord, avoidance decay should be 0.2% per level per avoidance (thus 102.4 for +3 crush cap)
+local AVD_DECAY_RATE, chanceString = .2, "%.2f%%"	--According to Light's Club discord, avoidance decay should be 0.2% per level per avoidance (thus 102.4 for +3 crush cap)
 
 local function IsWearingShield()
 	local slotID = GetInventorySlotInfo("SecondaryHandSlot")
@@ -49,7 +49,7 @@ local function OnEvent(self)
 	else
 		leveldifference = 0
 	end
-	if not UnitExists("target") then --If there"s no target, we"ll assume we"re talking about a lvl +3 boss. You can click yourself to see against your level.
+	if not UnitExists("target") then --If there's no target, we"ll assume we"re talking about a lvl +3 boss. You can click yourself to see against your level.
 		leveldifference = 3
 		targetlv = 73
 	end

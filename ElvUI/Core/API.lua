@@ -477,7 +477,7 @@ end
 function E:GetUnitBattlefieldFaction(unit)
 	local englishFaction, localizedFaction = UnitFactionGroup(unit)
 
-	-- this might be a rated BG or wargame and if so the player"s faction might be altered
+	-- this might be a rated BG or wargame and if so the player's faction might be altered
 	if unit == "player" then
 		englishFaction = PLAYER_FACTION_GROUP[GetBattlefieldArenaFaction()]
 		localizedFaction = (englishFaction == "Alliance" and FACTION_ALLIANCE) or FACTION_HORDE

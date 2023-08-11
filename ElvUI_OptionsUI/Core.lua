@@ -379,7 +379,7 @@ local function ExportImport_Open(mode)
 				Box:SetText(exportString)
 				Box.editBox:HighlightText()
 			else
-				--Scroll frame doesn't scroll to the bottom by itself, so let"s do that now
+				--Scroll frame doesn't scroll to the bottom by itself, so let's do that now
 				Box.scrollFrame:SetVerticalScroll(Box.scrollFrame:GetVerticalScrollRange())
 			end
 		end)
@@ -437,7 +437,7 @@ local function ExportImport_Open(mode)
 						Label2:SetText(format("%s: %s%s|r", L["Profile Name"], E.media.hexvaluecolor, profileKey))
 					end
 
-					--Scroll frame doesn't scroll to the bottom by itself, so let"s do that now
+					--Scroll frame doesn't scroll to the bottom by itself, so let's do that now
 					Box.scrollFrame:UpdateScrollChildRect()
 					Box.scrollFrame:SetVerticalScroll(Box.scrollFrame:GetVerticalScrollRange())
 

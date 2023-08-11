@@ -11,7 +11,7 @@ local NOT_APPLICABLE = NOT_APPLICABLE
 
 local mapInfo = E.MapInfo
 
-local colors = { -- pulled from Blizz"s ZoneText.lua
+local colors = { -- pulled from Blizz's ZoneText.lua
 	none		= {r = 1, g = 1, b = 0},
 	arena		= {r = 1.0, g = 0.1, b = 0.1},
 	combat		= {r = 1.0, g = 0.1, b = 0.1},

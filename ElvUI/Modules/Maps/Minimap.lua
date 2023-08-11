@@ -532,7 +532,7 @@ function M:Initialize()
 	Minimap.location:Point("TOP", Minimap, 0, -2)
 	Minimap.location:SetJustifyH("CENTER")
 	Minimap.location:SetJustifyV("MIDDLE")
-	Minimap.location:Hide() -- Fixes blizzard"s font rendering issue, keep after M:SetScale
+	Minimap.location:Hide() -- Fixes blizzard's font rendering issue, keep after M:SetScale
 	-- M:SetScale(Minimap.location, 1)
 
 	M:RegisterEvent("PLAYER_ENTERING_WORLD", "Update_ZoneText")
