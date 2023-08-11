@@ -6,10 +6,12 @@ local pairs, strjoin = pairs, strjoin
 local IsShiftKeyDown = IsShiftKeyDown
 local InCombatLockdown = InCombatLockdown
 local ReloadUI = ReloadUI
+local UIErrorsFrame = UIErrorsFrame
+
+local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
 
 local displayString, db = ""
 local configText = "ElvUI"
-local reloadText = RELOADUI
 
 local function OnEvent(self)
 	self.text:SetFormattedText(displayString, db.Label ~= "" and db.Label or configText)
@@ -18,7 +20,7 @@ end
 local function OnEnter()
 	DT.tooltip:ClearLines()
 	DT.tooltip:AddDoubleLine(L["Left Click:"], L["Toggle Configuration"], 1, 1, 1)
-	DT.tooltip:AddDoubleLine(L["Hold Shift + Right Click:"], reloadText, 1, 1, 1)
+	DT.tooltip:AddDoubleLine(L["Hold Shift + Right Click:"], L["Reload UI"], 1, 1, 1)
 
 	if E.Libs.EP.registeredPrefix then
 		DT.tooltip:AddLine(" ")
@@ -36,7 +38,7 @@ local function OnEnter()
 end
 
 local function OnClick(_, button)
-	if InCombatLockdown() then _G.UIErrorsFrame:AddMessage(E.InfoColor.._G.ERR_NOT_IN_COMBAT) return end
+	if InCombatLockdown() then UIErrorsFrame:AddMessage(E.InfoColor..ERR_NOT_IN_COMBAT) return end
 
 	if button == "LeftButton" then
 		E:ToggleOptionsUI()

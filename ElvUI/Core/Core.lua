@@ -21,16 +21,19 @@ local DisableAddOn = DisableAddOn
 local GetAddOnInfo = GetAddOnInfo
 local IsInGuild = IsInGuild
 local IsInInstance = IsInInstance
-local SendAddonMessage = SendAddonMessage
 local UnitGUID = UnitGUID
 local UnitLevel = UnitLevel
-local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
-local RAID_CLASS_COLORS = RAID_CLASS_COLORS
 local GetBindingKey = GetBindingKey
 local SetBinding = SetBinding
 local SaveBindings = SaveBindings
 local GetCurrentBindingSet = GetCurrentBindingSet
 local GetSpecialization = LCS.GetSpecialization
+
+local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
+local RAID_CLASS_COLORS = RAID_CLASS_COLORS
+local SendAddonMessage = SendAddonMessage
+local GetAddOnMetadata = GetAddOnMetadata
+-- GLOBALS: ElvCharacterDB
 
 --Modules
 local ActionBars = E:GetModule("ActionBars")
