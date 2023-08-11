@@ -3,32 +3,59 @@ local LCS = E.Libs.LCS
 
 local _G = _G
 local select, wipe, date = select, wipe, date
-local format, select, type, ipairs, pairs = format, select, type, ipairs, pairs
-local strmatch, strfind, tonumber, tostring = strmatch, strfind, tonumber, tostring
+local time, floor, format, math, select, type, ipairs, pairs = time, floor, format, math, select, type, ipairs, pairs
+local strmatch, strfind, strlen, strsub, tonumber, tostring = strmatch, strfind, strlen, strsub, tonumber, tostring
 local tinsert, tremove = table.insert, table.remove
 
+local CreateFrame = CreateFrame
 local CalendarGetDate = CalendarGetDate
+local GetBattlefieldArenaFaction = GetBattlefieldArenaFaction
+local GetExpansionLevel = GetExpansionLevel
 local GetInventorySlotInfo = GetInventorySlotInfo
 local GetItemQualityColor = GetItemQualityColor
 local GetInventoryItemTexture = GetInventoryItemTexture
 local GetInventoryItemLink = GetInventoryItemLink
+local GetInstanceInfo = GetInstanceInfo
+local GetNumPartyMembers = GetNumPartyMembers
+local GetNumRaidMembers = GetNumRaidMembers
 local GetItemInfo = GetItemInfo
+local GetTalentInfo = GetTalentInfo
+local HideUIPanel = HideUIPanel
+local InCombatLockdown = InCombatLockdown
 local GetActiveTalentGroup = GetActiveTalentGroup
 local GetCVarBool = GetCVarBool
 local GetFunctionCPUUsage = GetFunctionCPUUsage
 local GetTalentTabInfo = GetTalentTabInfo
+local IsAddOnLoaded = IsAddOnLoaded
+local IsXPUserDisabled = IsXPUserDisabled
 local RequestBattlefieldScoreData = RequestBattlefieldScoreData
+local SetCVar = SetCVar
+local UnitFactionGroup = UnitFactionGroup
 local UnitGroupRolesAssigned = UnitGroupRolesAssigned
 local UnitHasVehicleUI = UnitHasVehicleUI
+local UnitInParty = UnitInParty
+local UnitInRaid = UnitInRaid
+local UnitIsUnit = UnitIsUnit
+
 local GetSpecialization = LCS.GetSpecialization
 local GetSpecializationRole = LCS.GetSpecializationRole
 
 local MAX_TALENT_TABS = MAX_TALENT_TABS
 local NONE = NONE
 
+local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
 local PLAYER_FACTION_GROUP = PLAYER_FACTION_GROUP
 local FACTION_HORDE = FACTION_HORDE
 local FACTION_ALLIANCE = FACTION_ALLIANCE
+local LOCALIZED_CLASS_NAMES_MALE = LOCALIZED_CLASS_NAMES_MALE
+local LOCALIZED_CLASS_NAMES_FEMALE = LOCALIZED_CLASS_NAMES_FEMALE
+local CUSTOM_CLASS_COLORS = CUSTOM_CLASS_COLORS
+local RAID_CLASS_COLORS = RAID_CLASS_COLORS
+local MAX_PLAYER_LEVEL_TABLE = MAX_PLAYER_LEVEL_TABLE
+
+local GameMenuButtonRatings = GameMenuButtonRatings
+local GameMenuButtonLogout = GameMenuButtonLogout
+local GameMenuFrame = GameMenuFrame
 
 function E:ClassColor(class, usePriestColor)
 	if not class then return end
@@ -399,7 +426,7 @@ function E:PLAYER_ENTERING_WORLD()
 		E.MediaUpdated = true
 	end
 
-	-- Blizzard will set this value to int(50/CVar cameraDistanceMax)+1 at logout if it is manually set higher than that
+	-- Blizzard will set this value to int(60/CVar cameraDistanceMax)+1 at logout if it is manually set higher than that
 	if E.db.general.lockCameraDistanceMax then
 		SetCVar("cameraDistanceMax", E.db.general.cameraDistanceMax)
 	end
@@ -486,30 +513,6 @@ function E:GetUnitBattlefieldFaction(unit)
 	return englishFaction, localizedFaction
 end
 
-function E:PositionGameMenuButton()
-	local button = GameMenuFrame[E.name]
-	local buttonHeight = GameMenuButtonLogout:GetHeight()
-
-	GameMenuFrame:Height(GameMenuFrame:GetHeight() + buttonHeight + 1)
-
-	GameMenuButtonRatings:HookScript("OnShow", function(self)
-		GameMenuFrame:Height(GameMenuFrame:GetHeight() + self:GetHeight())
-	end)
-	GameMenuButtonRatings:HookScript("OnHide", function(self)
-		GameMenuFrame:Height(GameMenuFrame:GetHeight() - self:GetHeight())
-	end)
-
-	button:SetFormattedText("%s%s|r", E.media.hexvaluecolor, E.name)
-
-	local _, relTo, _, _, offY = GameMenuButtonLogout:GetPoint()
-	if relTo ~= button then
-		button:ClearAllPoints()
-		button:Point("TOPLEFT", relTo, "BOTTOMLEFT", 0, -1)
-		GameMenuButtonLogout:ClearAllPoints()
-		GameMenuButtonLogout:Point("TOPLEFT", button, "BOTTOMLEFT", 0, offY)
-	end
-end
-
 local titanGrip
 local qualityColors = {}
 
@@ -534,6 +537,41 @@ do
 			end
 		end)
 	end
+end
+
+function E:PositionGameMenuButton()
+	GameMenuFrame:Height(GameMenuFrame:GetHeight() + GameMenuButtonLogout:GetHeight() - 4)
+
+	local button = GameMenuFrame[E.name]
+	button:SetFormattedText("%s%s|r", E.media.hexvaluecolor, E.name)
+
+	local _, relTo, _, _, offY = GameMenuButtonLogout:GetPoint()
+	if relTo ~= button then
+		button:ClearAllPoints()
+		button:Point("TOPLEFT", relTo, "BOTTOMLEFT", 0, -1)
+		GameMenuButtonLogout:ClearAllPoints()
+		GameMenuButtonLogout:Point("TOPLEFT", button, "BOTTOMLEFT", 0, offY)
+	end
+end
+
+function E:PLAYER_LEVEL_UP(_, level)
+	E.mylevel = level
+end
+
+function E:ClickGameMenu()
+	E:ToggleOptionsUI() -- we already prevent it from opening in combat
+
+	if not InCombatLockdown() then
+		HideUIPanel(GameMenuFrame)
+	end
+end
+
+function E:SetupGameMenu()
+	local button = CreateFrame("Button", nil, GameMenuFrame, "GameMenuButtonTemplate")
+	button:SetScript("OnClick", E.ClickGameMenu)
+	GameMenuFrame[E.name] = button
+
+	E.PositionGameMenuButton()
 end
 
 function E:GetAverageItemLevel()
@@ -611,38 +649,37 @@ function E:GetItemLevelColor(unit)
 	end
 end
 
+function E:BreakUpLargeNumbers(value, dobreak)
+	-- Credits: bkader
+	-- Source: https://github.com/bkader/Compat-WotLK/blob/main/Compat/elements/math.lua#L43
 
-function E:PLAYER_LEVEL_UP(_, level)
-	E.mylevel = level
-end
-
-function E:BreakUpLargeNumbers(number)
-	-- Convert the number to a string
-	local strNumber = tostring(number)
-
-	-- Find the decimal point position
-	local decimalPos = string.find(strNumber, "%.")
-
-	-- Remove the decimal portion of the number
-	if decimalPos then
-		strNumber = string.sub(strNumber, 1, decimalPos - 1)
-	end
-
-	-- Insert commas to separate thousands
-	local formattedNumber = ""
-	local numDigits = string.len(strNumber)
-	local counter = 0
-
-	for i = numDigits, 1, -1 do
-		counter = counter + 1
-		formattedNumber = string.sub(strNumber, i, i) .. formattedNumber
-		if counter % 3 == 0 and i > 1 then
-			formattedNumber = "," .. formattedNumber
+	local retString = ""
+	if value < 1000 then
+		if (value - floor(value)) == 0 then
+			return value
 		end
+		local decimal = floor(value * 100)
+		retString = strsub(decimal, 1, -3)
+		retString = retString .. "."
+		retString = retString .. strsub(decimal, -2)
+		return retString
 	end
 
-	-- Return the formatted number
-	return formattedNumber
+	value = floor(value)
+	local strLen = strlen(value)
+	if dobreak then
+		if (strLen > 6) then
+			retString = strsub(value, 1, -7) .. ","
+		end
+		if (strLen > 3) then
+			retString = retString .. strsub(value, -6, -4) .. ","
+		end
+		retString = retString .. strsub(value, -3, -1)
+	else
+		retString = value
+	end
+
+	return retString
 end
 
 function E:GetCurrentCalendarTime()
@@ -678,6 +715,8 @@ function E:LoadAPI()
 	E:RegisterEvent("UNIT_EXITED_VEHICLE", "ExitVehicleShowFrames")
 	E:RegisterEvent("UI_SCALE_CHANGED", "PixelScaleChanged")
 
+	E:SetupGameMenu()
+
 	do -- setup cropIcon texCoords
 		local opt = E.db.general.cropIcon
 		local modifier = 0.04 * opt
@@ -689,16 +728,4 @@ function E:LoadAPI()
 			end
 		end
 	end
-
-	local GameMenuButton = CreateFrame("Button", nil, GameMenuFrame, "GameMenuButtonTemplate")
-	GameMenuButton:SetScript("OnClick", function()
-		E:ToggleOptionsUI() --We already prevent it from opening in combat
-		if not InCombatLockdown() then
-			HideUIPanel(GameMenuFrame)
-		end
-	end)
-	GameMenuFrame[E.name] = GameMenuButton
-
-	GameMenuButton:Size(GameMenuButtonLogout:GetWidth(), GameMenuButtonLogout:GetHeight())
-	E:PositionGameMenuButton()
 end
