@@ -5,6 +5,7 @@ local LibStub = LibStub
 local _G = _G
 local tinsert, xpcall, next, ipairs, pairs = tinsert, xpcall, next, ipairs, pairs
 local unpack, assert, type, strfind = unpack, assert, type, strfind
+
 local hooksecurefunc = hooksecurefunc
 local IsAddOnLoaded = IsAddOnLoaded
 local UIPanelWindows = UIPanelWindows
@@ -864,7 +865,7 @@ do
 			f.Texture = f:CreateTexture(nil, "OVERLAY")
 			f.Texture:Point("CENTER")
 			f.Texture:SetTexture(E.Media.Textures.Close)
-			f.Texture:Size(12, 12)
+			f.Texture:Size(12)
 			f:HookScript("OnEnter", closeOnEnter)
 			f:HookScript("OnLeave", closeOnLeave)
 			f:SetHitRectInsets(6, 6, 7, 7)
@@ -915,7 +916,7 @@ do
 		local Normal, Disabled, Pushed = btn:GetNormalTexture(), btn:GetDisabledTexture(), btn:GetPushedTexture()
 
 		if noBackdrop then
-			btn:Size(20, 20)
+			btn:Size(20)
 			Disabled:SetVertexColor(.5, .5, .5)
 			btn.Texture = Normal
 
@@ -924,7 +925,7 @@ do
 				btn:HookScript("OnLeave", closeOnLeave)
 			end
 		else
-			btn:Size(18, 18)
+			btn:Size(18)
 			Disabled:SetVertexColor(.3, .3, .3)
 		end
 

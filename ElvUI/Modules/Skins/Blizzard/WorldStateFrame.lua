@@ -46,7 +46,7 @@ S:AddCallback("Skin_WorldStateFrame", function()
 		bar.rightBarIcon = bar:CreateTexture("$parentRightBarIcon", "ARTWORK")
 		bar.rightBarIcon:SetTexture("Interface\\AddOns\\ElvUI\\Media\\Textures\\Horde-Logo-Small")
 		bar.rightBarIcon:SetPoint("LEFT", bar, "RIGHT", 0, 0)
-		bar.rightBarIcon:Size(32, 32)
+		bar.rightBarIcon:Size(32)
 
 		middleBar:Size(25, 16)
 		middleBar:SetTexture(E.media.glossTex)
