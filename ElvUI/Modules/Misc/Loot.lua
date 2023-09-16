@@ -6,7 +6,8 @@ local _G = _G
 local unpack = unpack
 local tinsert = tinsert
 local next = next
-local max = max
+local max = math.max
+local find = string.find
 
 local CloseLoot = CloseLoot
 local CreateFrame = CreateFrame
@@ -14,47 +15,43 @@ local CursorOnUpdate = CursorOnUpdate
 local CursorUpdate = CursorUpdate
 local GameTooltip = GameTooltip
 local GetCursorPosition = GetCursorPosition
-local GetCVarBool = GetCVarBool
+local GetCVar = GetCVar
 local GetLootSlotInfo = GetLootSlotInfo
 local GetLootSlotLink = GetLootSlotLink
 local GetNumLootItems = GetNumLootItems
+local GiveMasterLoot = GiveMasterLoot
+local HandleModifiedItemClick = HandleModifiedItemClick
 local IsFishingLoot = IsFishingLoot
 local IsModifiedClick = IsModifiedClick
 local LootSlot = LootSlot
 local LootSlotIsItem = LootSlotIsItem
 local ResetCursor = ResetCursor
+local ToggleDropDownMenu = ToggleDropDownMenu
 local UIParent = UIParent
 local UnitIsDead = UnitIsDead
 local UnitIsFriend = UnitIsFriend
 local UnitName = UnitName
+local UISpecialFrames = UISpecialFrames
 
 local StaticPopup_Hide = StaticPopup_Hide
 
 local hooksecurefunc = hooksecurefunc
 local ITEM_QUALITY_COLORS = ITEM_QUALITY_COLORS
 local TEXTURE_ITEM_QUEST_BANG = TEXTURE_ITEM_QUEST_BANG
+local FONT_COLOR_CODE_CLOSE = FONT_COLOR_CODE_CLOSE
 local LOOT = LOOT
 
 local iconSize, lootFrame, lootFrameHolder = 30
 
-local coinTextureIDs = {
-	[133784] = true,
-	[133785] = true,
-	[133786] = true,
-	[133787] = true,
-	[133788] = true,
-	[133789] = true,
-}
-
 -- Credit Haste
+local slotQuality, slotID, slotName
 local lootFrame, lootFrameHolder
 local iconSize = 30
 
-local sq, ss, sn
 local function SlotEnter(slot)
 	local id = slot:GetID()
 	if LootSlotIsItem(id) then
-		GameTooltip:SetOwner(slot, 'ANCHOR_RIGHT')
+		GameTooltip:SetOwner(slot, "ANCHOR_RIGHT")
 		GameTooltip:SetLootItem(id)
 		CursorUpdate(slot)
 	end
@@ -84,19 +81,19 @@ local function SlotClick(slot)
 	frame.selectedSlot = slot:GetID()
 
 	if IsModifiedClick() then
-		_G.HandleModifiedItemClick(GetLootSlotLink(frame.selectedSlot))
+		HandleModifiedItemClick(GetLootSlotLink(frame.selectedSlot))
 	else
-		StaticPopup_Hide('CONFIRM_LOOT_DISTRIBUTION')
-		ss = slot:GetID()
-		sq = slot.quality
-		sn = slot.name:GetText()
+		StaticPopup_Hide("CONFIRM_LOOT_DISTRIBUTION")
+		slotID = slot:GetID()
+		slotQuality = slot.quality
+		slotName = slot.name:GetText()
 		LootSlot(frame.selectedSlot)
 	end
 end
 
 local function SlotShow(slot)
 	if GameTooltip:IsOwned(slot) then
-		GameTooltip:SetOwner(slot, 'ANCHOR_RIGHT')
+		GameTooltip:SetOwner(slot, "ANCHOR_RIGHT")
 		GameTooltip:SetLootItem(slot:GetID())
 		CursorOnUpdate(slot)
 	end
@@ -220,7 +217,7 @@ function M:LOOT_OPENED(_, autoloot)
 		local scale = lootFrame:GetEffectiveScale()
 		local x, y = GetCursorPosition()
 
-		lootFrame:Point('TOPLEFT', UIParent, 'BOTTOMLEFT', (x / scale) - 40, (y / scale) + 20)
+		lootFrame:Point("TOPLEFT", UIParent, "BOTTOMLEFT", (x / scale) - 40, (y / scale) + 20)
 		lootFrame:GetCenter()
 		lootFrame:Raise()
 		E:DisableMover("LootFrameMover")
@@ -234,15 +231,15 @@ function M:LOOT_OPENED(_, autoloot)
 	if items > 0 then
 		for i = 1, items do
 			local slot = lootFrame.slots[i] or createSlot(i)
-			local textureID, item, count, quality, _, isQuestItem, questId, isActive = GetLootSlotInfo(i)
+			local texture, item, count, quality, _, isQuestItem, questId, isActive = GetLootSlotInfo(i)
 			local color = ITEM_QUALITY_COLORS[quality or 0]
 
-			if coinTextureIDs[textureID] then
-				item = item:gsub('\n', ', ')
+			if texture and find(texture, "INV_Misc_Coin") then
+				item = item:gsub("\n", ", ")
 			end
 
 			slot.count:SetShown(count and count > 1)
-			slot.count:SetText(count or '')
+			slot.count:SetText(count or "")
 
 			slot.drop:SetShown(quality and quality > 1)
 			slot.drop:SetVertexColor(color.r, color.g, color.b)
@@ -250,7 +247,7 @@ function M:LOOT_OPENED(_, autoloot)
 			slot.quality = quality
 			slot.name:SetText(item)
 			slot.name:SetTextColor(color.r, color.g, color.b)
-			slot.icon:SetTexture(textureID)
+			slot.icon:SetTexture(texture)
 
 			max_width = max(max_width, slot.name:GetStringWidth())
 
@@ -271,13 +268,13 @@ function M:LOOT_OPENED(_, autoloot)
 			end
 
 			-- Check for FasterLooting scripts or w/e (if bag is full)
-			if textureID then
+			if texture then
 				slot:Enable()
 				slot:Show()
 			end
 		end
 	else
-		local slot = lootFrame.slots[1] or CreateSlot(1)
+		local slot = lootFrame.slots[1]
 		local color = ITEM_QUALITY_COLORS[0]
 
 		slot.name:SetText(L["No Loot"])
@@ -300,18 +297,18 @@ function M:LOOT_OPENED(_, autoloot)
 end
 
 function M:OPEN_MASTER_LOOT_LIST()
-	ToggleDropDownMenu(1, nil, GroupLootDropDown, lootFrame.slots[ss], 0, 0)
+	ToggleDropDownMenu(1, nil, GroupLootDropDown, lootFrame.slots[slotID], 0, 0)
 end
 
 function M:UPDATE_MASTER_LOOT_LIST()
-	UIDropDownMenu_Refresh(GroupLootDropDown)
+	_G.UIDropDownMenu_Refresh(GroupLootDropDown)
 end
 
 function M:LoadLoot()
 	if not E.private.general.loot then return end
 
 	lootFrameHolder = CreateFrame("Frame", "ElvLootFrameHolder", E.UIParent)
-	lootFrameHolder:Point('TOPLEFT', E.UIParent, 'TOPLEFT', 418, -186)
+	lootFrameHolder:Point("TOPLEFT", E.UIParent, "TOPLEFT", 418, -186)
 	lootFrameHolder:Size(150, 22)
 
 	lootFrame = CreateFrame("Button", "ElvLootFrame", lootFrameHolder)
@@ -340,23 +337,23 @@ function M:LoadLoot()
 	E:CreateMover(lootFrameHolder, "LootFrameMover", L["Loot Frame"], nil, nil, nil, nil, nil, "general,blizzUIImprovements")
 
 	-- Fuzz
-	LootFrame:UnregisterAllEvents()
+	_G.LootFrame:UnregisterAllEvents()
 	tinsert(UISpecialFrames, "ElvLootFrame")
 
 	function _G.GroupLootDropDown_GiveLoot(self)
-		if sq >= MASTER_LOOT_THREHOLD then
-			local dialog = StaticPopup_Show("CONFIRM_LOOT_DISTRIBUTION", ITEM_QUALITY_COLORS[sq].hex..sn..FONT_COLOR_CODE_CLOSE, self:GetText())
+		if slotQuality >= _G.MASTER_LOOT_THREHOLD then
+			local dialog = StaticPopup_Show("CONFIRM_LOOT_DISTRIBUTION", ITEM_QUALITY_COLORS[slotQuality].hex..slotName..FONT_COLOR_CODE_CLOSE, self:GetText())
 			if dialog then
 				dialog.data = self.value
 			end
 		else
-			GiveMasterLoot(ss, self.value)
+			GiveMasterLoot(slotID, self.value)
 		end
 		CloseDropDownMenus()
 	end
 
 	E.PopupDialogs.CONFIRM_LOOT_DISTRIBUTION.OnAccept = function(_, data)
-		GiveMasterLoot(ss, data)
+		GiveMasterLoot(slotID, data)
 	end
 	StaticPopupDialogs.CONFIRM_LOOT_DISTRIBUTION.preferredIndex = 3
 end
