@@ -73,6 +73,9 @@ PI.Installs = {}
 local BUTTON_HEIGHT = 20
 local f
 
+local titleColor = {1, 1, 1}
+local titleSelectedColor = {.09, .52, .82}
+
 function PI:SetupReset()
 	f.Next:Disable()
 	f.Prev:Disable()
@@ -177,7 +180,7 @@ function PI:CreateStepComplete()
 	imsg.firstShow = false
 
 	imsg.bg = imsg:CreateTexture(nil, "BACKGROUND")
-	imsg.bg:SetTexture([[Interface\LevelUp\LevelUpTex]])
+	imsg.bg:SetTexture([[Interface\AddOns\ElvUI\media\textures\LevelUpTex]])
 	imsg.bg:Point("BOTTOM")
 	imsg.bg:Size(326, 103)
 	imsg.bg:SetTexCoord(0.00195313, 0.63867188, 0.03710938, 0.23828125)
@@ -185,14 +188,14 @@ function PI:CreateStepComplete()
 
 	imsg.lineTop = imsg:CreateTexture(nil, "BACKGROUND")
 	imsg.lineTop:SetDrawLayer("BACKGROUND", 2)
-	imsg.lineTop:SetTexture([[Interface\LevelUp\LevelUpTex]])
+	imsg.lineTop:SetTexture([[Interface\AddOns\ElvUI\media\textures\LevelUpTex]])
 	imsg.lineTop:Point("TOP")
 	imsg.lineTop:Size(418, 7)
 	imsg.lineTop:SetTexCoord(0.00195313, 0.81835938, 0.01953125, 0.03320313)
 
 	imsg.lineBottom = imsg:CreateTexture(nil, "BACKGROUND")
 	imsg.lineBottom:SetDrawLayer("BACKGROUND", 2)
-	imsg.lineBottom:SetTexture([[Interface\LevelUp\LevelUpTex]])
+	imsg.lineBottom:SetTexture([[Interface\AddOns\ElvUI\media\textures\LevelUpTex]])
 	imsg.lineBottom:Point("BOTTOM")
 	imsg.lineBottom:Size(418, 7)
 	imsg.lineBottom:SetTexCoord(0.00195313, 0.81835938, 0.01953125, 0.03320313)
@@ -448,7 +451,7 @@ function PI:RunInstall()
 	if not E.private.install_complete then return end
 
 	local db = PI.Installs[1]
-	if db and not f:IsShown() and not (ElvUIInstallFrame and ElvUIInstallFrame:IsShown()) then
+	if db and not f:IsShown() and not (E.InstallFrame and E.InstallFrame:IsShown()) then
 		f.StepTitles = nil
 		f.StepTitlesColor = nil
 		f.StepTitlesColorSelected = nil

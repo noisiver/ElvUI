@@ -28,6 +28,7 @@ local ChatFrame_RemoveChannel = ChatFrame_RemoveChannel
 local ChatFrame_AddMessageGroup = ChatFrame_AddMessageGroup
 local ChatFrame_RemoveAllMessageGroups = ChatFrame_RemoveAllMessageGroups
 local ToggleChatColorNamesByClassGroup = ToggleChatColorNamesByClassGroup
+-- GLOBALS: ElvUIInstallFrame
 
 local CLASS, CONTINUE, PREVIOUS = CLASS, CONTINUE, PREVIOUS
 local LOOT, GENERAL, TRADE = LOOT, GENERAL, TRADE
@@ -71,14 +72,14 @@ function E:SetupChat(noDisplayMsg)
 		FCF_StopDragging(frame)
 	end
 
-	local chatGroup = {"SYSTEM", "CHANNEL", "SAY", "EMOTE", "YELL", "WHISPER", "PARTY", "PARTY_LEADER", "RAID", "RAID_LEADER", "RAID_WARNING", "BATTLEGROUND", "BATTLEGROUND_LEADER", "GUILD", "OFFICER", "MONSTER_SAY", "MONSTER_YELL", "MONSTER_EMOTE", "MONSTER_WHISPER", "MONSTER_BOSS_EMOTE", "MONSTER_BOSS_WHISPER", "ERRORS", "AFK", "DND", "IGNORED", "BG_HORDE", "BG_ALLIANCE", "BG_NEUTRAL", "ACHIEVEMENT", "GUILD_ACHIEVEMENT", "BN_WHISPER", "BN_CONVERSATION", "BN_INLINE_TOAST_ALERT"}
+	local chatGroup = { "SYSTEM", "CHANNEL", "SAY", "EMOTE", "YELL", "WHISPER", "PARTY", "PARTY_LEADER", "RAID", "RAID_LEADER", "RAID_WARNING", "BATTLEGROUND", "BATTLEGROUND_LEADER", "GUILD", "OFFICER", "MONSTER_SAY", "MONSTER_YELL", "MONSTER_EMOTE", "MONSTER_WHISPER", "MONSTER_BOSS_EMOTE", "MONSTER_BOSS_WHISPER", "ERRORS", "AFK", "DND", "IGNORED", "BG_HORDE", "BG_ALLIANCE", "BG_NEUTRAL", "ACHIEVEMENT", "GUILD_ACHIEVEMENT", "BN_WHISPER", "BN_CONVERSATION", "BN_INLINE_TOAST_ALERT" }
 	ChatFrame_RemoveAllMessageGroups(ChatFrame1)
 	for _, v in ipairs(chatGroup) do
 		ChatFrame_AddMessageGroup(ChatFrame1, v)
 	end
 
 	-- keys taken from `ChatTypeGroup` which weren't added above to ChatFrame1
-	chatGroup = {"COMBAT_XP_GAIN", "COMBAT_HONOR_GAIN", "COMBAT_FACTION_CHANGE", "COMBAT_GUILD_XP_GAIN", "SKILL", "LOOT", "CURRENCY", "MONEY"}
+	chatGroup = { "COMBAT_XP_GAIN", "COMBAT_HONOR_GAIN", "COMBAT_FACTION_CHANGE", "COMBAT_GUILD_XP_GAIN", "SKILL", "LOOT", "CURRENCY", "MONEY" }
 	ChatFrame_RemoveAllMessageGroups(rightChatFrame)
 	for _, v in ipairs(chatGroup) do
 		ChatFrame_AddMessageGroup(rightChatFrame, v)
@@ -218,6 +219,7 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 	if not noDataReset then
 		E.db.layoutSet = layout
 		E.db.layoutSetting = layout
+		E.db.convertPages = true
 
 		--Unitframes
 		E:CopyTable(E.db.unitframe.units, P.unitframe.units)
@@ -485,7 +487,6 @@ function E:SetupAuras(style, noDisplayMsg)
 	if frame then
 		UF:Configure_Auras(frame, "Buffs")
 		UF:Configure_Auras(frame, "Debuffs")
-		UF:Configure_AuraBars(frame)
 	end
 
 	frame = UF.target
@@ -560,11 +561,11 @@ function E:SetupReset()
 	InstallSlider:SetScript("OnValueChanged", nil)
 	InstallSlider:SetScript("OnMouseUp", nil)
 
-	ElvUIInstallFrame.SubTitle:SetText("")
-	ElvUIInstallFrame.Desc1:SetText("")
-	ElvUIInstallFrame.Desc2:SetText("")
-	ElvUIInstallFrame.Desc3:SetText("")
-	ElvUIInstallFrame:Size(550, 400)
+	E.InstallFrame.SubTitle:SetText("")
+	E.InstallFrame.Desc1:SetText("")
+	E.InstallFrame.Desc2:SetText("")
+	E.InstallFrame.Desc3:SetText("")
+	E.InstallFrame:Size(550, 400)
 end
 
 function E:SetPage(PageNum)
@@ -578,7 +579,7 @@ function E:SetPage(PageNum)
 	InstallNextButton:SetEnabled(PageNum ~= MAX_PAGE)
 	InstallPrevButton:SetEnabled(PageNum ~= 1)
 
-	local f = ElvUIInstallFrame
+	local f = E.InstallFrame
 	local InstallOption1Button = InstallOption1Button
 	local InstallOption2Button = InstallOption2Button
 	local InstallOption3Button = InstallOption3Button
@@ -751,7 +752,7 @@ function E:SetPage(PageNum)
 		InstallOption2Button:Show()
 		InstallOption2Button:SetScript("OnClick", function() E:SetupComplete(true) end)
 		InstallOption2Button:SetText(L["Finished"])
-		ElvUIInstallFrame:Size(550, 350)
+		E.InstallFrame:Size(550, 350)
 	end
 end
 
@@ -791,7 +792,7 @@ function E:Install()
 		imsg.firstShow = false
 
 		imsg.bg = imsg:CreateTexture(nil, "BACKGROUND")
-		imsg.bg:SetTexture([[Interface\LevelUp\LevelUpTex]])
+		imsg.bg:SetTexture([[Interface\AddOns\ElvUI\media\textures\LevelUpTex]])
 		imsg.bg:Point("BOTTOM")
 		imsg.bg:Size(326, 103)
 		imsg.bg:SetTexCoord(0.00195313, 0.63867188, 0.03710938, 0.23828125)
@@ -799,14 +800,14 @@ function E:Install()
 
 		imsg.lineTop = imsg:CreateTexture(nil, "BACKGROUND")
 		imsg.lineTop:SetDrawLayer("BACKGROUND", 2)
-		imsg.lineTop:SetTexture([[Interface\LevelUp\LevelUpTex]])
+		imsg.lineTop:SetTexture([[Interface\AddOns\ElvUI\media\textures\LevelUpTex]])
 		imsg.lineTop:Point("TOP")
 		imsg.lineTop:Size(418, 7)
 		imsg.lineTop:SetTexCoord(0.00195313, 0.81835938, 0.01953125, 0.03320313)
 
 		imsg.lineBottom = imsg:CreateTexture(nil, "BACKGROUND")
 		imsg.lineBottom:SetDrawLayer("BACKGROUND", 2)
-		imsg.lineBottom:SetTexture([[Interface\LevelUp\LevelUpTex]])
+		imsg.lineBottom:SetTexture([[Interface\AddOns\ElvUI\media\textures\LevelUpTex]])
 		imsg.lineBottom:Point("BOTTOM")
 		imsg.lineBottom:Size(418, 7)
 		imsg.lineBottom:SetTexCoord(0.00195313, 0.81835938, 0.01953125, 0.03320313)
@@ -819,7 +820,7 @@ function E:Install()
 	end
 
 	--Create Frame
-	if not ElvUIInstallFrame then
+	if not E.InstallFrame then
 		local f = CreateFrame("Button", "ElvUIInstallFrame", E.UIParent)
 		f.SetPage = E.SetPage
 		f:Size(550, 400)
@@ -972,9 +973,11 @@ function E:Install()
 		logo2:SetTexture(E.Media.Textures.LogoBottom)
 		logo2:Point("BOTTOM", 0, 70)
 		f.tutorialImage2 = logo2
+
+		E.InstallFrame = f
 	end
 
-	ElvUIInstallFrame.tutorialImage:SetVertexColor(unpack(E.media.rgbvaluecolor))
-	ElvUIInstallFrame:Show()
+	E.InstallFrame.tutorialImage:SetVertexColor(unpack(E.media.rgbvaluecolor))
+	E.InstallFrame:Show()
 	E:NextPage()
 end
