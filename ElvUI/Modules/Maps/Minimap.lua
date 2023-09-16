@@ -549,7 +549,6 @@ function M:Initialize()
 		MinimapZoneTextButton,
 		MiniMapWorldMapButton,
 		MiniMapMailBorder,
-		MinimapToggleButton,
 		MinimapCompassTexture,
 	}
 
