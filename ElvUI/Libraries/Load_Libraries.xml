@@ -25,7 +25,6 @@
 	<Include file="AceGUI-3.0-SharedMediaWidgets\widget.xml" />
 	<Include file="UTF8\UTF8.xml"/>
 
-	<!-- <Script file="LibButtonGlow-1.0\LibButtonGlow-1.0.lua"/> -->
 	<Script file="LibSimpleSticky\LibSimpleSticky.lua"/>
 	<Script file="LibSpellRange-1.0\LibSpellRange-1.0.lua"/>
 	<Script file="LibDataBroker\LibDataBroker-1.1.lua"/>
