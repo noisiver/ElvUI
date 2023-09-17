@@ -49,14 +49,12 @@ local function OnEvent(self)
 				totalDurability = perc
 			end
 
-			if E.Retail and E.ScanTooltip.GetTooltipData then
+			if E.ScanTooltip.GetTooltipData then
 				E.ScanTooltip:SetInventoryItem("player", index)
 				E.ScanTooltip:Show()
 
 				local data = E.ScanTooltip:GetTooltipData()
 				repairCost = data and data.repairCost
-			else
-				repairCost = select(3, E.ScanTooltip:SetInventoryItem("player", index))
 			end
 
 			totalRepairCost = totalRepairCost + (repairCost or 0)

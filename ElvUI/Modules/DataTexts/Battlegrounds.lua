@@ -22,7 +22,7 @@ local function GetBattleStats(name)
 	elseif name == 'PvP: Honorable Kills' then
 		return _G.HONORABLE_KILLS, data.honorableKills
 	elseif name == 'PvP: Heals' then
-		return (E.Retail and _G.SHOW_COMBAT_HEALING) or _G.HEALS, data.healingDone
+		return _G.SHOW_COMBAT_HEALING, data.healingDone
 	elseif name == 'PvP: Deaths' then
 		return _G.DEATHS, data.deaths
 	elseif name == 'PvP: Damage Done' then
