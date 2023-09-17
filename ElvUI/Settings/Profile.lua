@@ -214,6 +214,7 @@ end
 
 P.databars.threat.hideInCombat = nil -- always on in code
 P.databars.threat.tankStatus = true
+P.databars.threat.smoothbars = true
 
 P.databars.experience.hideAtMaxLevel = true
 P.databars.experience.showLevel = false
