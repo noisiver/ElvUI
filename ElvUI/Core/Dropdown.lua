@@ -1,9 +1,12 @@
 local E, L, V, P, G = unpack(select(2, ...))
 
-local tinsert = tinsert
-local ToggleFrame = ToggleFrame
-local GetCursorPosition = GetCursorPosition
+local tinsert = table.insert
+
 local CreateFrame = CreateFrame
+local GetCursorPosition = GetCursorPosition
+local ToggleFrame = ToggleFrame
+local UIParent = UIParent
+local UISpecialFrames = UISpecialFrames
 
 local PADDING = 10
 local BUTTON_HEIGHT = 16
