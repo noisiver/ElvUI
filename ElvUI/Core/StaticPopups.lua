@@ -1174,14 +1174,16 @@ function E:Contruct_StaticPopups()
 
 		_G["ElvUI_StaticPopup"..index.."EditBox"]:SetFrameLevel(_G["ElvUI_StaticPopup"..index.."EditBox"]:GetFrameLevel()+1)
 		Skins:HandleEditBox(_G["ElvUI_StaticPopup"..index.."EditBox"])
+
 		for k = 1, _G["ElvUI_StaticPopup"..index.."EditBox"]:GetNumRegions() do
 			local region = select(k, _G["ElvUI_StaticPopup"..index.."EditBox"]:GetRegions())
 			if region and region:IsObjectType("Texture") then
-				if region:GetTexture() == "Interface\\ChatFrame\\UI-ChatInputBorder-Left" or region:GetTexture() == "Interface\\ChatFrame\\UI-ChatInputBorder-Right" then
+				if region:GetTexture() == [[Interface\ChatFrame\UI-ChatInputBorder-Left]] or region:GetTexture() == [[Interface\ChatFrame\UI-ChatInputBorder-Right]] then
 					region:Kill()
 				end
 			end
 		end
+
 		Skins:HandleEditBox(_G["ElvUI_StaticPopup"..index.."MoneyInputFrameGold"])
 		Skins:HandleEditBox(_G["ElvUI_StaticPopup"..index.."MoneyInputFrameSilver"])
 		Skins:HandleEditBox(_G["ElvUI_StaticPopup"..index.."MoneyInputFrameCopper"])

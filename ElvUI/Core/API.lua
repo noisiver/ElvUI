@@ -144,8 +144,9 @@ function E:GetTalentSpecInfo(isInspect)
 	if not specName then
 		specName = NONE
 	end
+
 	if not specIcon then
-		specIcon = "Interface\\Icons\\INV_Misc_QuestionMark"
+		specIcon = [[Interface\Icons\INV_Misc_QuestionMark]]
 	end
 
 	return specIdx, specName, specIcon

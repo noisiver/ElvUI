@@ -24,8 +24,8 @@ S:AddCallbackForAddon("Blizzard_GlyphUI", "Skin_Blizzard_GlyphUI", function()
 		S:Unhook(self, "OnShow")
 	end)
 
-	GlyphFrameBackground:SetTexture("Interface\\Spellbook\\UI-GlyphFrame")
-	GlyphFrameGlow:SetTexture("Interface\\Spellbook\\UI-GlyphFrame-Glow")
+	GlyphFrameBackground:SetTexture([[Interface\Spellbook\UI-GlyphFrame]])
+	GlyphFrameGlow:SetTexture([[Interface\Spellbook\UI-GlyphFrame-Glow]])
 	GlyphFrameGlow:SetAllPoints(GlyphFrameBackground)
 
 	-- texWidth, texHeight, cropWidth, cropHeight, offsetX, offsetY = 512, 512, 315, 340, 21, 72

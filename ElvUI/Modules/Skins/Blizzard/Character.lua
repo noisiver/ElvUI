@@ -600,7 +600,7 @@ S:AddCallback("Skin_Character", function()
 	S:HandleCloseButton(ReputationDetailCloseButton, ReputationDetailFrame)
 
 	S:HandleCheckBox(ReputationDetailAtWarCheckBox)
-	ReputationDetailAtWarCheckBox:SetCheckedTexture("Interface\\Buttons\\UI-CheckBox-SwordCheck")
+	ReputationDetailAtWarCheckBox:SetCheckedTexture([[Interface\Buttons\UI-CheckBox-SwordCheck]])
 	S:HandleCheckBox(ReputationDetailInactiveCheckBox)
 	S:HandleCheckBox(ReputationDetailMainScreenCheckBox)
 
@@ -754,7 +754,7 @@ S:AddCallback("Skin_Character", function()
 						local factionGroup = UnitFactionGroup("player")
 
 						if factionGroup then
-							button.icon:SetTexture("Interface\\TargetingFrame\\UI-PVP-"..factionGroup)
+							button.icon:SetTexture([[Interface\\TargetingFrame\\UI-PVP-]]..factionGroup)
 							-- texWidth, texHeight, cropWidth, cropHeight, offsetX, offsetY = 64, 64, 36, 36, 4, 1
 							button.icon:SetTexCoord(0.0625, 0.625, 0.015625, 0.578125)
 						else

@@ -111,8 +111,8 @@ S:AddCallback("Skin_Bags", function()
 	end
 
 	local bagIconCache = {
-		[-2] = "Interface\\ContainerFrame\\KeyRing-Bag-Icon",
-		[0] = "Interface\\Buttons\\Button-Backpack-Up"
+		[-2] = [[Interface\ContainerFrame\KeyRing-Bag-Icon]],
+		[0] = [[Interface\Buttons\Button-Backpack-Up]]
 	}
 
 	hooksecurefunc("ContainerFrame_GenerateFrame", function(frame)

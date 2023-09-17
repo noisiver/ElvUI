@@ -67,7 +67,7 @@ S:AddCallback("Skin_Spellbook", function()
 		local autoCast = _G["SpellButton"..i.."AutoCastable"]
 		button:StripTextures()
 
-		autoCast:SetTexture("Interface\\Buttons\\UI-AutoCastableOverlay")
+		autoCast:SetTexture([[Interface\Buttons\UI-AutoCastableOverlay]])
 		autoCast:SetOutside(button, 16, 16)
 
 		button:CreateBackdrop("Default", true)

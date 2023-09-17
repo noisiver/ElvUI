@@ -21,7 +21,7 @@ S:AddCallback("Skin_WatchFrame", function()
 	WatchFrameCollapseExpandButton.tex = WatchFrameCollapseExpandButton:CreateTexture(nil, "OVERLAY")
 	WatchFrameCollapseExpandButton.tex:SetTexture(E.Media.Textures.MinusButton)
 	WatchFrameCollapseExpandButton.tex:SetInside()
-	WatchFrameCollapseExpandButton:SetHighlightTexture("Interface\\Buttons\\UI-PlusButton-Hilight", "ADD")
+	WatchFrameCollapseExpandButton:SetHighlightTexture([[Interface\Buttons\UI-PlusButton-Hilight]], "ADD")
 	WatchFrameCollapseExpandButton:SetFrameStrata("MEDIUM")
 	WatchFrameCollapseExpandButton:Point("TOPRIGHT", 0, -2)
 

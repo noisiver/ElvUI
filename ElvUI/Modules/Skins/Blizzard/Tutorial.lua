@@ -12,7 +12,7 @@ S:AddCallback("Skin_Tutorial", function()
 	TutorialFrameAlertButton:Size(50)
 
 	local TutorialFrameAlertButtonIcon = TutorialFrameAlertButton:GetNormalTexture()
-	TutorialFrameAlertButtonIcon:SetTexture("INTERFACE\\ICONS\\INV_Letter_18")
+	TutorialFrameAlertButtonIcon:SetTexture([[Interface\ICONS\INV_Letter_18]])
 	TutorialFrameAlertButtonIcon:Point("TOPLEFT", 5, -5)
 	TutorialFrameAlertButtonIcon:Point("BOTTOMRIGHT", -5, 5)
 	TutorialFrameAlertButtonIcon:SetTexCoord(unpack(E.TexCoords))

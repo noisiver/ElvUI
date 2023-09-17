@@ -42,7 +42,7 @@ function UF:UpdateOverridePvP(event, unit)
 	local factionGroup = UnitFactionGroup(unit)
 
 	if UnitIsPVPFreeForAll(unit) then
-		element:SetTexture("Interface\\TargetingFrame\\UI-PVP-FFA")
+		element:SetTexture([[Interface\TargetingFrame\UI-PVP-FFA]])
 		element:SetTexCoord(0, 0.65625, 0, 0.65625)
 
 		status = "ffa"

@@ -265,7 +265,7 @@ function M:LootRoll_Create(index)
 
 	local spark = status:CreateTexture(nil, "OVERLAY")
 	spark:Size(2, status:GetHeight())
-	spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
+	spark:SetTexture([[Interface\CastingBar\UI-CastingBar-Spark]])
 	spark:SetBlendMode("ADD")
 	status.spark = spark
 

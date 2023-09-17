@@ -219,7 +219,7 @@ S:AddCallback("Skin_LFD", function()
 		skinLFDDungeonReadyDialogReward(button)
 
 		SetPortraitToTexture(button.texture, "")
-		button.texture:SetTexture("Interface\\Icons\\inv_misc_coin_02")
+		button.texture:SetTexture([[Interface\Icons\inv_misc_coin_02]])
 	end)
 
 	hooksecurefunc("LFDDungeonReadyDialogReward_SetReward", function(button, dungeonID, rewardIndex)

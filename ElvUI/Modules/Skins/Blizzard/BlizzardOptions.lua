@@ -362,7 +362,7 @@ S:AddCallback("Skin_BlizzardOptions", function()
 	InterfaceOptionsFrameCancel:Point("BOTTOMRIGHT", -22, 16)
 	InterfaceOptionsFrameOkay:Point("BOTTOMRIGHT", InterfaceOptionsFrameCancel, "BOTTOMLEFT", -3, 0)
 
-	VideoOptionsResolutionPanelBrightnessGrayScale:SetTexture("Interface\\OptionsFrame\\21stepgrayscale")
+	VideoOptionsResolutionPanelBrightnessGrayScale:SetTexture([[Interface\OptionsFrame\21stepgrayscale]])
 
 	-- Mac Options
 	if IsMacClient() then

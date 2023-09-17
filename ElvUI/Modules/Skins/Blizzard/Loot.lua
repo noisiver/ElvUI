@@ -186,7 +186,7 @@ S:AddCallback("Skin_LootRoll", function()
 		statusBar:SetStatusBarTexture(E.media.normTex)
 		E:RegisterStatusBar(statusBar)
 
-		decoration:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Gold-Dragon")
+		decoration:SetTexture([[Interface\DialogFrame\UI-DialogBox-Gold-Dragon]])
 		decoration:Size(130)
 		decoration:Point("TOPLEFT", -37, 20)
 

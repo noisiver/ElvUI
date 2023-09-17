@@ -160,7 +160,7 @@ function B:LoadBagBar()
 	ElvUIKeyRing.SetParent = E.noop
 	ElvUIKeyRing:RegisterForClicks("anyUp")
 
-	_G[ElvUIKeyRing:GetName().."IconTexture"]:SetTexture("Interface\\ContainerFrame\\KeyRing-Bag-Icon")
+	_G[ElvUIKeyRing:GetName().."IconTexture"]:SetTexture([[Interface\ContainerFrame\KeyRing-Bag-Icon]])
 	_G[ElvUIKeyRing:GetName().."IconTexture"]:SetInside()
 	_G[ElvUIKeyRing:GetName().."IconTexture"]:SetTexCoord(unpack(E.TexCoords))
 
