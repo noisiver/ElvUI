@@ -38,6 +38,7 @@ local StaticPopup_Hide = StaticPopup_Hide
 local hooksecurefunc = hooksecurefunc
 local ITEM_QUALITY_COLORS = ITEM_QUALITY_COLORS
 local TEXTURE_ITEM_QUEST_BANG = TEXTURE_ITEM_QUEST_BANG
+local TEXTURE_ITEM_QUEST_BORDER = TEXTURE_ITEM_QUEST_BORDER
 local FONT_COLOR_CODE_CLOSE = FONT_COLOR_CODE_CLOSE
 local LOOT = LOOT
 
@@ -114,7 +115,7 @@ local function AnchorSlots(self)
 	self:Height(max(shownSlots * iconSize + 16, 20))
 end
 
-local function createSlot(id)
+local function CreateSlot(id)
 	local size = (iconSize - 2)
 
 	local slot = CreateFrame("Button", "ElvLootSlot"..id, lootFrame)
@@ -227,10 +228,10 @@ function M:LOOT_OPENED(_, autoloot)
 	end
 
 	local max_quality, max_width = 0, 0
-	local items = GetNumLootItems()
-	if items > 0 then
-		for i = 1, items do
-			local slot = lootFrame.slots[i] or createSlot(i)
+	local numItems = GetNumLootItems()
+	if numItems > 0 then
+		for i = 1, numItems do
+			local slot = lootFrame.slots[i] or CreateSlot(i)
 			local texture, item, count, quality, _, isQuestItem, questId, isActive = GetLootSlotInfo(i)
 			local color = ITEM_QUALITY_COLORS[quality or 0]
 
@@ -257,14 +258,13 @@ function M:LOOT_OPENED(_, autoloot)
 
 			local questTexture = slot.questTexture
 			if questId and not isActive then
+				questTexture:SetTexture(TEXTURE_ITEM_QUEST_BANG)
 				questTexture:Show()
-				-- LCG.ShowOverlayGlow(slot.iconFrame)
 			elseif questId or isQuestItem then
+				questTexture:SetTexture(TEXTURE_ITEM_QUEST_BORDER)
 				questTexture:Hide()
-				-- LCG.ShowOverlayGlow(slot.iconFrame)
 			else
 				questTexture:Hide()
-				-- LCG.HideOverlayGlow(slot.iconFrame)
 			end
 
 			-- Check for FasterLooting scripts or w/e (if bag is full)
@@ -274,12 +274,12 @@ function M:LOOT_OPENED(_, autoloot)
 			end
 		end
 	else
-		local slot = lootFrame.slots[1]
+		local slot = lootFrame.slots[1] or CreateSlot(1)
 		local color = ITEM_QUALITY_COLORS[0]
 
 		slot.name:SetText(L["No Loot"])
 		slot.name:SetTextColor(color.r, color.g, color.b)
-		slot.icon:SetTexture()
+		slot.icon:SetTexture([[Interface\PaperDoll\UI-PaperDoll-Slot-Bag]])
 
 		max_width = max(max_width, slot.name:GetStringWidth())
 
