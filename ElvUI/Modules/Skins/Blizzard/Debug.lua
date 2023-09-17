@@ -33,7 +33,7 @@ S:AddCallbackForAddon("Blizzard_DebugTools", "Skin_Blizzard_DebugTools", functio
 
 	for i = 1, ScriptErrorsFrame:GetNumChildren() do
 		local child = select(i, ScriptErrorsFrame:GetChildren())
-		if child:GetObjectType() == "Button" and not child:GetName() then
+		if child:IsObjectType("Button") and not child:GetName() then
 			S:HandleButton(child)
 		end
 	end

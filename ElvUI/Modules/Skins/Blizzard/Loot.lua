@@ -60,7 +60,7 @@ S:AddCallback("Skin_Loot", function()
 
 	for i = 1, LootFrame:GetNumRegions() do
 		local region = select(i, LootFrame:GetRegions())
-		if region:GetObjectType() == "FontString" then
+		if region:IsObjectType("FontString") then
 			if region:GetText() == ITEMS then
 				LootFrame.Title = region
 				break

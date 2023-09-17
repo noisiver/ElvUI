@@ -281,7 +281,7 @@ function NP:UnitDetailedThreatSituation(frame)
 end
 
 function NP:UnitLevel(frame)
-	local level, boss = frame.oldLevel:GetObjectType() == "FontString" and tonumber(frame.oldLevel:GetText()) or false, frame.BossIcon:IsShown()
+	local level, boss = frame.oldLevel:IsObjectType("FontString") and tonumber(frame.oldLevel:GetText()) or false, frame.BossIcon:IsShown()
 	if boss or not level then
 		return "??", 0.9, 0, 0
 	else
@@ -841,7 +841,7 @@ local function findNewPlate(...)
 	for i = lastChildern + 1, numChildren do
 		local frame = select(i, ...)
 		local region = frame:GetRegions()
-		if region and region:GetObjectType() == "Texture" and region:GetTexture() == OVERLAY and not NP.CreatedPlates[frame] then
+		if region and region:IsObjectType("Texture") and region:GetTexture() == OVERLAY and not NP.CreatedPlates[frame] then
 			NP:OnCreated(frame)
 		end
 	end

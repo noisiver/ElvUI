@@ -46,7 +46,7 @@ S:AddCallback("Skin_Misc", function()
 
 		for j = 1, itemFrameBox:GetNumRegions() do
 			local region = select(j, itemFrameBox:GetRegions())
-			if region and region:GetObjectType() == "Texture" then
+			if region and region:IsObjectType("Texture") then
 				if region:GetTexture() == "Interface\\ChatFrame\\UI-ChatInputBorder-Left" or region:GetTexture() == "Interface\\ChatFrame\\UI-ChatInputBorder-Right" then
 					region:Kill()
 				end
