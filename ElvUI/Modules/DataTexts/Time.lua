@@ -1,5 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule('DataTexts')
+local LC = E.Libs.Compat
 
 local _G = _G
 local next, unpack = next, unpack
@@ -8,12 +9,12 @@ local sort, tinsert = sort, tinsert
 local date, utf8sub = date, string.utf8sub
 
 local ToggleFrame = ToggleFrame
-local GetDifficultyInfo = GetDifficultyInfo
 local GetNumSavedInstances = GetNumSavedInstances
 local GetSavedInstanceInfo = GetSavedInstanceInfo
 local RequestRaidInfo = RequestRaidInfo
 local SecondsToTime = SecondsToTime
 local InCombatLockdown = InCombatLockdown
+local GetCurrentCalendarTime = LC.GetCurrentCalendarTime
 
 local TIMEMANAGER_TOOLTIP_LOCALTIME = TIMEMANAGER_TOOLTIP_LOCALTIME
 local TIMEMANAGER_TOOLTIP_REALMTIME = TIMEMANAGER_TOOLTIP_REALMTIME
@@ -63,7 +64,7 @@ end
 
 local function CalculateTimeValues(tooltip)
 	if (tooltip and db.localTime) or (not tooltip and not db.localTime) then
-		local dateTable = E:GetCurrentCalendarTime()
+		local dateTable = GetCurrentCalendarTime()
 		return ConvertTime(dateTable.hour, dateTable.minute)
 	else
 		local dateTable = date('*t')
@@ -76,12 +77,33 @@ local function OnClick(_, btn)
 
 	if btn == 'RightButton' then
 		ToggleFrame(TimeManagerFrame)
+	else
 		GameTimeFrame:Click()
 	end
 end
 
 local function OnLeave()
 	enteredFrame = false
+end
+
+local instanceIconByName = {}
+local collectIDs, collectedIDs = false -- for testing; mouse over the dt to show the tinspect table (@Merathilis :x)
+local function GetInstanceImages(index, raid)
+	local instanceID, name, _, _, buttonImage = GetInstanceInfo(index, raid)
+	print(instanceID, name, buttonImage)
+	while instanceID do
+		if collectIDs then
+			if not collectedIDs then
+				collectedIDs = {}
+			end
+
+			collectedIDs[instanceID] = name
+		end
+
+		instanceIconByName[InstanceNameByID[instanceID] or name] = buttonImage
+		index = index + 1
+		instanceID, name, _, _, buttonImage = GetInstanceInfo(index, raid)
+	end
 end
 
 local krcntw = E.locale == 'koKR' or E.locale == 'zhCN' or E.locale == 'zhTW'
@@ -107,7 +129,6 @@ local function OnEnter()
 		local name, _, _, difficulty, locked, extended, _, isRaid = GetSavedInstanceInfo(i)
 		if (locked or extended) and name then
 			local isLFR, isHeroicOrMythicDungeon = (difficulty == 7 or difficulty == 17), (difficulty == 2 or difficulty == 23 or difficulty == 174)
-			local _, _, isHeroic, _, displayHeroic, displayMythic = GetDifficultyInfo(difficulty)
 			local sortName = name .. (displayMythic and 4 or (isHeroic or displayHeroic) and 3 or isLFR and 1 or 2)
 			local difficultyLetter = (displayMythic and difficultyTag[4] or (isHeroic or displayHeroic) and difficultyTag[3] or isLFR and difficultyTag[1] or difficultyTag[2])
 			local buttonImg = instanceIconByName[name] and format('|T%s:16:16:0:0:96:96:0:64:0:64|t ', instanceIconByName[name]) or ''
@@ -191,12 +212,10 @@ function OnUpdate(self, t)
 	if self.timeElapsed > 0 then return end
 	self.timeElapsed = 5
 
-	if E.Retail then
-		if db.flashInvite and GameTimeFrame.flashInvite then
-			E:Flash(self, 0.53, true)
-		else
-			E:StopFlash(self)
-		end
+	if db.flashInvite and GameTimeFrame.flashInvite then
+		E:Flash(self, 0.53, true)
+	else
+		E:StopFlash(self)
 	end
 
 	if enteredFrame then

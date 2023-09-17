@@ -1,5 +1,5 @@
 local E, L, V, P, G = unpack(select(2, ...))
-local LCS = E.Libs.LCS
+local LC = E.Libs.Compat
 
 local _G = _G
 local select, wipe, date = select, wipe, date
@@ -37,8 +37,8 @@ local UnitInParty = UnitInParty
 local UnitInRaid = UnitInRaid
 local UnitIsUnit = UnitIsUnit
 
-local GetSpecialization = LCS.GetSpecialization
-local GetSpecializationRole = LCS.GetSpecializationRole
+local GetSpecialization = LC.GetSpecialization
+local GetSpecializationRole = LC.GetSpecializationRole
 
 local MAX_TALENT_TABS = MAX_TALENT_TABS
 local NONE = NONE
@@ -513,32 +513,6 @@ function E:GetUnitBattlefieldFaction(unit)
 	return englishFaction, localizedFaction
 end
 
-local titanGrip
-local qualityColors = {}
-
-do
-	for i = 0, 7 do
-		qualityColors[i] = {GetItemQualityColor(i)}
-	end
-
-	if E.myclass == "WARRIOR" then
-		local GetTalentInfo = GetTalentInfo
-
-		local titanGripCheck = CreateFrame("Frame")
-		titanGripCheck:RegisterEvent("PLAYER_ENTERING_WORLD")
-		titanGripCheck:RegisterEvent("SPELL_UPDATE_USABLE")
-		titanGripCheck:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
-		titanGripCheck:RegisterEvent("CHARACTER_POINTS_CHANGED")
-		titanGripCheck:SetScript("OnEvent", function(self, event, ...)
-			titanGrip = select(5, GetTalentInfo(2, 27)) == 1
-
-			if event == "PLAYER_ENTERING_WORLD" or event == "SPELL_UPDATE_USABLE" then
-				self:UnregisterEvent(event)
-			end
-		end)
-	end
-end
-
 function E:PositionGameMenuButton()
 	GameMenuFrame:Height(GameMenuFrame:GetHeight() + GameMenuButtonLogout:GetHeight() - 4)
 
@@ -572,132 +546,6 @@ function E:SetupGameMenu()
 	GameMenuFrame.ElvUI = button
 
 	E.PositionGameMenuButton()
-end
-
-function E:GetAverageItemLevel()
-	local items = 16
-	local ilvl = 0
-	local colorCount, sumR, sumG, sumB = 0, 0, 0, 0
-
-	for slotID = 1, 18 do
-		if slotID ~= INVSLOT_BODY then
-			local itemLink = GetInventoryItemLink("player", slotID)
-
-			if itemLink then
-				local _, _, quality, itemLevel, _, _, _, _, itemEquipLoc = GetItemInfo(itemLink)
-
-				if itemLevel then
-					ilvl = ilvl + itemLevel
-
-					local color = qualityColors[quality]
-					sumR = sumR + color[1]
-					sumG = sumG + color[2]
-					sumB = sumB + color[3]
-
-					colorCount = colorCount + 1
-
-					if slotID == INVSLOT_MAINHAND and (itemEquipLoc ~= "INVTYPE_2HWEAPON" or titanGrip) then
-						items = 17
-					end
-				end
-			end
-		end
-	end
-
-	if colorCount == 0 then
-		return ilvl / items, 1, 1, 1
-	else
-		return ilvl / items, sumR / colorCount, sumG / colorCount, sumB / colorCount
-	end
-end
-
-function E:GetItemLevelColor(unit)
-	if not unit then
-		unit = "player"
-	end
-
-	local slots = {
-		"HeadSlot", "NeckSlot", "ShoulderSlot", "BackSlot", "ChestSlot", "WristSlot",
-		"HandsSlot", "WaistSlot", "LegsSlot", "FeetSlot", "Finger0Slot", "Finger1Slot",
-		"Trinket0Slot", "Trinket1Slot", "MainHandSlot", "SecondaryHandSlot"
-	}
-
-	local i, sumR, sumG, sumB = 0, 0, 0, 0
-
-	for _, slotName in ipairs(slots) do
-		local slotID = GetInventorySlotInfo(slotName)
-		local texture = GetInventoryItemTexture(unit, slotID)
-		if texture then
-			local itemLink = GetInventoryItemLink(unit, slotID)
-			if itemLink then
-				local quality = select(3, GetItemInfo(itemLink))
-				if quality then
-					i = i + 1
-					local r, g, b = GetItemQualityColor(quality)
-					sumR = sumR + r
-					sumG = sumG + g
-					sumB = sumB + b
-				end
-			end
-		end
-	end
-
-	if i > 0 then
-		return sumR / i, sumG / i, sumB / i
-	else
-		return 1, 1, 1
-	end
-end
-
-function E:BreakUpLargeNumbers(value, dobreak)
-	-- Credits: bkader
-	-- Source: https://github.com/bkader/Compat-WotLK/blob/main/Compat/elements/math.lua#L43
-
-	local retString = ""
-	if value < 1000 then
-		if (value - floor(value)) == 0 then
-			return value
-		end
-		local decimal = floor(value * 100)
-		retString = strsub(decimal, 1, -3)
-		retString = retString .. "."
-		retString = retString .. strsub(decimal, -2)
-		return retString
-	end
-
-	value = floor(value)
-	local strLen = strlen(value)
-	if dobreak then
-		if (strLen > 6) then
-			retString = strsub(value, 1, -7) .. ","
-		end
-		if (strLen > 3) then
-			retString = retString .. strsub(value, -6, -4) .. ","
-		end
-		retString = retString .. strsub(value, -3, -1)
-	else
-		retString = value
-	end
-
-	return retString
-end
-
-function E:GetCurrentCalendarTime()
-	local dateTable = {}
-	local weekday, month, monthDay, year  = CalendarGetDate()
-	dateTable.weekday = weekday
-	dateTable.month = month
-	dateTable.monthDay = monthDay
-	dateTable.year = year
-
-	local timeInSeconds = time()
-	local timeInMinutes = math.floor(timeInSeconds / 60)
-	local timeInHours = math.floor(timeInMinutes / 60)
-	local timeInDays = math.floor(timeInHours / 24)
-	dateTable.minute = timeInMinutes % 60
-	dateTable.hour = timeInHours % 24
-
-	return dateTable
 end
 
 function E:LoadAPI()

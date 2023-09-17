@@ -1,10 +1,13 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
+local LC = E.Libs.Compat
 
 local _G = _G
 local format, tonumber, wipe = format, tonumber, wipe
 local pairs, ipairs, unpack, tostring = pairs, ipairs, unpack, tostring
+
 local GetMoney = GetMoney
+local BreakUpLargeNumbers = LC.BreakUpLargeNumbers
 
 local CURRENCY = CURRENCY
 local BACKPACK_TOOLTIP = BACKPACK_TOOLTIP
@@ -22,10 +25,10 @@ local function AddInfo(id)
 	if name then
 		local textRight = "%s"
 		if db.maxCurrency and info.maxQuantity and info.maxQuantity > 0 then
-			textRight = "%s / "..E:BreakUpLargeNumbers(info.maxQuantity)
+			textRight = "%s / "..BreakUpLargeNumbers(info.maxQuantity)
 		end
 
-		DT.tooltip:AddDoubleLine(format("%s %s", icon, name), format(textRight, E:BreakUpLargeNumbers(info.quantity)), 1, 1, 1, 1, 1, 1)
+		DT.tooltip:AddDoubleLine(format("%s %s", icon, name), format(textRight, BreakUpLargeNumbers(info.quantity)), 1, 1, 1, 1, 1, 1)
 	end
 end
 

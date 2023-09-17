@@ -1,6 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI)
 local LSM = E.Libs.LSM
-local LCS = E.Libs.LCS
+local LC = E.Libs.Compat
 
 local wipe, sort, unpack = wipe, sort, unpack
 local next, pairs, tinsert = next, pairs, tinsert
@@ -10,8 +10,8 @@ local GetAddOnInfo = GetAddOnInfo
 local GetCVarBool = GetCVarBool
 local GetNumAddOns = GetNumAddOns
 local GetRealZoneText = GetRealZoneText
-local GetSpecialization = LCS.GetSpecialization
-local GetSpecializationInfo = LCS.GetSpecializationInfo
+local GetSpecialization = LC.GetSpecialization
+local GetSpecializationInfo = LC.GetSpecializationInfo
 local UNKNOWN = UNKNOWN
 
 function E:AreOtherAddOnsEnabled()

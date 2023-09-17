@@ -1,5 +1,5 @@
 local E, L, V, P, G = unpack(ElvUI)
-local LCS = E.Libs.LCS
+local LC = E.Libs.Compat
 
 local _G = _G
 local tinsert, strmatch = tinsert, strmatch
@@ -11,7 +11,8 @@ local GetCVarBool = GetCVarBool
 local GetItemInfo = GetItemInfo
 local GetInventoryItemLink = GetInventoryItemLink
 local GetInventoryItemTexture = GetInventoryItemTexture
-local GetInspectSpecialization = LCS.GetInspectSpecialization
+local GetInspectSpecialization = LC.GetInspectSpecialization
+local GetAverageItemLevel = LC.GetAverageItemLevel
 local RETRIEVING_ITEM_INFO = RETRIEVING_ITEM_INFO
 
 local MATCH_ITEM_LEVEL = ITEM_LEVEL:gsub("%%d", "(%%d+)")
@@ -148,7 +149,7 @@ function E:CalculateAverageItemLevel(iLevelDB, unit)
 end
 
 function E:GetPlayerItemLevel()
-	return format("%0.2f", E:Round((select(2, E:GetAverageItemLevel())), 2))
+	return format("%0.2f", E:Round((select(2, GetAverageItemLevel())), 2))
 end
 
 do

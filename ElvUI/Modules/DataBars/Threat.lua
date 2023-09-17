@@ -1,11 +1,13 @@
 local E, L, V, P, G = unpack(select(2, ...))
 local DB = E:GetModule("DataBars")
+local LC = E.Libs.Compat
 
 local pairs, select, wipe = pairs, select, wipe
 
-local GetNumPartyMembers, GetNumRaidMembers = GetNumPartyMembers, GetNumRaidMembers
+local IsInGroup, IsInRaid = LC.IsInGroup, LC.IsInRaid
 local UnitAffectingCombat = UnitAffectingCombat
 local UnitDetailedThreatSituation = UnitDetailedThreatSituation
+local GetNumGroupMembers = LC.GetNumGroupMembers
 local UnitIsPlayer = UnitIsPlayer
 local UnitReaction = UnitReaction
 local UnitExists = UnitExists
@@ -48,7 +50,7 @@ function DB:ThreatBar_Update()
 	local bar = DB.StatusBars.Threat
 	local petExists = UnitExists("pet")
 
-	if UnitAffectingCombat("player") and (petExists or GetNumPartyMembers() > 0) then
+	if UnitAffectingCombat("player") and (petExists or IsInGroup()) then
 		local _, status, percent = UnitDetailedThreatSituation("player", "target")
 		local name = UnitName("target") or UNKNOWN
 		bar.showBar = true
@@ -59,8 +61,8 @@ function DB:ThreatBar_Update()
 				bar.list.pet = select(3, UnitDetailedThreatSituation("pet", "target"))
 			end
 
-			local isInRaid = GetNumRaidMembers() > 1
-			for i = 1, GetNumPartyMembers() do
+			local isInRaid = IsInRaid()
+			for i = 1, GetNumGroupMembers() do
 				local groupUnit = (isInRaid and "raid" or "party")..i
 				if UnitExists(groupUnit) and not UnitIsUnit(groupUnit, "player") then
 					bar.list[groupUnit] = select(3, UnitDetailedThreatSituation(groupUnit, "target"))

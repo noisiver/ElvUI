@@ -1,5 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule('DataTexts')
+local LC = E.Libs.Compat
 
 local strjoin = strjoin
 local format = format
@@ -12,7 +13,7 @@ local GetQuestLogTitle = GetQuestLogTitle
 local GetQuestLogRewardXP = GetQuestLogRewardXP
 local SelectQuestLogEntry = SelectQuestLogEntry
 local GetQuestLogRewardMoney = GetQuestLogRewardMoney
-local BreakUpLargeNumbers = BreakUpLargeNumbers
+local BreakUpLargeNumbers = LC.BreakUpLargeNumbers
 
 local C_QuestLog_GetInfo = C_QuestLog.GetInfo
 local GetNumQuestLogEntries = (C_QuestLog and C_QuestLog.GetNumQuestLogEntries) or GetNumQuestLogEntries

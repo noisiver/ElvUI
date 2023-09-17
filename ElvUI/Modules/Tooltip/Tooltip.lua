@@ -4,7 +4,7 @@ local AB = E:GetModule("ActionBars")
 local Skins = E:GetModule("Skins")
 local B = E:GetModule("Bags")
 local LSM = E.Libs.LSM
-local LCS = E.Libs.LCS
+local LC = E.Libs.Compat
 
 --Lua functions
 local _G = _G
@@ -60,11 +60,11 @@ local FACTION_HORDE = FACTION_HORDE
 local LEVEL = LEVEL
 local FACTION_BAR_COLORS = FACTION_BAR_COLORS
 local ID = ID
-local GetSpecialization = LCS.GetSpecialization
-local GetSpecializationInfo = LCS.GetSpecializationInfo
-local GetSpecializationRole = LCS.GetSpecializationRole
-local GetInspectSpecialization = LCS.GetInspectSpecialization
-local GetSpecializationInfoByID = LCS.GetSpecializationInfoByID
+local GetSpecialization = LC.GetSpecialization
+local GetSpecializationInfo = LC.GetSpecializationInfo
+local GetSpecializationRole = LC.GetSpecializationRole
+local GetInspectSpecialization = LC.GetInspectSpecialization
+local GetSpecializationInfoByID = LC.GetSpecializationInfoByID
 
 local PRIEST_COLOR = RAID_CLASS_COLORS.PRIEST
 local UNKNOWN = UNKNOWN
@@ -637,7 +637,6 @@ function TT:GameTooltip_OnTooltipSetItem(data)
 
 			if quality and quality > 1 then
 				local r, g, b = GetItemQualityColor(quality)
-				print(link, quality, r, g, b, self:GetName())
 				self:SetBackdropBorderColor(r, g, b)
 
 				self.qualityChanged = true

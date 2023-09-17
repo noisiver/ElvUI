@@ -1,9 +1,10 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule('DataTexts')
+local LC = E.Libs.Compat
 
 local format, strjoin = format, strjoin
 
-local BreakUpLargeNumbers = BreakUpLargeNumbers
+local BreakUpLargeNumbers = LC.BreakUpLargeNumbers
 local GetCombatRating = GetCombatRating
 local GetCombatRatingBonus = GetCombatRatingBonus
 local GetSpeed = GetSpeed

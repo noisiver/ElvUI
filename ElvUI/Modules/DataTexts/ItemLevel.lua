@@ -1,5 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
+local LC = E.Libs.Compat
 
 local ipairs = ipairs
 local format = format
@@ -7,6 +8,8 @@ local pi = math.pi
 
 local GetInventoryItemLink = GetInventoryItemLink
 local GetInventoryItemTexture = GetInventoryItemTexture
+local GetAverageItemLevel = LC.GetAverageItemLevel
+local GetItemLevelColor = LC.GetItemLevelColor
 
 local GMSURVEYRATING3 = GMSURVEYRATING3
 local NOT_APPLICABLE = NOT_APPLICABLE
@@ -27,21 +30,15 @@ local function colorize(num)
 end
 
 local function OnEvent(self)
-	if E.Retail then
-		avg, avgEquipped, avgPvp = E:GetAverageItemLevel()
-		r, g, b = E:GetItemLevelColor()
+	avg, avgEquipped, avgPvp = GetAverageItemLevel()
+	r, g, b = GetItemLevelColor()
 
-		local hex = db.rarityColor and E:RGBToHex(r, g, b) or "|cFFFFFFFF"
+	local hex = db.rarityColor and E:RGBToHex(r, g, b) or "|cFFFFFFFF"
 
-		self.text:SetFormattedText(avg == avgEquipped and sameString or bothString, L["iLvl"], hex, avgEquipped or 0, hex, avg or 0)
-	else
-		self.text:SetText(NOT_APPLICABLE)
-	end
+	self.text:SetFormattedText(avg == avgEquipped and sameString or bothString, L["iLvl"], hex, avgEquipped or 0, hex, avg or 0)
 end
 
 local function OnEnter()
-	if not E.Retail then return end
-
 	DT.tooltip:ClearLines()
 
 	DT.tooltip:AddDoubleLine(L["Item Level"], format("%0.2f", avg), 1, 1, 1, r, g, b)

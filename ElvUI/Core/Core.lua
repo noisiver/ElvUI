@@ -1,7 +1,7 @@
 local ElvUI = select(2, ...)
 ElvUI[2] = ElvUI[1].Libs.ACL:GetLocale("ElvUI", ElvUI[1]:GetLocale()) -- Locale doesn't exist yet, make it exist.
 local E, L, V, P, G = unpack(ElvUI)
-local LCS = E.Libs.LCS
+local LC = E.Libs.Compat
 
 local _G = _G
 local tonumber, pairs, ipairs, error, unpack, select, tostring = tonumber, pairs, ipairs, error, unpack, select, tostring
@@ -27,7 +27,8 @@ local GetBindingKey = GetBindingKey
 local SetBinding = SetBinding
 local SaveBindings = SaveBindings
 local GetCurrentBindingSet = GetCurrentBindingSet
-local GetSpecialization = LCS.GetSpecialization
+local GetSpecialization = LC.GetSpecialization
+local GetPhysicalScreenSize = LC.GetPhysicalScreenSize
 
 local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
 local RAID_CLASS_COLORS = RAID_CLASS_COLORS
@@ -56,26 +57,25 @@ local LSM = E.Libs.LSM
 E.noop = function() end
 E.isMacClient = IsMacClient()
 E.title = format("|cffff7000E|r|cffe5e3e3lvUI|r")
-E.version = tonumber(GetAddOnMetadata("ElvUI", "Version"))
 E.toc = tonumber(GetAddOnMetadata("ElvUI", "X-Interface"))
+E.version = tonumber(GetAddOnMetadata("ElvUI", "Version"))
 E.myfaction, E.myLocalizedFaction = UnitFactionGroup("player")
-E.mylevel = UnitLevel("player")
 E.myLocalizedClass, E.myclass = UnitClass("player")
 E.myLocalizedRace, E.myrace = UnitRace("player")
+E.mylevel = UnitLevel("player")
 E.myname = UnitName("player")
 E.myrealm = GetRealmName()
 E.mynameRealm = format("%s - %s", E.myname, E.myrealm) -- contains spaces/dashes in realm (for profile keys)
 E.myspec = GetSpecialization()
 E.wowbuild = tonumber(E.wowbuild)
-E.resolution = GetCVar("gxResolution")
-E.physicalHeight, E.physicalWidth = tonumber(match(E.resolution, "%d+x(%d+)")), tonumber(match(E.resolution, "(%d+)x+%d"))
+E.physicalWidth, E.physicalHeight = GetPhysicalScreenSize()
 E.screenWidth, E.screenHeight = GetScreenWidth(), GetScreenHeight()
+E.resolution = format('%dx%d', E.physicalWidth, E.physicalHeight)
 E.perfect = 768 / E.physicalHeight
 E.NewSign = [[|TInterface\OptionsFrame\UI-OptionsFrame-NewFeatureIcon:14:14|t]]
 E.TexturePath = [[Interface\AddOns\ElvUI\Media\Textures\]] -- for plugins?
 E.ClearTexture = "" -- used to clear: Set (Normal, Disabled, Checked, Pushed, Highlight) Texture
 E.UserList = {}
-
 
 -- oUF Defines
 -- E.oUF.Tags.Vars.E = E

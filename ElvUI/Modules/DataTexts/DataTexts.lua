@@ -3,7 +3,7 @@ local DT = E:GetModule("DataTexts")
 local TT = E:GetModule("Tooltip")
 local LDB = E.Libs.LDB
 local LSM = E.Libs.LSM
-local LCS = E.Libs.LCS
+local LC = E.Libs.Compat
 
 local format, type, pcall, unpack = format, type, pcall, unpack
 local tinsert, ipairs, pairs, wipe, sort = tinsert, ipairs, pairs, wipe, sort
@@ -17,9 +17,8 @@ local GetBackpackCurrencyInfo = GetBackpackCurrencyInfo
 local GetCurrencyListSize = GetCurrencyListSize
 local GetCurrencyListInfo = GetCurrencyListInfo
 local ExpandCurrencyList = ExpandCurrencyList
-local GetClassID = LCS.GetClassID
-local GetNumSpecializations = LCS.GetNumSpecializationsForClassID
-local GetSpecializationInfo = LCS.GetSpecializationInfo
+local GetNumSpecializations = LC.GetNumSpecializations
+local GetSpecializationInfo = LC.GetSpecializationInfo
 local InCombatLockdown = InCombatLockdown
 local IsInInstance = IsInInstance
 local MouseIsOver = MouseIsOver
@@ -722,7 +721,7 @@ function DT:PopulateData(currencyOnly)
 	end
 
 	if not currencyOnly then
-		for index = 1, GetNumSpecializations(GetClassID()) do
+		for index = 1, GetNumSpecializations() do
 			local id, name, _, icon, _, statID = GetSpecializationInfo(index)
 
 			if id then

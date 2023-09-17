@@ -1,6 +1,7 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
 local B = E:GetModule("Bags")
+local LC = E.Libs.Compat
 -- GLOBALS: ElvDB
 
 local type, wipe, pairs, ipairs, sort = type, wipe, pairs, ipairs, sort
@@ -12,6 +13,7 @@ local GetMoney = GetMoney
 local IsLoggedIn = IsLoggedIn
 local IsShiftKeyDown = IsShiftKeyDown
 local IsControlKeyDown = IsControlKeyDown
+local BreakUpLargeNumbers = LC.BreakUpLargeNumbers
 
 local Profit, Spent = 0, 0
 local resetCountersFormatter = strjoin("", "|cffaaaaaa", L["Reset Session Data: Hold Ctrl + Right Click"], "|r")
@@ -194,7 +196,7 @@ local function OnEnter()
 		end
 
 		if info.quantity then
-			DT.tooltip:AddDoubleLine(format("%s %s", format(iconString, info.iconFileID), name), E:BreakUpLargeNumbers(info.quantity), 1, 1, 1, 1, 1, 1)
+			DT.tooltip:AddDoubleLine(format("%s %s", format(iconString, info.iconFileID), name), BreakUpLargeNumbers(info.quantity), 1, 1, 1, 1, 1, 1)
 		end
 
 		index = index + 1

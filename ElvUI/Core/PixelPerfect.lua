@@ -1,4 +1,5 @@
 local E, L, V, P, G = unpack(select(2, ...))
+local LC = E.Libs.Compat
 
 local min, match, max, format = min, string.match, max, format
 
@@ -6,6 +7,7 @@ local UIParent = UIParent
 local GetScreenWidth = GetScreenWidth
 local GetScreenHeight = GetScreenHeight
 local InCombatLockdown = InCombatLockdown
+local GetPhysicalScreenSize = LC.GetPhysicalScreenSize
 
 function E:IsEyefinity(width, height)
 	if E.global.general.eyefinity and width >= 3840 then
@@ -78,9 +80,7 @@ end
 
 function E:PixelScaleChanged(event)
 	if event == "UI_SCALE_CHANGED" then
-		local resolution = GetCVar("gxResolution")
-
-		E.physicalHeight, E.physicalWidth = tonumber(match(resolution, "%d+x(%d+)")), tonumber(match(resolution, "(%d+)x+%d"))
+		E.physicalWidth, E.physicalHeight = GetPhysicalScreenSize()
 		E.resolution = format("%dx%d", E.physicalWidth, E.physicalHeight)
 		E.perfect = 768 / E.physicalHeight
 	end

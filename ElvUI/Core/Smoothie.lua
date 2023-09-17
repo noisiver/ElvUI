@@ -1,16 +1,13 @@
 local E, L, V, P, G = unpack(select(2, ...))
+local LC = E.Libs.Compat
 
 -- Credit: ls- (lightspark)
-local abs, next = abs, next
+local abs, next, Lerp = abs, next, LC.Lerp
 local tonumber, assert = tonumber, assert
 local activeObjects = {}
 local handledObjects = {}
 local TARGET_FPS = 60
 local AMOUNT = 0.33
-
-local function Lerp(startValue, endValue, amount)
-	return (1 - amount) * startValue + amount * endValue
-end
 
 local function clamp(v, min, max)
 	min = min or 0

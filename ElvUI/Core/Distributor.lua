@@ -1,17 +1,17 @@
 local E, L, V, P, G = unpack(select(2, ...))
 local D = E:GetModule("Distributor")
 local NP = E:GetModule("NamePlates")
+local LC = E.Libs.Compat
 local LibDeflate = E.Libs.Deflate
 
---Lua functions
 local tonumber, type, gsub, pairs, pcall, loadstring = tonumber, type, gsub, pairs, pcall, loadstring
-local len, format, split, strmatch = strlen, format, strsplit, strmatch
+local len, format, split, strmatch, strfind = strlen, format, strsplit, strmatch, strfind
 
---WoW API / Variables
 local CreateFrame = CreateFrame
-local GetNumRaidMembers, UnitInRaid = GetNumRaidMembers, UnitInRaid
-local GetNumPartyMembers, UnitInParty = GetNumPartyMembers, UnitInParty
+local IsInRaid, UnitInRaid = LC.IsInRaid, UnitInRaid
+local IsInGroup, UnitInParty = LC.IsInGroup, UnitInParty
 local ACCEPT, CANCEL, YES, NO, OKAY = ACCEPT, CANCEL, YES, NO, OKAY
+-- GLOBALS: ElvDB, ElvPrivateDB
 
 ----------------------------------
 -- CONSTANTS
@@ -23,6 +23,7 @@ local REPLY_PREFIX = "ELVUI_REPLY"
 local TRANSFER_PREFIX = "ELVUI_TRANSFER"
 local TRANSFER_COMPLETE_PREFIX = "ELVUI_COMPLETE"
 
+-- Set compression
 LibDeflate.compressLevel = { level = 5 }
 
 -- The active downloads
@@ -127,29 +128,29 @@ do
 end
 
 function D:Initialize()
-	self.Initialized = true
+	D.Initialized = true
 
 	D:UpdateSettings()
 
-	self.statusBar = CreateFrame("StatusBar", "ElvUI_Download", E.UIParent)
-	self.statusBar:CreateBackdrop()
-	self.statusBar:SetStatusBarTexture(E.media.normTex)
-	self.statusBar:SetStatusBarColor(0.95, 0.15, 0.15)
-	self.statusBar:Size(250, 18)
-	self.statusBar.text = self.statusBar:CreateFontString(nil, "OVERLAY")
-	self.statusBar.text:FontTemplate()
-	self.statusBar.text:Point("CENTER")
-	self.statusBar:Hide()
-	E:RegisterStatusBar(self.statusBar)
+	D.statusBar = CreateFrame("StatusBar", "ElvUI_Download", E.UIParent)
+	D.statusBar:CreateBackdrop()
+	D.statusBar:SetStatusBarTexture(E.media.normTex)
+	D.statusBar:SetStatusBarColor(0.95, 0.15, 0.15)
+	D.statusBar:Size(250, 18)
+	D.statusBar.text = D.statusBar:CreateFontString(nil, "OVERLAY")
+	D.statusBar.text:FontTemplate()
+	D.statusBar.text:Point("CENTER")
+	D.statusBar:Hide()
+	E:RegisterStatusBar(D.statusBar)
 end
 
 function D:UpdateSettings()
 	if E.global.general.allowDistributor then
-		self:RegisterComm(REQUEST_PREFIX)
-		self:RegisterEvent("CHAT_MSG_ADDON")
+		D:RegisterComm(REQUEST_PREFIX)
+		D:RegisterEvent("CHAT_MSG_ADDON")
 	else
-		self:UnregisterComm(REQUEST_PREFIX)
-		self:UnregisterEvent("CHAT_MSG_ADDON")
+		D:UnregisterComm(REQUEST_PREFIX)
+		D:UnregisterEvent("CHAT_MSG_ADDON")
 	end
 end
 
@@ -167,27 +168,38 @@ function D:Distribute(target, otherServer, isGlobal)
 
 	if not data then return end
 
-	local serialData = self:Serialize(data)
+	local serialData = D:Serialize(data)
 	local length = len(serialData)
 	local message = format("%s:%d:%s", profileKey, length, target)
 
 	Uploads[profileKey] = {serialData = serialData, target = target}
 
 	if otherServer then
-		local numParty, numRaid = GetNumPartyMembers(), GetNumRaidMembers()
-		if numRaid > 0 and UnitInRaid("target") then
-			self:SendCommMessage(REQUEST_PREFIX, message, "RAID")
-		elseif numParty > 0 and UnitInParty("target") then
-			self:SendCommMessage(REQUEST_PREFIX, message, "PARTY")
+		if IsInRaid() and UnitInRaid("target") then
+			D:SendCommMessage(REQUEST_PREFIX, message, "RAID")
+		elseif IsInGroup() > 0 and UnitInParty("target") then
+			D:SendCommMessage(REQUEST_PREFIX, message, "PARTY")
 		else
 			E:Print(L["Must be in group with the player if he isn't on the same server as you."])
 			return
 		end
 	else
-		self:SendCommMessage(REQUEST_PREFIX, message, "WHISPER", target)
+		D:SendCommMessage(REQUEST_PREFIX, message, "WHISPER", target)
 	end
-	self:RegisterComm(REPLY_PREFIX)
+
+	D:RegisterComm(REPLY_PREFIX)
 	E:StaticPopup_Show("DISTRIBUTOR_WAITING")
+end
+
+function D:CHAT_MSG_ADDON(_, prefix, message, _, sender)
+	if prefix ~= TRANSFER_PREFIX or not Downloads[sender] then return end
+
+	local cur, max = len(message), Downloads[sender].length
+	local current = Downloads[sender].current + cur
+	if current > max then current = max end
+	Downloads[sender].current = current
+
+	D.statusBar:SetValue(current)
 end
 
 function D:OnCommReceived(prefix, msg, dist, sender)
@@ -198,8 +210,8 @@ function D:OnCommReceived(prefix, msg, dist, sender)
 			return
 		end
 
-		if self.statusBar:IsShown() then
-			self:SendCommMessage(REPLY_PREFIX, profile..":NO", dist, sender)
+		if D.statusBar:IsShown() then
+			D:SendCommMessage(REPLY_PREFIX, profile..":NO", dist, sender)
 			return
 		end
 
@@ -215,10 +227,10 @@ function D:OnCommReceived(prefix, msg, dist, sender)
 				self.statusBar:SetValue(0)
 				self.statusBar.text:SetFormattedText(L["Data From: %s"], sender)
 				E:StaticPopupSpecial_Show(self.statusBar)
-				self:SendCommMessage(REPLY_PREFIX, profile..":YES", dist, sender)
+				D:SendCommMessage(REPLY_PREFIX, profile..":YES", dist, sender)
 			end,
 			OnCancel = function()
-				self:SendCommMessage(REPLY_PREFIX, profile..":NO", dist, sender)
+				D:SendCommMessage(REPLY_PREFIX, profile..":NO", dist, sender)
 			end,
 			button1 = ACCEPT,
 			button2 = CANCEL,
@@ -235,26 +247,26 @@ function D:OnCommReceived(prefix, msg, dist, sender)
 			profile = profile,
 		}
 
-		self:RegisterComm(TRANSFER_PREFIX)
+		D:RegisterComm(TRANSFER_PREFIX)
 	elseif prefix == REPLY_PREFIX then
-		self:UnregisterComm(REPLY_PREFIX)
+		D:UnregisterComm(REPLY_PREFIX)
 		E:StaticPopup_Hide("DISTRIBUTOR_WAITING")
 
 		local profileKey, response = split(":", msg)
 		if response == "YES" then
-			self:RegisterComm(TRANSFER_COMPLETE_PREFIX)
-			self:SendCommMessage(TRANSFER_PREFIX, Uploads[profileKey].serialData, dist, Uploads[profileKey].target)
+			D:RegisterComm(TRANSFER_COMPLETE_PREFIX)
+			D:SendCommMessage(TRANSFER_PREFIX, Uploads[profileKey].serialData, dist, Uploads[profileKey].target)
 		else
 			E:StaticPopup_Show("DISTRIBUTOR_REQUEST_DENIED")
 		end
 
 		Uploads[profileKey] = nil
 	elseif prefix == TRANSFER_PREFIX then
-		self:UnregisterComm(TRANSFER_PREFIX)
-		E:StaticPopupSpecial_Hide(self.statusBar)
+		D:UnregisterComm(TRANSFER_PREFIX)
+		E:StaticPopupSpecial_Hide(D.statusBar)
 
 		local profileKey = Downloads[sender].profile
-		local success, data = self:Deserialize(msg)
+		local success, data = D:Deserialize(msg)
 
 		if success then
 			local textString = format(L["Profile download complete from %s, would you like to load the profile %s now?"], sender, profileKey)
@@ -287,7 +299,7 @@ function D:OnCommReceived(prefix, msg, dist, sender)
 					}
 
 					E:StaticPopup_Show("DISTRIBUTOR_CONFIRM")
-					self:SendCommMessage(TRANSFER_COMPLETE_PREFIX, "COMPLETE", dist, sender)
+					D:SendCommMessage(TRANSFER_COMPLETE_PREFIX, "COMPLETE", dist, sender)
 					return
 				end
 			end
@@ -313,13 +325,13 @@ function D:OnCommReceived(prefix, msg, dist, sender)
 			}
 
 			E:StaticPopup_Show("DISTRIBUTOR_CONFIRM")
-			self:SendCommMessage(TRANSFER_COMPLETE_PREFIX, "COMPLETE", dist, sender)
+			D:SendCommMessage(TRANSFER_COMPLETE_PREFIX, "COMPLETE", dist, sender)
 		else
 			E:StaticPopup_Show("DISTRIBUTOR_FAILED")
-			self:SendCommMessage(TRANSFER_COMPLETE_PREFIX, "FAILED", dist, sender)
+			D:SendCommMessage(TRANSFER_COMPLETE_PREFIX, "FAILED", dist, sender)
 		end
 	elseif prefix == TRANSFER_COMPLETE_PREFIX then
-		self:UnregisterComm(TRANSFER_COMPLETE_PREFIX)
+		D:UnregisterComm(TRANSFER_COMPLETE_PREFIX)
 		if msg == "COMPLETE" then
 			E:StaticPopup_Show("DISTRIBUTOR_SUCCESS")
 		else
@@ -409,7 +421,7 @@ end
 
 function D:Decode(dataString)
 	local profileInfo, profileType, profileKey, profileData
-	local stringType = self:GetImportStringType(dataString)
+	local stringType = D:GetImportStringType(dataString)
 
 	if stringType == "Deflate" then
 		local data = gsub(dataString, "^"..EXPORT_PREFIX, "")
@@ -518,7 +530,7 @@ function D:ExportProfile(profileType, exportFormat)
 end
 
 function D:ImportProfile(dataString)
-	local profileType, profileKey, profileData = self:Decode(dataString)
+	local profileType, profileKey, profileData = D:Decode(dataString)
 
 	if not profileData or type(profileData) ~= "table" then
 		E:Print("Error: something went wrong when converting string to table!")
