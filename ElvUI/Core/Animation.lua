@@ -5,6 +5,10 @@ local E, L, V, P, G = unpack(select(2, ...))
 
 local random, next, unpack, strsub = random, next, unpack, strsub
 
+local CreateFrame = CreateFrame
+local CreateAnimationGroup = CreateAnimationGroup
+local issecurevariable = issecurevariable
+
 E.AnimShake = {{-9,7,-7,12}, {-5,9,-9,5}, {-5,7,-7,5}, {-9,9,-9,9}, {-5,7,-7,5}, {-9,7,-9,5}}
 E.AnimShakeH = {-5,5,-2,5,-2,5}
 
@@ -271,7 +275,7 @@ function E:UIFrameFade(frame, info)
 
 	frame:SetAlpha(info.startAlpha)
 
-	if not frame:IsProtected() then
+	if not frame:IsShown() and not frame:IsProtected() and not issecurevariable(frame, 'Show') then
 		frame:Show()
 	end
 
