@@ -4,7 +4,7 @@ local D = E:GetModule("Distributor")
 local NP = E:GetModule("NamePlates")
 local LibDeflate = E.Libs.Deflate
 local ACH = E.Libs.ACH
-local LCS = E.Libs.LCS
+local LC = E.Libs.Compat
 
 local _G = _G
 local wipe, pairs, strmatch, strsplit, tostring = wipe, pairs, strmatch, strsplit, tostring
@@ -20,8 +20,8 @@ local GetTalentInfo = GetTalentInfo
 local tIndexOf = tIndexOf
 
 local GetMapInfo = GetMapInfo
-local GetNumSpecializationsForClassID = LCS.GetNumSpecializationsForClassID
-local GetSpecializationInfoForClassID = LCS.GetSpecializationInfoForClassID
+local GetNumSpecializationsForClassID = LC.GetNumSpecializationsForClassID
+local GetSpecializationInfoForClassID = LC.GetSpecializationInfoForClassID
 local GetPvpTalentInfoByID = GetPvpTalentInfoByID
 
 local MAX_PLAYER_LEVEL = MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]
@@ -88,7 +88,7 @@ local function GetPvpTalentString(talentID)
 	return formatStr:format(texture, name)
 end
 
-local function GenerateValues(tier, isPvP)
+--[[ local function GenerateValues(tier, isPvP)
 	local values = {}
 
 	if isPvP then
@@ -106,7 +106,7 @@ local function GenerateValues(tier, isPvP)
 	end
 
 	return values
-end
+end ]]
 
 local function GetSpellFilterInfo(name)
 	local spell, stacks = strmatch(name, NP.StyleFilterStackPattern)
@@ -286,21 +286,19 @@ StyleFilters.triggers.args.combat.args.playerGroup = ACH:Group(L["Player"], nil,
 StyleFilters.triggers.args.combat.args.playerGroup.inline = true
 StyleFilters.triggers.args.combat.args.playerGroup.args.inCombat = ACH:Toggle(L["In Combat"], L["If enabled then the filter will only activate when you are in combat."], 1)
 StyleFilters.triggers.args.combat.args.playerGroup.args.outOfCombat = ACH:Toggle(L["Out of Combat"], L["If enabled then the filter will only activate when you are out of combat."], 2)
-StyleFilters.triggers.args.combat.args.playerGroup.args.inVehicle = ACH:Toggle(L["In Vehicle"], L["If enabled then the filter will only activate when you are in a Vehicle."], 3, nil, nil, nil, nil, nil, nil, not E.Retail)
-StyleFilters.triggers.args.combat.args.playerGroup.args.outOfVehicle = ACH:Toggle(L["Out of Vehicle"], L["If enabled then the filter will only activate when you are not in a Vehicle."], 4, nil, nil, nil, nil, nil, nil, not E.Retail)
+StyleFilters.triggers.args.combat.args.playerGroup.args.inVehicle = ACH:Toggle(L["In Vehicle"], L["If enabled then the filter will only activate when you are in a Vehicle."], 3, nil, nil, nil, nil, nil, nil)
+StyleFilters.triggers.args.combat.args.playerGroup.args.outOfVehicle = ACH:Toggle(L["Out of Vehicle"], L["If enabled then the filter will only activate when you are not in a Vehicle."], 4, nil, nil, nil, nil, nil, nil)
 StyleFilters.triggers.args.combat.args.playerGroup.args.isResting = ACH:Toggle(L["Is Resting"], L["If enabled then the filter will only activate when you are resting at an Inn."], 5)
 StyleFilters.triggers.args.combat.args.playerGroup.args.notResting = ACH:Toggle(L["Not Resting"], nil, 6)
 StyleFilters.triggers.args.combat.args.playerGroup.args.playerCanAttack = ACH:Toggle(L["Can Attack"], L["If enabled then the filter will only activate when the unit can be attacked by the active player."], 7)
 StyleFilters.triggers.args.combat.args.playerGroup.args.playerCanNotAttack = ACH:Toggle(L["Can Not Attack"], L["If enabled then the filter will only activate when the unit can not be attacked by the active player."], 8)
-StyleFilters.triggers.args.combat.args.playerGroup.args.inPetBattle = ACH:Toggle(L["In Pet Battle"], nil, 9, nil, nil, nil, nil, nil, nil, not E.Retail)
-StyleFilters.triggers.args.combat.args.playerGroup.args.notPetBattle = ACH:Toggle(L["Not Pet Battle"], nil, 10, nil, nil, nil, nil, nil, nil, not E.Retail)
 
 StyleFilters.triggers.args.combat.args.unitGroup = ACH:Group(L["Unit"], nil, 2)
 StyleFilters.triggers.args.combat.args.unitGroup.inline = true
 StyleFilters.triggers.args.combat.args.unitGroup.args.inCombatUnit = ACH:Toggle(L["In Combat"], L["If enabled then the filter will only activate when the unit is in combat."], 1)
 StyleFilters.triggers.args.combat.args.unitGroup.args.outOfCombatUnit = ACH:Toggle(L["Out of Combat"], L["If enabled then the filter will only activate when the unit is out of combat."], 2)
-StyleFilters.triggers.args.combat.args.unitGroup.args.inVehicleUnit = ACH:Toggle(L["In Vehicle"], L["If enabled then the filter will only activate when the unit is in a Vehicle."], 3, nil, nil, nil, nil, nil, nil, not E.Retail)
-StyleFilters.triggers.args.combat.args.unitGroup.args.outOfVehicleUnit = ACH:Toggle(L["Out of Vehicle"], L["If enabled then the filter will only activate when the unit is not in a Vehicle."], 4, nil, nil, nil, nil, nil, nil, not E.Retail)
+StyleFilters.triggers.args.combat.args.unitGroup.args.inVehicleUnit = ACH:Toggle(L["In Vehicle"], L["If enabled then the filter will only activate when the unit is in a Vehicle."], 3, nil, nil, nil, nil, nil, nil)
+StyleFilters.triggers.args.combat.args.unitGroup.args.outOfVehicleUnit = ACH:Toggle(L["Out of Vehicle"], L["If enabled then the filter will only activate when the unit is not in a Vehicle."], 4, nil, nil, nil, nil, nil, nil)
 StyleFilters.triggers.args.combat.args.unitGroup.args.inParty = ACH:Toggle(L["In Party"], L["If enabled then the filter will only activate when the unit is in your Party."], 5)
 StyleFilters.triggers.args.combat.args.unitGroup.args.notInParty = ACH:Toggle(L["Not in Party"], L["If enabled then the filter will only activate when the unit is not in your Party."], 6)
 StyleFilters.triggers.args.combat.args.unitGroup.args.inRaid = ACH:Toggle(L["In Raid"], L["If enabled then the filter will only activate when the unit is in your Raid."], 7)
@@ -380,7 +378,7 @@ StyleFilters.triggers.args.talent.args.enabled = ACH:Toggle(L["Enable"], nil, 1,
 StyleFilters.triggers.args.talent.args.type = ACH:Toggle(L["Is PvP Talents"], nil, 2, nil, nil, nil, function() local triggers = GetFilter(true) return triggers.talent.type == "pvp" end, function(_, value) local triggers = GetFilter(true) triggers.talent.type = value and "pvp" or "normal" NP:ConfigureAll() end, function() local triggers = GetFilter(true) return not triggers.talent.enabled end)
 StyleFilters.triggers.args.talent.args.requireAll = ACH:Toggle(L["Require All"], nil, 3, nil, nil, nil, function() local triggers = GetFilter(true) return triggers.talent.requireAll end, function(_, value) local triggers = GetFilter(true) triggers.talent.requireAll = value NP:ConfigureAll() end, function() local triggers = GetFilter(true) return not triggers.talent.enabled end)
 
-for i = 1, 7 do
+--[[ for i = 1, 7 do
 	local tier, enable = "tier"..i, "tier"..i.."enabled"
 	local option = ACH:Group(L["Tier "..i], nil, i + 4)
 	option.args[enable] = ACH:Toggle(L["Enable"], nil, 1, nil, nil, nil, function() local triggers = GetFilter(true) return triggers.talent[enable] end, function(_, value) local triggers = GetFilter(true) triggers.talent[enable] = value NP:ConfigureAll() end, nil, function() local triggers = GetFilter(true) return (triggers.talent.type == "pvp" and i > 3) end)
@@ -389,7 +387,7 @@ for i = 1, 7 do
 	option.inline = true
 
 	StyleFilters.triggers.args.talent.args[tier] = option
-end
+end ]]
 
 StyleFilters.triggers.args.slots = ACH:Group(L["Slots"], nil, 13, nil, nil, nil, DisabledFilter)
 StyleFilters.triggers.args.slots.args.types = ACH:MultiSelect(L["Equipped"], nil, 1, nil, nil, nil, function(_, key) local triggers = GetFilter(true) return triggers.slots[key] end, function(_, key, value) local triggers = GetFilter(true) triggers.slots[key] = value or nil NP:ConfigureAll() end)
