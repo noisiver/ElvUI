@@ -361,7 +361,7 @@ function NP:StyleFilterSetChanges(frame, actions, HealthColorChanged, BorderChan
 			frame.Level:SetPoint("LEFT", frame.Name, "RIGHT")
 			frame.Level:SetJustifyH("LEFT")
 			frame.Level:SetParent(frame)
-			frame.Level:SetFormattedText(" [%s]", NP:UnitLevel(frame))
+			frame.Level:SetFormattedText("")
 		end
 		if not NameColorChanged or not IconOnlyChanged then
 			NP:Update_Name(frame, true)
