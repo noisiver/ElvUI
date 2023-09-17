@@ -86,6 +86,34 @@ function B:GetContainerFrame(arg)
 	return B.BagFrame
 end
 
+B.IsEquipmentSlot = {
+	INVTYPE_HEAD = true,
+	INVTYPE_NECK = true,
+	INVTYPE_SHOULDER = true,
+	INVTYPE_BODY = true,
+	INVTYPE_CHEST = true,
+	INVTYPE_WAIST = true,
+	INVTYPE_LEGS = true,
+	INVTYPE_FEET = true,
+	INVTYPE_WRIST = true,
+	INVTYPE_HAND = true,
+	INVTYPE_FINGER = true,
+	INVTYPE_TRINKET = true,
+	INVTYPE_WEAPON = true,
+	INVTYPE_SHIELD = true,
+	INVTYPE_RANGED = true,
+	INVTYPE_CLOAK = true,
+	INVTYPE_2HWEAPON = true,
+	INVTYPE_TABARD = true,
+	INVTYPE_ROBE = true,
+	INVTYPE_WEAPONMAINHAND = true,
+	INVTYPE_WEAPONOFFHAND = true,
+	INVTYPE_HOLDABLE = true,
+	INVTYPE_THROWN = true,
+	INVTYPE_RANGEDRIGHT = true,
+	INVTYPE_RELIC = true
+}
+
 function B:Tooltip_Show()
 	GameTooltip:SetOwner(self)
 	GameTooltip:ClearLines()
@@ -307,6 +335,10 @@ function B:UpdateAllBagSlots()
 	for _, bagFrame in pairs(B.BagFrames) do
 		B:UpdateAllSlots(bagFrame)
 	end
+end
+
+function B:IsItemEligibleForItemLevelDisplay(classID, subClassID, equipLoc, rarity)
+	return (B.IsEquipmentSlot[equipLoc] or (classID == 3 and subClassID == 11)) and (rarity and rarity > 1)
 end
 
 function B:UpdateSlot(frame, bagID, slotID)

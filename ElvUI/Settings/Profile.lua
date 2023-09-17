@@ -149,6 +149,7 @@ P.general = {
 		qualityItemLevel = false,
 		qualityStatusBar = true,
 		qualityStatusBarBackdrop = true,
+		backdropAlpha = 0.1,
 		statusBarColor = { r = 0, g = .4, b = 1 },
 		nameFont = "Expressway",
 		nameFontSize = 12,
