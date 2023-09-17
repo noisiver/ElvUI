@@ -12,45 +12,50 @@ local UIPanelWindows = UIPanelWindows
 local UpdateUIPanelPositions = UpdateUIPanelPositions
 
 S.allowBypass = {}
-S.addonCallbacks = {}
-S.nonAddonCallbacks = {["CallPriority"] = {}}
+S.addonsToLoad = {}
+S.nonAddonsToLoad = {}
 
 S.Blizzard = {}
 S.Blizzard.Regions = {
-	"Left",
-	"Middle",
-	"Right",
-	"Mid",
-	"LeftDisabled",
-	"MiddleDisabled",
-	"RightDisabled",
-	"TopLeft",
-	"TopRight",
-	"BottomLeft",
-	"BottomRight",
-	"TopMiddle",
-	"MiddleLeft",
-	"MiddleRight",
-	"BottomMiddle",
-	"MiddleMiddle",
-	"TabSpacer",
-	"TabSpacer1",
-	"TabSpacer2",
-	"_RightSeparator",
-	"_LeftSeparator",
-	"Cover",
-	"Border",
-	"Background",
-	"TopTex",
-	"TopLeftTex",
-	"TopRightTex",
-	"LeftTex",
-	"BottomTex",
-	"BottomLeftTex",
-	"BottomRightTex",
-	"RightTex",
-	"MiddleTex",
-	"Center"
+	'Left',
+	'Middle',
+	'Right',
+	'Mid',
+	'LeftDisabled',
+	'MiddleDisabled',
+	'RightDisabled',
+	'BorderBottom',
+	'BorderBottomLeft',
+	'BorderBottomRight',
+	'BorderLeft',
+	'BorderRight',
+	'TopLeft',
+	'TopRight',
+	'BottomLeft',
+	'BottomRight',
+	'TopMiddle',
+	'MiddleLeft',
+	'MiddleRight',
+	'BottomMiddle',
+	'MiddleMiddle',
+	'TabSpacer',
+	'TabSpacer1',
+	'TabSpacer2',
+	'_RightSeparator',
+	'_LeftSeparator',
+	'Cover',
+	'Border',
+	'Background',
+	'TopTex',
+	'TopLeftTex',
+	'TopRightTex',
+	'LeftTex',
+	'BottomTex',
+	'BottomLeftTex',
+	'BottomRightTex',
+	'RightTex',
+	'MiddleTex',
+	'Center'
 }
 
 -- Depends on the arrow texture to be up by default.
@@ -239,17 +244,6 @@ function S:SetDisabledBackdrop()
 	end
 end
 
--- function to handle the recap button script
-function S:UpdateRecapButton()
-	-- when UpdateRecapButton runs and enables the button, it unsets OnEnter
-	-- we need to reset it with ours. blizzard will replace it when the button
-	-- is disabled. so, we don't have to worry about anything else.
-	if self and self.button4 and self.button4:IsEnabled() then
-		self.button4:SetScript("OnEnter", S.SetModifiedBackdrop)
-		self.button4:SetScript("OnLeave", S.SetOriginalBackdrop)
-	end
-end
-
 function S:StatusBarColorGradient(bar, value, max, backdrop)
 	if not (bar and value) then return end
 
@@ -396,6 +390,7 @@ do
 	local function ThumbWatcher(frame)
 		hooksecurefunc(frame, "Enable", ThumbStatus)
 		hooksecurefunc(frame, "Disable", ThumbStatus)
+		hooksecurefunc(frame, "SetEnabled", ThumbStatus)
 		hooksecurefunc(frame, "SetMinMaxValues", ThumbStatus)
 		ThumbStatus(frame)
 	end
@@ -511,8 +506,8 @@ do
 
 		frame:StripTextures()
 
-		ReskinScrollBarArrow(frame.Back, "up")
-		ReskinScrollBarArrow(frame.Forward, "down")
+		ReskinScrollBarArrow(frame.Back, 'up')
+		ReskinScrollBarArrow(frame.Forward, 'down')
 
 		if frame.Background then
 			frame.Background:Hide()
@@ -520,27 +515,23 @@ do
 
 		local track = frame.Track
 		if track then
-			track:DisableDrawLayer("ARTWORK")
+			track:DisableDrawLayer('ARTWORK')
 		end
 
 		local thumb = frame:GetThumb()
 		if thumb then
-			thumb:DisableDrawLayer("BACKGROUND")
-			thumb:CreateBackdrop("Transparent")
+			thumb:DisableDrawLayer('ARTWORK')
+			thumb:DisableDrawLayer('BACKGROUND')
+			thumb:CreateBackdrop('Transparent')
 			thumb.backdrop:SetFrameLevel(thumb:GetFrameLevel()+1)
 
 			local r, g, b = unpack(E.media.rgbvaluecolor)
 			thumb.backdrop:SetBackdropColor(r, g, b, .25)
 
-			if not small then
-				thumb.backdrop:Point("TOPLEFT", 4, -1)
-				thumb.backdrop:Point("BOTTOMRIGHT", -4, 1)
-			end
-
-			thumb:HookScript("OnEnter", ThumbOnEnter)
-			thumb:HookScript("OnLeave", ThumbOnLeave)
-			thumb:HookScript("OnMouseUp", ThumbOnMouseUp)
-			thumb:HookScript("OnMouseDown", ThumbOnMouseDown)
+			thumb:HookScript('OnEnter', ThumbOnEnter)
+			thumb:HookScript('OnLeave', ThumbOnLeave)
+			thumb:HookScript('OnMouseUp', ThumbOnMouseUp)
+			thumb:HookScript('OnMouseDown', ThumbOnMouseDown)
 		end
 	end
 end
@@ -577,7 +568,7 @@ do --Tab Regions
 		if not noBackdrop then
 			tab:CreateBackdrop(template)
 
-			local spacing = 10
+			local spacing = 8
 			tab.backdrop:Point("TOPLEFT", spacing, E.PixelMode and -1 or -3)
 			tab.backdrop:Point("BOTTOMRIGHT", -spacing, 3)
 		end
@@ -638,11 +629,11 @@ function S:HandleEditBox(frame, template)
 	end
 end
 
-function S:HandleDropDownBox(frame, width, template)
+function S:HandleDropDownBox(frame, width, pos, template)
 	assert(frame, "doesn't exist!")
 
-	local frameName = frame:GetName()
-	local button = frameName and _G[frameName.."Button"]
+	local frameName = frame.GetName and frame:GetName()
+	local button = frame.Button or frameName and (_G[frameName.."Button"] or _G[frameName.."_Button"])
 	local text = frameName and _G[frameName.."Text"] or frame.Text
 	local icon = frame.Icon
 
@@ -659,7 +650,11 @@ function S:HandleDropDownBox(frame, width, template)
 
 	button:ClearAllPoints()
 
-	button:Point("RIGHT", frame, "RIGHT", -10, 3)
+	if pos then
+		button:Point("TOPRIGHT", frame.Right, -20, -21)
+	else
+		button:Point("RIGHT", frame, "RIGHT", -10, 3)
+	end
 
 	button.SetPoint = E.noop
 	S:HandleNextPrevButton(button, "down")
@@ -674,113 +669,88 @@ function S:HandleDropDownBox(frame, width, template)
 	end
 end
 
-local statusBarColor = {0.01, 0.39, 0.1}
-function S:HandleStatusBar(frame, color)
+function S:HandleStatusBar(frame, color, template)
 	frame:SetFrameLevel(frame:GetFrameLevel() + 1)
 	frame:StripTextures()
-	frame:CreateBackdrop("Transparent")
+	frame:CreateBackdrop(template or "Transparent")
 	frame:SetStatusBarTexture(E.media.normTex)
-	frame:SetStatusBarColor(unpack(color or statusBarColor))
+	frame:SetStatusBarColor(unpack(color or {.01, .39, .1}))
 	E:RegisterStatusBar(frame)
 end
 
-function S:HandleCheckBox(frame, noBackdrop, noReplaceTextures, forceSaturation)
-	if frame.isSkinned then return end
+do
+	local check = [[Interface\Buttons\UI-CheckBox-Check]]
+	local disabled = [[Interface\Buttons\UI-CheckBox-Check-Disabled]]
 
-	frame:StripTextures()
-	frame.forceSaturation = forceSaturation
-
-	if noBackdrop then
-		frame:SetTemplate()
-		frame:Size(16)
-	else
-		frame:CreateBackdrop()
-		frame.backdrop:SetInside(nil, 4, 4)
+	local function checkNormalTexture(checkbox, texture) if texture ~= E.ClearTexture then checkbox:SetNormalTexture(E.ClearTexture) end end
+	local function checkPushedTexture(checkbox, texture) if texture ~= E.ClearTexture then checkbox:SetPushedTexture(E.ClearTexture) end end
+	local function checkHighlightTexture(checkbox, texture) if texture ~= E.ClearTexture then checkbox:SetHighlightTexture(E.ClearTexture) end end
+	local function checkCheckedTexture(checkbox, texture)
+		if texture == E.Media.Textures.Melli or texture == check then return end
+		checkbox:SetCheckedTexture(E.private.skins.checkBoxSkin and E.Media.Textures.Melli or check)
+	end
+	local function checkOnDisable(checkbox)
+		if not checkbox.SetDisabledTexture then return end
+		checkbox:SetDisabledTexture(checkbox:GetChecked() and (E.private.skins.checkBoxSkin and E.Media.Textures.Melli or disabled) or '')
 	end
 
-	if not noReplaceTextures then
-		if frame.SetCheckedTexture then
-			if E.private.skins.checkBoxSkin then
-				frame:SetCheckedTexture(E.Media.Textures.Melli)
+	function S:HandleCheckBox(frame, noBackdrop, noReplaceTextures, frameLevel, template)
+		assert(frame, "doesn't exist.")
 
-				local checkedTexture = frame:GetCheckedTexture()
-				checkedTexture:SetVertexColor(1, 0.82, 0, 0.8)
-				checkedTexture:SetInside(frame.backdrop)
-			else
-				frame:SetCheckedTexture("Interface\\Buttons\\UI-CheckBox-Check")
+		if frame.isSkinned then return end
 
-				if noBackdrop then
-					frame:GetCheckedTexture():SetInside(nil, -4, -4)
-				end
-			end
+		frame:StripTextures()
+
+		if noBackdrop then
+			frame:Size(16)
+		else
+			frame:CreateBackdrop(template, nil, nil, nil, nil, nil, nil, nil, frameLevel)
+			frame.backdrop:SetInside(nil, 4, 4)
 		end
 
-		if frame.SetDisabledCheckedTexture then
-			if E.private.skins.checkBoxSkin then
-				frame:SetDisabledCheckedTexture(E.Media.Textures.Melli)
-
-				local disabledCheckedTexture = frame:GetDisabledCheckedTexture()
-				disabledCheckedTexture:SetVertexColor(0.6, 0.6, 0.6, 0.8)
-				disabledCheckedTexture:SetInside(frame.backdrop)
-			else
-				frame:SetDisabledCheckedTexture("Interface\\Buttons\\UI-CheckBox-Check-Disabled")
-
-				if noBackdrop then
-					frame:GetDisabledCheckedTexture():SetInside(nil, -4, -4)
-				end
-			end
-		end
-
-		if frame.SetDisabledTexture then
-			if E.private.skins.checkBoxSkin then
-				frame:SetDisabledTexture(E.Media.Textures.Melli)
-
-				local disabledTexture = frame:GetDisabledTexture()
-				disabledTexture:SetVertexColor(0.6, 0.6, 0.6, 0.8)
-				disabledTexture:SetInside(frame.backdrop)
-			else
-				frame:SetDisabledTexture("Interface\\Buttons\\UI-CheckBox-Check-Disabled")
-
-				if noBackdrop then
-					frame:GetDisabledTexture():SetInside(nil, -4, -4)
-				end
-			end
-		end
-
-		frame:HookScript("OnDisable", function(checkbox)
-			if not checkbox.SetDisabledTexture then return end
-
-			if checkbox:GetChecked() then
+		if not noReplaceTextures then
+			if frame.SetCheckedTexture then
 				if E.private.skins.checkBoxSkin then
-					checkbox:SetDisabledTexture(E.Media.Textures.Melli)
+					frame:SetCheckedTexture(E.Media.Textures.Melli)
+
+					local checkedTexture = frame:GetCheckedTexture()
+					checkedTexture:SetVertexColor(1, .82, 0, 0.8)
+					checkedTexture:SetInside(frame.backdrop)
 				else
-					checkbox:SetDisabledTexture("Interface\\Buttons\\UI-CheckBox-Check-Disabled")
+					frame:SetCheckedTexture(check)
+
+					if noBackdrop then
+						frame:GetCheckedTexture():SetInside(nil, -4, -4)
+					end
 				end
-			else
-				checkbox:SetDisabledTexture("")
 			end
-		end)
 
-		hooksecurefunc(frame, "SetNormalTexture", function(checkbox, texPath)
-			if texPath ~= "" then checkbox:SetNormalTexture("") end
-		end)
-		hooksecurefunc(frame, "SetPushedTexture", function(checkbox, texPath)
-			if texPath ~= "" then checkbox:SetPushedTexture("") end
-		end)
-		hooksecurefunc(frame, "SetHighlightTexture", function(checkbox, texPath)
-			if texPath ~= "" then checkbox:SetHighlightTexture("") end
-		end)
-		hooksecurefunc(frame, "SetCheckedTexture", function(checkbox, texPath)
-			if texPath == E.Media.Textures.Melli or texPath == "Interface\\Buttons\\UI-CheckBox-Check" then return end
-			if E.private.skins.checkBoxSkin then
-				checkbox:SetCheckedTexture(E.Media.Textures.Melli)
-			else
-				checkbox:SetCheckedTexture("Interface\\Buttons\\UI-CheckBox-Check")
+			if frame.SetDisabledTexture then
+				if E.private.skins.checkBoxSkin then
+					frame:SetDisabledTexture(E.Media.Textures.Melli)
+
+					local disabledTexture = frame:GetDisabledTexture()
+					disabledTexture:SetVertexColor(.6, .6, .6, .8)
+					disabledTexture:SetInside(frame.backdrop)
+				else
+					frame:SetDisabledTexture(disabled)
+
+					if noBackdrop then
+						frame:GetDisabledTexture():SetInside(nil, -4, -4)
+					end
+				end
 			end
-		end)
+
+			frame:HookScript("OnDisable", checkOnDisable)
+
+			hooksecurefunc(frame, "SetNormalTexture", checkNormalTexture)
+			hooksecurefunc(frame, "SetPushedTexture", checkPushedTexture)
+			hooksecurefunc(frame, "SetCheckedTexture", checkCheckedTexture)
+			hooksecurefunc(frame, "SetHighlightTexture", checkHighlightTexture)
+		end
+
+		frame.isSkinned = true
 	end
-
-	frame.isSkinned = true
 end
 
 function S:HandleColorSwatch(frame, size)
@@ -964,7 +934,7 @@ function S:HandleSliderFrame(frame, template, frameLevel)
 	frame:SetThumbTexture(E.Media.Textures.Melli)
 
 	if not frame.backdrop then
-		frame:SetTemplate()
+		frame:SetTemplate(template)
 	end
 
 	local thumb = frame:GetThumbTexture()
@@ -1158,62 +1128,6 @@ do -- Handle collapse
 	end
 end
 
-function S:ADDON_LOADED(_, addon)
-	if self.allowBypass[addon] then
-		if self.addonCallbacks[addon] then
-			--Fire events to the skins that rely on this addon
-			for index, event in ipairs(self.addonCallbacks[addon].CallPriority) do
-				self.addonCallbacks[addon][event] = nil
-				self.addonCallbacks[addon].CallPriority[index] = nil
-				E.callbacks:Fire(event)
-			end
-		end
-		return
-	end
-
-	if not E.initialized then return end
-
-	if self.addonCallbacks[addon] then
-		for index, event in ipairs(self.addonCallbacks[addon].CallPriority) do
-			self.addonCallbacks[addon][event] = nil
-			self.addonCallbacks[addon].CallPriority[index] = nil
-			E.callbacks:Fire(event)
-		end
-	end
-end
-
-local function errorhandler(err)
-	return geterrorhandler()(err)
-end
-
-function S:RegisterSkin(addonName, func, forceLoad, bypass, position)
-	if bypass then
-		self.allowBypass[addonName] = true
-	end
-
-	if forceLoad then
-		xpcall(func, errorhandler)
-		self.addonsToLoad[addonName] = nil
-	elseif addonName == "ElvUI" then
-		if position then
-			tinsert(self.nonAddonsToLoad, position, func)
-		else
-			tinsert(self.nonAddonsToLoad, func)
-		end
-	else
-		local addon = self.addonsToLoad[addonName]
-		if not addon then
-			self.addonsToLoad[addonName] = {}
-			addon = self.addonsToLoad[addonName]
-		end
-
-		if position then
-			tinsert(addon, position, func)
-		else
-			tinsert(addon, func)
-		end
-	end
-end
 
 local function SetPanelWindowInfo(frame, name, value, igroneUpdate)
 	frame:SetAttribute(name, value)
@@ -1240,18 +1154,18 @@ function S:SetUIPanelWindowInfo(frame, name, value, offset, igroneUpdate, anyPan
 	if not frame:CanChangeAttribute() then
 		local frameInfo = format("%s-%s", frameName, name)
 
-		if self.uiPanelQueue[frameInfo] then
+		if S.uiPanelQueue[frameInfo] then
 			if not valueChanged then
-				self.uiPanelQueue[frameInfo][3] = nil
+				S.uiPanelQueue[frameInfo][3] = nil
 			else
-				self.uiPanelQueue[frameInfo][3] = value
-				self.uiPanelQueue[frameInfo][4] = igroneUpdate
+				S.uiPanelQueue[frameInfo][3] = value
+				S.uiPanelQueue[frameInfo][4] = igroneUpdate
 			end
 		elseif valueChanged then
-			self.uiPanelQueue[frameInfo] = {frame, name, value, igroneUpdate}
+			S.uiPanelQueue[frameInfo] = {frame, name, value, igroneUpdate}
 
-			if not self.inCombat then
-				self.inCombat = true
+			if not S.inCombat then
+				S.inCombat = true
 				S:RegisterEvent("PLAYER_REGEN_ENABLED")
 			end
 		end
@@ -1293,10 +1207,10 @@ function S:SetBackdropHitRect(frame, backdrop, clampRect, attempt)
 	bottom = bbottom - bottom
 
 	if not frame:CanChangeAttribute() then
-		self.hitRectQueue[frame] = {left, right, top, bottom, clampRect}
+		S.hitRectQueue[frame] = {left, right, top, bottom, clampRect}
 
-		if not self.inCombat then
-			self.inCombat = true
+		if not S.inCombat then
+			S.inCombat = true
 			S:RegisterEvent("PLAYER_REGEN_ENABLED")
 		end
 	else
@@ -1309,91 +1223,89 @@ function S:SetBackdropHitRect(frame, backdrop, clampRect, attempt)
 end
 
 function S:PLAYER_REGEN_ENABLED()
-	self.inCombat = nil
-	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	S.inCombat = nil
+	S:UnregisterEvent("PLAYER_REGEN_ENABLED")
 
-	for frameInfo, info in pairs(self.uiPanelQueue) do
+	for frameInfo, info in pairs(S.uiPanelQueue) do
 		if info[3] then
 			SetPanelWindowInfo(info[1], info[2], info[3], info[4])
 		end
-		self.uiPanelQueue[frameInfo] = nil
+		S.uiPanelQueue[frameInfo] = nil
 	end
 
-	for frame, info in pairs(self.hitRectQueue) do
+	for frame, info in pairs(S.hitRectQueue) do
 		frame:SetHitRectInsets(info[1], info[2], info[3], info[4])
 
 		if info[5] then
 			frame:SetClampRectInsets(info[1], info[2], info[3], info[4])
 		end
 
-		self.hitRectQueue[frame] = nil
+		S.hitRectQueue[frame] = nil
 	end
 end
 
---Add callback for skin that relies on another addon.
---These events will be fired when the addon is loaded.
-function S:AddCallbackForAddon(addonName, eventName, loadFunc, forceLoad, bypass)
-	if not addonName or type(addonName) ~= "string" then
-		E:Print("Invalid argument #1 to S:AddCallbackForAddon (string expected)")
-		return
-	elseif not eventName or type(eventName) ~= "string" then
-		E:Print("Invalid argument #2 to S:AddCallbackForAddon (string expected)")
-		return
-	elseif not loadFunc or type(loadFunc) ~= "function" then
-		E:Print("Invalid argument #3 to S:AddCallbackForAddon (function expected)")
+function S:ADDON_LOADED(_, addonName)
+	if not S.allowBypass[addonName] and not E.initialized then
 		return
 	end
 
+	local object = S.addonsToLoad[addonName]
+	if object then
+		S:CallLoadedAddon(addonName, object)
+	end
+end
+
+-- EXAMPLE:
+--- S:AddCallbackForAddon('Details', 'MyAddon_Details', MyAddon.SkinDetails)
+---- arg1: Addon name (same as the toc): MyAddon.toc (without extension)
+---- arg2: Given name (try to use something that won't be used by someone else)
+---- arg3: load function (preferably not-local)
+-- this is used for loading skins that should be executed when the addon loads (including blizzard addons that load later).
+-- please add a given name, non-given-name is specific for elvui core addon.
+function S:AddCallbackForAddon(addonName, name, func, forceLoad, bypass, position) -- arg2: name is 'given name'; see example above.
+	local load = (type(name) == 'function' and name) or (not func and (S[name] or S[addonName]))
+	S:RegisterSkin(addonName, load or func, forceLoad, bypass, position)
+end
+
+-- nonAddonsToLoad:
+--- this is used for loading skins when our skin init function executes.
+--- please add a given name, non-given-name is specific for elvui core addon.
+function S:AddCallback(name, func, position) -- arg1: name is 'given name'
+	local load = (type(name) == 'function' and name) or (not func and S[name])
+	S:RegisterSkin('ElvUI', load or func, nil, nil, position)
+end
+
+local function errorhandler(err)
+	return _G.geterrorhandler()(err)
+end
+
+function S:RegisterSkin(addonName, func, forceLoad, bypass, position)
 	if bypass then
-		self.allowBypass[addonName] = true
+		S.allowBypass[addonName] = true
 	end
-
-	--Create an event registry for this addon, so that we can fire multiple events when this addon is loaded
-	if not self.addonCallbacks[addonName] then
-		self.addonCallbacks[addonName] = {["CallPriority"] = {}}
-	end
-
-	if self.addonCallbacks[addonName][eventName] or E.ModuleCallbacks[eventName] or E.InitialModuleCallbacks[eventName] then
-		--Don't allow a registered callback to be overwritten
-		E:Print("Invalid argument #2 to S:AddCallbackForAddon (event name:", eventName, "is already registered, please use a unique event name)")
-		return
-	end
-
-	--Register loadFunc to be called when event is fired
-	E.RegisterCallback(E, eventName, loadFunc)
 
 	if forceLoad then
-		E.callbacks:Fire(eventName)
+		xpcall(func, errorhandler)
+		S.addonsToLoad[addonName] = nil
+	elseif addonName == 'ElvUI' then
+		if position then
+			tinsert(S.nonAddonsToLoad, position, func)
+		else
+			tinsert(S.nonAddonsToLoad, func)
+		end
 	else
-		--Insert eventName in this addons" registry
-		self.addonCallbacks[addonName][eventName] = true
-		self.addonCallbacks[addonName].CallPriority[#self.addonCallbacks[addonName].CallPriority + 1] = eventName
+		local addon = S.addonsToLoad[addonName]
+		if not addon then
+			S.addonsToLoad[addonName] = {}
+			addon = S.addonsToLoad[addonName]
+		end
+
+		if position then
+			tinsert(addon, position, func)
+		else
+			tinsert(addon, func)
+		end
 	end
-end
-
---Add callback for skin that does not rely on a another addon.
---These events will be fired when the Skins module is initialized.
-function S:AddCallback(eventName, loadFunc)
-	if not eventName or type(eventName) ~= "string" then
-		E:Print("Invalid argument #1 to S:AddCallback (string expected)")
-		return
-	elseif not loadFunc or type(loadFunc) ~= "function" then
-		E:Print("Invalid argument #2 to S:AddCallback (function expected)")
-		return
-	end
-
-	if self.nonAddonCallbacks[eventName] or E.ModuleCallbacks[eventName] or E.InitialModuleCallbacks[eventName] then
-		--Don't allow a registered callback to be overwritten
-		E:Print("Invalid argument #1 to S:AddCallback (event name:", eventName, "is already registered, please use a unique event name)")
-		return
-	end
-
-	--Add event name to registry
-	self.nonAddonCallbacks[eventName] = true
-	self.nonAddonCallbacks.CallPriority[#self.nonAddonCallbacks.CallPriority + 1] = eventName
-
-	--Register loadFunc to be called when event is fired
-	E.RegisterCallback(E, eventName, loadFunc)
 end
 
 function S:CallLoadedAddon(addonName, object)
@@ -1401,31 +1313,25 @@ function S:CallLoadedAddon(addonName, object)
 		xpcall(func, errorhandler)
 	end
 
-	self.addonsToLoad[addonName] = nil
+	S.addonsToLoad[addonName] = nil
 end
 
 function S:Initialize()
-	self.Initialized = true
-	self.db = E.private.skins
+	S.Initialized = true
+	S.db = E.private.skins
 
-	self.uiPanelQueue = {}
-	self.hitRectQueue = {}
+	S.uiPanelQueue = {}
+	S.hitRectQueue = {}
 
-	--Fire event for all skins that doesn't rely on a Blizzard addon
-	for index, event in ipairs(self.nonAddonCallbacks.CallPriority) do
-		self.nonAddonCallbacks[event] = nil
-		self.nonAddonCallbacks.CallPriority[index] = nil
-		E.callbacks:Fire(event)
+	for index, func in next, S.nonAddonsToLoad do
+		xpcall(func, errorhandler)
+		S.nonAddonsToLoad[index] = nil
 	end
 
-	--Fire events for Blizzard addons that are already loaded
-	for addon in pairs(self.addonCallbacks) do
-		if IsAddOnLoaded(addon) then
-			for index, event in ipairs(S.addonCallbacks[addon].CallPriority) do
-				self.addonCallbacks[addon][event] = nil
-				self.addonCallbacks[addon].CallPriority[index] = nil
-				E.callbacks:Fire(event)
-			end
+	for addonName, object in pairs(S.addonsToLoad) do
+		local isLoaded, isFinished = IsAddOnLoaded(addonName)
+		if isLoaded and isFinished then
+			S:CallLoadedAddon(addonName, object)
 		end
 	end
 
@@ -1442,6 +1348,7 @@ function S:Initialize()
 			S:Ace3_SkinTooltip(LibStub(n, true))
 		end
 	end
+
 	if E.private.skins.libDropdown and S.EarlyDropdowns then
 		for _, n in next, S.EarlyDropdowns do
 			S:SkinLibDropDownMenu(n)
@@ -1449,6 +1356,7 @@ function S:Initialize()
 	end
 end
 
+-- Keep this outside, it's used for skinning addons before ElvUI load
 S:RegisterEvent("ADDON_LOADED")
 
 local function InitializeCallback()
