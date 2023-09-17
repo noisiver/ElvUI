@@ -638,11 +638,11 @@ function S:HandleEditBox(frame, template)
 	end
 end
 
-function S:HandleDropDownBox(frame, width, pos, template)
+function S:HandleDropDownBox(frame, width, template)
 	assert(frame, "doesn't exist!")
 
-	local frameName = frame.GetName and frame:GetName()
-	local button = frame.Button or frameName and (_G[frameName.."Button"] or _G[frameName.."_Button"])
+	local frameName = frame:GetName()
+	local button = frameName and _G[frameName.."Button"]
 	local text = frameName and _G[frameName.."Text"] or frame.Text
 	local icon = frame.Icon
 
@@ -659,11 +659,7 @@ function S:HandleDropDownBox(frame, width, pos, template)
 
 	button:ClearAllPoints()
 
-	if pos then
-		button:Point("TOPRIGHT", frame.Right, -20, -21)
-	else
-		button:Point("RIGHT", frame, "RIGHT", -10, 3)
-	end
+	button:Point("RIGHT", frame, "RIGHT", -10, 3)
 
 	button.SetPoint = E.noop
 	S:HandleNextPrevButton(button, "down")
@@ -968,7 +964,7 @@ function S:HandleSliderFrame(frame, template, frameLevel)
 	frame:SetThumbTexture(E.Media.Textures.Melli)
 
 	if not frame.backdrop then
-		frame:CreateBackdrop(template, nil, nil, nil, nil, nil, nil, true, frameLevel)
+		frame:SetTemplate()
 	end
 
 	local thumb = frame:GetThumbTexture()
@@ -980,11 +976,10 @@ function S:HandleSliderFrame(frame, template, frameLevel)
 	else
 		frame:Height(SIZE)
 
-		for i = 1, frame:GetNumRegions() do
-			local region = select(i, frame:GetRegions())
-			if region and region:IsObjectType("FontString") then
+		for _, region in next, { frame:GetRegions() } do
+			if region:IsObjectType('FontString') then
 				local point, anchor, anchorPoint, x, y = region:GetPoint()
-				if strfind(anchorPoint, "BOTTOM") then
+				if strfind(anchorPoint, 'BOTTOM') then
 					region:Point(point, anchor, anchorPoint, x, y - 4)
 				end
 			end

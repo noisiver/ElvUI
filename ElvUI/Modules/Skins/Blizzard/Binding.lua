@@ -7,9 +7,8 @@ local S = E:GetModule("Skins")
 S:AddCallbackForAddon("Blizzard_BindingUI", "Skin_Blizzard_BindingUI", function()
 	if not E.private.skins.blizzard.enable or not E.private.skins.blizzard.binding then return end
 
-	KeyBindingFrame:StripTextures()
-	KeyBindingFrame:SetTemplate("Transparent")
-	KeyBindingFrame:Size(596, 490)
+	S:HandleFrame(KeyBindingFrame, true)
+	S:HandlePointXY(KeyBindingFrameHeader, 0, -4)
 
 	local bindingKey1, bindingKey2
 	for i = 1, KEY_BINDINGS_DISPLAYED do

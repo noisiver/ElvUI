@@ -62,7 +62,7 @@ S:AddCallback("Skin_BlizzardOptions", function()
 		VideoOptionsFrameHeader,
 	}
 	for _, header in ipairs(optionHeaders) do
-		header:SetTexture("")
+		header:StripTextures(true)
 		header:SetPoint("TOP", 0, 0)
 	end
 
