@@ -33,6 +33,13 @@ local SplitContainerItem = SplitContainerItem
 local SplitGuildBankItem = SplitGuildBankItem
 local ARMOR, ENCHSLOT_WEAPON = ARMOR, ENCHSLOT_WEAPON
 
+local FILTER_FLAG_IGNORE = 1
+local FILTER_FLAG_EQUIPMENT = 2
+local FILTER_FLAG_CONSUMABLES = 3
+local FILTER_FLAG_TRADE_GOODS = 4
+local FILTER_FLAG_JUNK = 5
+local FILTER_FLAG_QUEST = 32 -- didnt exist
+
 local MAX_MOVE_TIME = 1.25
 local guildBags = {51, 52, 53, 54, 55, 56, 57, 58}
 
@@ -119,18 +126,23 @@ local safe = {
 	[0] = true
 }
 
-local WAIT_TIME = 0.05
+local WAIT_TIME = 0.1
 do
-	local t = 0
-	local frame = CreateFrame("Frame")
-	frame:SetScript("OnUpdate", function(_, elapsed)
-		t = t + (elapsed or 0.01)
-		if t > WAIT_TIME then
-			t = 0
+	local wait = 0
+	local function update(_, elapsed)
+		wait = wait + (elapsed or 0.01)
+
+		if wait > WAIT_TIME then
+			wait = 0
+
 			B:DoMoves()
 		end
-	end)
+	end
+
+	local frame = CreateFrame('Frame')
+	frame:SetScript('OnUpdate', update)
 	frame:Hide()
+
 	B.SortUpdateTimer = frame
 end
 
@@ -256,16 +268,17 @@ local function UpdateSorted(source, destination)
 end
 
 local function ShouldMove(source, destination)
-	if destination == source then return end
+	local sourceID = bagIDs[source]
+	if not sourceID or destination == source then return end
 
-	if not bagIDs[source] then return end
-	if bagIDs[source] == bagIDs[destination] and bagStacks[source] == bagStacks[destination] then return end
+	if sourceID == bagIDs[destination] and bagStacks[source] == bagStacks[destination] then return end
 
 	return true
 end
 
 local function IterateForwards(bagList, i)
 	i = i + 1
+
 	local step = 1
 	for _, bag in ipairs(bagList) do
 		local slots = B:GetNumSlots(bag, bagRole)
@@ -276,18 +289,21 @@ local function IterateForwards(bagList, i)
 				if step == i then
 					return i, bag, slot
 				end
+
 				step = step + 1
 			end
 		end
 	end
+
 	bagRole = nil
 end
 
 local function IterateBackwards(bagList, i)
 	i = i + 1
+
 	local step = 1
-	for ii = #bagList, 1, -1 do
-		local bag = bagList[ii]
+	for v = #bagList, 1, -1 do
+		local bag = bagList[v]
 		local slots = B:GetNumSlots(bag, bagRole)
 		if i > slots + step then
 			step = step + slots
@@ -296,10 +312,12 @@ local function IterateBackwards(bagList, i)
 				if step == i then
 					return i, bag, slot
 				end
+
 				step = step + 1
 			end
 		end
 	end
+
 	bagRole = nil
 end
 
@@ -329,7 +347,8 @@ function B:GetItemInfo(bag, slot)
 	if IsGuildBankBag(bag) then
 		return GetGuildBankItemInfo(bag - 50, slot)
 	else
-		return GetContainerItemInfo(bag, slot)
+		local info = B:GetContainerItemInfo(bag, slot)
+		return info.iconFileID, info.stackCount, info.isLocked
 	end
 end
 
@@ -417,11 +436,29 @@ function B:ScanBags()
 	end
 end
 
+do
+	local assigned = {
+		[FILTER_FLAG_EQUIPMENT] = 'Equipment',
+		[FILTER_FLAG_CONSUMABLES] = 'Consumables',
+		[FILTER_FLAG_TRADE_GOODS] = 'TradeGoods',
+		[FILTER_FLAG_JUNK] = 'Junk',
+		[FILTER_FLAG_QUEST] = 'QuestItems'
+	}
+
+	function B:IsAssignedBag(bagID)
+		local isBank = B.BankFrame.Bags[bagID]
+		return assigned[B:GetFilterFlagInfo(bagID, isBank)]
+	end
+end
+
 function B:IsSpecialtyBag(bagID)
 	if safe[bagID] or IsGuildBankBag(bagID) then return false end
 
 	local inventorySlot = ContainerIDToInventoryID(bagID)
 	if not inventorySlot then return false end
+
+	local assigned = B:IsAssignedBag(bagID)
+	if assigned then return assigned end
 
 	local bag = GetInventoryItemLink("player", inventorySlot)
 	if not bag then return false end
@@ -703,7 +740,7 @@ function B:RegisterUpdateDelayed()
 	end
 
 	if shouldUpdateFade then
-		B:RefreshSearch() -- this will clear the bag lock look during a sort
+		B:SearchRefresh() -- this will clear the bag lock look during a sort
 	end
 end
 

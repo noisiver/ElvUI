@@ -1,177 +1,274 @@
-local E, L, V, P, G = unpack(select(2, ...))
-local B = E:GetModule("Bags")
+local E, L, V, P, G = unpack(ElvUI)
+local B = E:GetModule('Bags')
+local AB = E:GetModule('ActionBars')
+local LSM = E.Libs.LSM
 
---Lua functions
 local _G = _G
+local gsub = gsub
+local ipairs = ipairs
 local unpack = unpack
-local tinsert = table.insert
---WoW API / Variables
-local CreateFrame = CreateFrame
-local CursorHasItem = CursorHasItem
-local PutKeyInKeyRing = PutKeyInKeyRing
-local RegisterStateDriver = RegisterStateDriver
-local ToggleKeyRing = ToggleKeyRing
+local tinsert = tinsert
+local hooksecurefunc = hooksecurefunc
 
-local KEYRING = KEYRING
+local CreateFrame = CreateFrame
+local GameTooltip = GameTooltip
+local InCombatLockdown = InCombatLockdown
+local RegisterStateDriver = RegisterStateDriver
+local CalculateTotalNumberOfFreeBagSlots = CalculateTotalNumberOfFreeBagSlots
+
 local NUM_BAG_FRAMES = NUM_BAG_FRAMES
 
-local function OnEnter()
-	if not E.db.bags.bagBar.mouseover then return end
-	E:UIFrameFadeOut(ElvUIBags, 0.2, ElvUIBags:GetAlpha(), 1)
+local commandNames = {
+	[-1] = 'TOGGLEBACKPACK',
+	[0] = 'TOGGLEBAG4',
+	'TOGGLEBAG3',	-- 1
+	'TOGGLEBAG2',	-- 2
+	'TOGGLEBAG1'	-- 3
+}
+
+function B:BagBar_OnEnter()
+	return E.db.bags.bagBar.mouseover and E:UIFrameFadeIn(B.BagBar, 0.2, B.BagBar:GetAlpha(), 1)
 end
 
-local function OnLeave()
-	if not E.db.bags.bagBar.mouseover then return end
-	E:UIFrameFadeOut(ElvUIBags, 0.2, ElvUIBags:GetAlpha(), 0)
+function B:BagBar_OnLeave()
+	return E.db.bags.bagBar.mouseover and E:UIFrameFadeOut(B.BagBar, 0.2, B.BagBar:GetAlpha(), 0)
+end
+
+function B:BagButton_OnEnter()
+	-- bag keybind support from actionbar module
+	if E.private.actionbar.enable then
+		AB:BindUpdate(self)
+	end
+
+	B:BagBar_OnEnter()
+end
+
+function B:BagButton_OnLeave()
+	B:BagBar_OnLeave()
+end
+
+function B:KeyRing_OnEnter()
+	GameTooltip:SetOwner(self, 'ANCHOR_LEFT')
+	GameTooltip:AddLine(_G.KEYRING, 1, 1, 1)
+	GameTooltip:Show()
+
+	B:BagBar_OnEnter()
+end
+
+function B:BagBar_OnEvent(event)
+	B:BagBar_UpdateVisibility()
+	B.BagBar:UnregisterEvent(event)
+end
+
+function B:KeyRing_OnLeave()
+	GameTooltip:Hide()
+
+	B:BagBar_OnEnter()
 end
 
 function B:SkinBag(bag)
-	local icon = _G[bag:GetName().."IconTexture"]
+	local icon = bag.icon or _G[bag:GetName()..'IconTexture']
 	bag.oldTex = icon:GetTexture()
 
-	bag:StripTextures()
-	bag:SetTemplate(nil, true)
+	bag:StripTextures(false)
+	bag:SetTemplate()
 	bag:StyleButton(true)
 
-	icon:SetTexture(bag.oldTex)
 	icon:SetInside()
+	icon:SetTexture((not bag.oldTex or bag.oldTex == 1721259) and E.Media.Textures.Backpack or bag.oldTex)
 	icon:SetTexCoord(unpack(E.TexCoords))
 end
 
+function B:BagBar_UpdateVisibility()
+	local visibility = gsub(E.db.bags.bagBar.visibility, '[\n\r]', '')
+	RegisterStateDriver(B.BagBar, 'visibility', visibility)
+end
+
 function B:SizeAndPositionBagBar()
-	if not ElvUIBags then return end
+	if not B.BagBar then return end
 
-	local buttonSpacing = E:Scale(E.db.bags.bagBar.spacing)
-	local backdropSpacing = E:Scale(E.db.bags.bagBar.backdropSpacing)
-	local bagBarSize = E:Scale(E.db.bags.bagBar.size)
-	local showBackdrop = E.db.bags.bagBar.showBackdrop
-	local growthDirection = E.db.bags.bagBar.growthDirection
-	local sortDirection = E.db.bags.bagBar.sortDirection
+	local db = E.db.bags.bagBar
+	local bagBarSize = db.size
+	local buttonSpacing = db.spacing
+	local growthDirection = db.growthDirection
+	local sortDirection = db.sortDirection
+	local showBackdrop = db.showBackdrop
+	local justBackpack = db.justBackpack
+	local backdropSpacing = not showBackdrop and 0 or db.backdropSpacing
 
-	local visibility = E.db.bags.bagBar.visibility
-	if visibility and string.match(visibility, "[\n\r]") then
-		visibility = string.gsub(visibility, "[\n\r]","")
-	end
-
-	RegisterStateDriver(ElvUIBags, "visibility", visibility)
-
-	if E.db.bags.bagBar.mouseover then
-		ElvUIBags:SetAlpha(0)
+	if InCombatLockdown() then
+		B.BagBar:RegisterEvent('PLAYER_REGEN_ENABLED')
 	else
-		ElvUIBags:SetAlpha(1)
+		B:BagBar_UpdateVisibility()
 	end
 
-	ElvUIBags.backdrop:SetShown(showBackdrop)
+	B.BagBar:SetAlpha(db.mouseover and 0 or 1)
 
-	ElvUIKeyRingButton:Size(bagBarSize)
-	ElvUIKeyRingButton:ClearAllPoints()
+	_G.MainMenuBarBackpackButtonCount:FontTemplate(LSM:Fetch('font', db.font), db.fontSize, db.fontOutline)
 
-	local bdpSpacing = (showBackdrop and backdropSpacing + E.Border) or 0
-	local btnSpacing = (buttonSpacing + E.Border)
-
-	for i = 1, #ElvUIBags.buttons do
-		local button = ElvUIBags.buttons[i]
-		local prevButton = ElvUIBags.buttons[i-1]
-		button:SetSize(bagBarSize, bagBarSize)
+	local firstButton, lastButton
+	for i, button in ipairs(B.BagBar.buttons) do
+		button:Size(bagBarSize)
 		button:ClearAllPoints()
+		button:SetShown(not justBackpack or i == 1)
 
-		if growthDirection == "HORIZONTAL" and sortDirection == "ASCENDING" then
+		if sortDirection == 'ASCENDING'then
+			if i == 1 then firstButton = button else lastButton = button end
+		else
+			if i == 1 then lastButton = button else firstButton = button end
+		end
+
+		local prevButton = B.BagBar.buttons[i-1]
+		if growthDirection == 'HORIZONTAL' and sortDirection == 'ASCENDING' then
 			if i == 1 then
-				button:SetPoint("LEFT", ElvUIBags, "LEFT", bdpSpacing, 0)
+				button:Point('LEFT', B.BagBar, 'LEFT', backdropSpacing, 0)
 			elseif prevButton then
-				button:SetPoint("LEFT", prevButton, "RIGHT", btnSpacing, 0)
+				button:Point('LEFT', prevButton, 'RIGHT', buttonSpacing, 0)
 			end
-		elseif growthDirection == "VERTICAL" and sortDirection == "ASCENDING" then
+		elseif growthDirection == 'VERTICAL' and sortDirection == 'ASCENDING' then
 			if i == 1 then
-				button:SetPoint("TOP", ElvUIBags, "TOP", 0, -bdpSpacing)
+				button:Point('TOP', B.BagBar, 'TOP', 0, -backdropSpacing)
 			elseif prevButton then
-				button:SetPoint("TOP", prevButton, "BOTTOM", 0, -btnSpacing)
+				button:Point('TOP', prevButton, 'BOTTOM', 0, -buttonSpacing)
 			end
-		elseif growthDirection == "HORIZONTAL" and sortDirection == "DESCENDING" then
+		elseif growthDirection == 'HORIZONTAL' and sortDirection == 'DESCENDING' then
 			if i == 1 then
-				button:SetPoint("RIGHT", ElvUIBags, "RIGHT", -bdpSpacing, 0)
+				button:Point('RIGHT', B.BagBar, 'RIGHT', -backdropSpacing, 0)
 			elseif prevButton then
-				button:SetPoint("RIGHT", prevButton, "LEFT", -btnSpacing, 0)
+				button:Point('RIGHT', prevButton, 'LEFT', -buttonSpacing, 0)
 			end
 		else
 			if i == 1 then
-				button:SetPoint("BOTTOM", ElvUIBags, "BOTTOM", 0, bdpSpacing)
+				button:Point('BOTTOM', B.BagBar, 'BOTTOM', 0, backdropSpacing)
 			elseif prevButton then
-				button:SetPoint("BOTTOM", prevButton, "TOP", 0, btnSpacing)
+				button:Point('BOTTOM', prevButton, 'TOP', 0, buttonSpacing)
 			end
 		end
+
+		B:GetBagAssignedInfo(button)
 	end
 
-	local btnSize = bagBarSize * (NUM_BAG_FRAMES + 2)
-	local btnSpace = btnSpacing * (NUM_BAG_FRAMES + 1)
-	local bdpDoubled = bdpSpacing * 2
+	local btnSize = bagBarSize * (NUM_BAG_FRAMES + 1)
+	local btnSpace = buttonSpacing * NUM_BAG_FRAMES
+	local bdpDoubled = backdropSpacing * 2
 
-	if growthDirection == "HORIZONTAL" then
-		ElvUIBags:SetWidth(btnSize + btnSpace + bdpDoubled)
-		ElvUIBags:SetHeight(bagBarSize + bdpDoubled)
+	B.BagBar.backdrop:ClearAllPoints()
+	B.BagBar.backdrop:Point('TOPLEFT', firstButton, 'TOPLEFT', -backdropSpacing, backdropSpacing)
+	B.BagBar.backdrop:Point('BOTTOMRIGHT', justBackpack and firstButton or lastButton, 'BOTTOMRIGHT', backdropSpacing, -backdropSpacing)
+	B.BagBar.backdrop:SetShown(showBackdrop)
+
+	if growthDirection == 'HORIZONTAL' then
+		B.BagBar:Size(btnSize + btnSpace + bdpDoubled, bagBarSize + bdpDoubled)
 	else
-		ElvUIBags:SetHeight(btnSize + btnSpace + bdpDoubled)
-		ElvUIBags:SetWidth(bagBarSize + bdpDoubled)
+		B.BagBar:Size(bagBarSize + bdpDoubled, btnSize + btnSpace + bdpDoubled)
+	end
+
+	B.BagBar.mover:SetSize(B.BagBar.backdrop:GetSize())
+	B:UpdateMainButtonCount()
+end
+
+function B:UpdateMainButtonCount()
+	local mainCount = _G[B.BagBar.buttons[1]:GetName().."Count"]
+	mainCount:SetShown(E.db.bags.bagBar.showCount)
+	local free, total = 0, 0
+	for i = 0, NUM_BAG_SLOTS do
+		free, total = free + GetContainerNumFreeSlots(i), total + GetContainerNumSlots(i)
+	end
+	mainCount:SetFormattedText("", total - free, total)
+end
+
+function B:BagButton_OnClick(key)
+	if key == 'RightButton' then
+		B.AssignBagDropdown.holder = self
+		_G.ToggleDropDownMenu(1, nil, B.AssignBagDropdown, 'cursor')
+	end
+end
+
+function B:BagButton_UpdateTextures()
+	local pushed = self:GetPushedTexture()
+	pushed:SetInside()
+	pushed:SetTexture(0.9, 0.8, 0.1, 0.3)
+
+	if self.SlotHighlightTexture then
+		self.SlotHighlightTexture:SetTexture(1, 1, 1, 0.3)
+		self.SlotHighlightTexture:SetInside()
 	end
 end
 
 function B:LoadBagBar()
 	if not E.private.bags.bagBar then return end
 
-	local ElvUIBags = CreateFrame("Frame", "ElvUIBags", E.UIParent)
-	ElvUIBags:Point("TOPRIGHT", RightChatPanel, "TOPLEFT", -4, 0)
-	ElvUIBags.buttons = {}
-	ElvUIBags:CreateBackdrop(E.db.bags.transparent and "Transparent")
-	ElvUIBags.backdrop:SetAllPoints()
-	ElvUIBags:EnableMouse(true)
-	ElvUIBags:SetScript("OnEnter", OnEnter)
-	ElvUIBags:SetScript("OnLeave", OnLeave)
+	B.BagBar = CreateFrame('Frame', 'ElvUIBagBar', E.UIParent)
+	B.BagBar:Point('TOPRIGHT', _G.RightChatPanel, 'TOPLEFT', -4, 0)
+	B.BagBar:CreateBackdrop(E.db.bags.transparent and 'Transparent', nil, nil, nil, nil, nil, nil, true)
+	B.BagBar:SetScript('OnEnter', B.BagBar_OnEnter)
+	B.BagBar:SetScript('OnLeave', B.BagBar_OnLeave)
+	B.BagBar:SetScript('OnEvent', B.BagBar_OnEvent)
+	B.BagBar:EnableMouse(true)
+	B.BagBar.buttons = {}
 
-	MainMenuBarBackpackButton:SetParent(ElvUIBags)
-	MainMenuBarBackpackButton.SetParent = E.noop
-	MainMenuBarBackpackButton:ClearAllPoints()
+	_G.MainMenuBarBackpackButton:SetParent(B.BagBar)
+	_G.MainMenuBarBackpackButton:ClearAllPoints()
+	_G.MainMenuBarBackpackButton:HookScript('OnEnter', B.BagButton_OnEnter)
+	_G.MainMenuBarBackpackButton:HookScript('OnLeave', B.BagButton_OnLeave)
 
-	MainMenuBarBackpackButtonCount:FontTemplate(nil, 10)
-	MainMenuBarBackpackButtonCount:ClearAllPoints()
-	MainMenuBarBackpackButtonCount:Point("BOTTOMRIGHT", MainMenuBarBackpackButton, "BOTTOMRIGHT", -1, 4)
+	_G.MainMenuBarBackpackButtonCount:ClearAllPoints()
+	_G.MainMenuBarBackpackButtonCount:Point('BOTTOMRIGHT', _G.MainMenuBarBackpackButton, 0, 1)
+	_G.MainMenuBarBackpackButtonCount:FontTemplate(LSM:Fetch('font', E.db.bags.bagBar.font), E.db.bags.bagBar.fontSize, E.db.bags.bagBar.fontOutline)
 
-	MainMenuBarBackpackButton:HookScript("OnEnter", OnEnter)
-	MainMenuBarBackpackButton:HookScript("OnLeave", OnLeave)
+	_G.MainMenuBarBackpackButton.commandName = commandNames[-1]
 
-	tinsert(ElvUIBags.buttons, MainMenuBarBackpackButton)
-	self:SkinBag(MainMenuBarBackpackButton)
-
-	for i = 0, NUM_BAG_FRAMES - 1 do
-		local b = _G["CharacterBag"..i.."Slot"]
-		b:SetParent(ElvUIBags)
-		b.SetParent = E.noop
-		b:HookScript("OnEnter", OnEnter)
-		b:HookScript("OnLeave", OnLeave)
-
-		self:SkinBag(b)
-		tinsert(ElvUIBags.buttons, b)
+	if _G.BagBarExpandToggle then
+		_G.BagBarExpandToggle:Kill()
 	end
 
-	local ElvUIKeyRing = CreateFrame("CheckButton", "ElvUIKeyRingButton", UIParent, "ItemButtonTemplate")
-	ElvUIKeyRing:StripTextures()
-	ElvUIKeyRing:SetTemplate()
-	ElvUIKeyRing:StyleButton(true)
-	ElvUIKeyRing:SetParent(ElvUIBags)
-	ElvUIKeyRing.SetParent = E.noop
-	ElvUIKeyRing:RegisterForClicks("anyUp")
+	tinsert(B.BagBar.buttons, _G.MainMenuBarBackpackButton)
+	B:SkinBag(_G.MainMenuBarBackpackButton)
+	B.BagButton_UpdateTextures(_G.MainMenuBarBackpackButton)
 
-	_G[ElvUIKeyRing:GetName().."IconTexture"]:SetTexture([[Interface\ContainerFrame\KeyRing-Bag-Icon]])
-	_G[ElvUIKeyRing:GetName().."IconTexture"]:SetInside()
-	_G[ElvUIKeyRing:GetName().."IconTexture"]:SetTexCoord(unpack(E.TexCoords))
+	for i = 0, NUM_BAG_FRAMES-1 do
+		local b = _G['CharacterBag'..i..'Slot']
+		b:HookScript('OnEnter', B.BagButton_OnEnter)
+		b:HookScript('OnLeave', B.BagButton_OnLeave)
+		b:SetParent(B.BagBar)
+		B:SkinBag(b)
 
-	ElvUIKeyRing:SetScript("OnClick", function() if CursorHasItem() then PutKeyInKeyRing() else ToggleKeyRing() end end)
-	ElvUIKeyRing:SetScript("OnReceiveDrag", function() if CursorHasItem() then PutKeyInKeyRing() end end)
-	ElvUIKeyRing:SetScript("OnEnter", function(self) GameTooltip:SetOwner(self, "ANCHOR_LEFT") GameTooltip:SetText(KEYRING, 1, 1, 1) OnEnter() end)
-	ElvUIKeyRing:SetScript("OnLeave",function() GameTooltip:Hide() OnLeave() end)
+		B.BagButton_UpdateTextures(b)
 
-	tinsert(ElvUIBags.buttons, ElvUIKeyRing)
+		b.commandName = commandNames[i]
 
-	self:SizeAndPositionBagBar()
+		tinsert(B.BagBar.buttons, b)
+	end
 
-	E:CreateMover(ElvUIBags, "BagsMover", L["Bags"], nil, nil, nil, nil, nil, "bags,general")
+	local KeyRing = _G.KeyRingButton
+	if KeyRing then
+		KeyRing:SetParent(B.BagBar)
+		KeyRing:SetScript('OnEnter', B.KeyRing_OnEnter)
+		KeyRing:SetScript('OnLeave', B.KeyRing_OnLeave)
+
+		KeyRing:StripTextures()
+		KeyRing:SetTemplate(nil, true)
+		KeyRing:StyleButton(true)
+
+		B:SetButtonTexture(KeyRing, [[Interface\ICONS\INV_Misc_Key_03]])
+
+		tinsert(B.BagBar.buttons, KeyRing)
+	end
+
+	for i, button in ipairs(B.BagBar.buttons) do
+		button.BagID = i - 1
+
+		if E.Retail then -- Item Assignment
+			B:CreateFilterIcon(button)
+		end
+
+		if button ~= KeyRing then
+			button:HookScript('OnClick', B.BagButton_OnClick)
+		end
+	end
+
+	E:CreateMover(B.BagBar, 'BagsMover', L["Bag Bar"], nil, nil, nil, nil, nil, 'bags,general')
+	B.BagBar:SetPoint('BOTTOMLEFT', B.BagBar.mover)
+
+	B:SizeAndPositionBagBar()
 end
