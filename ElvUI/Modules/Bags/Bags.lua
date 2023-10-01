@@ -54,6 +54,7 @@ local SetItemButtonTexture = SetItemButtonTexture
 local SetItemButtonTextureVertexColor = SetItemButtonTextureVertexColor
 local ToggleFrame = ToggleFrame
 local UseContainerItem = UseContainerItem
+local EditBox_HighlightText = EditBox_HighlightText
 
 local BACKPACK_TOOLTIP = BACKPACK_TOOLTIP
 local BINDING_NAME_TOGGLEKEYRING = BINDING_NAME_TOGGLEKEYRING
@@ -355,6 +356,23 @@ function B:SearchClear()
 	B.BankFrame.editBox:ClearFocus()
 
 	B:SetItemSearch('')
+end
+
+function B:SearchTextShow()
+	if not B.db.clearSearchOnClose and self:GetText() ~= '' then
+		self.clearButton:Show()
+		self.searchText:Hide()
+
+		return
+	end
+
+	self.clearButton:Hide()
+	self.searchText:Show()
+end
+
+function B:SearchTextHide()
+		self.clearButton:Show()
+		self.searchText:Hide()
 end
 
 function B:UpdateItemDisplay()
@@ -1476,17 +1494,43 @@ function B:ConstructContainerFrame(name, isBank)
 	f.editBox:Height(16)
 	f.editBox:SetAutoFocus(false)
 	f.editBox:SetFrameLevel(f.editBox:GetFrameLevel() + 2)
-	f.editBox:SetScript('OnEditFocusGained', EditBox_HighlightText)
+	f.editBox:SetScript('OnEditFocusGained', function(eb)
+		EditBox_HighlightText(eb)
+		B.SearchTextHide(eb)
+	end)
+	f.editBox:SetScript('OnEditFocusLost', function(eb) B.SearchTextShow(eb) end)
 	f.editBox:SetScript("OnEnterPressed", function(eb) eb:ClearFocus() end)
 	f.editBox:HookScript('OnTextChanged', B.SearchUpdate)
 	f.editBox:SetScript('OnEscapePressed', B.SearchClear)
-	-- f.editBox:SetText(SEARCH)
-	-- f.editBox.clearButton:HookScript('OnClick', B.SearchClear)
+	f.editBox:SetScript('OnChar', B.SearchTextHide)
+	local insetLeft, insetRight, insetTop, insetBottom = f.editBox:GetTextInsets()
+	f.editBox:SetTextInsets(insetLeft + 15, insetRight, insetTop, insetBottom)
+
+	f.editBox.clearButton = CreateFrame('Button', nil, f.editBox)
+	B:SetButtonTexture(f.editBox.clearButton, [[Interface\FriendsFrame\ClearBroadcastIcon]])
+	f.editBox.clearButton:Point("RIGHT", f.editBox.backdrop, "RIGHT", E.Border + -5, 0)
+	f.editBox.clearButton:Size(15)
+	f.editBox.clearButton:Hide()
+	f.editBox.clearButton:SetAlpha(0.5)
+	f.editBox.clearButton:HookScript("OnEnter", function(self) self:SetAlpha(1) end)
+	f.editBox.clearButton:HookScript("OnLeave", function(self) self:SetAlpha(0.5) end)
+	f.editBox.clearButton:HookScript('OnClick', function()
+		B.SearchClear()
+		B.SearchTextShow(f.editBox)
+	end)
 
 	f.editBox.searchIcon = f.editBox:CreateTexture(nil, "OVERLAY")
 	f.editBox.searchIcon:SetTexture([[Interface\Common\UI-Searchbox-Icon]])
 	f.editBox.searchIcon:Point("LEFT", f.editBox.backdrop, "LEFT", E.Border + 1, -1)
+	f.editBox.searchIcon:SetAlpha(0.5)
 	f.editBox.searchIcon:Size(15)
+
+	f.editBox.searchText = f.editBox:CreateFontString(nil, 'OVERLAY')
+	f.editBox.searchText:FontTemplate()
+	f.editBox.searchText:Point("LEFT", f.editBox.searchIcon, "RIGHT", 1, 0)
+	f.editBox.searchText:SetJustifyH('RIGHT')
+	f.editBox.searchText:SetAlpha(0.5)
+	f.editBox.searchText:SetText(SEARCH)
 
 	if isBank then
 		f.notPurchased = {}
