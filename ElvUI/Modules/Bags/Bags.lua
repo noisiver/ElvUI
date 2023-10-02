@@ -109,7 +109,7 @@ do
 	function B:GetBackpackCurrencyInfo(index)
 		if _G.GetBackpackCurrencyInfo then
 			local info = {}
-			info.name, info.quantity, info.currencyTypesID, info.iconFileID = GetBackpackCurrencyInfo(index)
+			info.name, info.quantity, info.currencyTypesID, info.iconFileID, info.itemID = GetBackpackCurrencyInfo(index)
 			return info
 		else
 			return GetBackpackCurrencyInfo(index)
@@ -120,6 +120,11 @@ do
 		if _G.GetContainerItemInfo then
 			local info = {}
 			info.iconFileID, info.stackCount, info.isLocked, info.quality, info.isReadable, info.hasLoot, info.hyperlink = GetContainerItemInfo(containerIndex, slotIndex)
+
+			if info.hyperlink then
+				info.itemID = B:ConvertLinkToID(info.hyperlink)
+			end
+
 			return info
 		else
 			return GetContainerItemInfo(containerIndex, slotIndex) or {}
@@ -206,9 +211,9 @@ function B:SetItemSearch(query)
 	for _, bagFrame in pairs(B.BagFrames) do
 		for _, bagID in ipairs(bagFrame.BagIDs) do
 			for slotID = 1, GetContainerNumSlots(bagID) do
-				local _, _, _, _, _, _, link = GetContainerItemInfo(bagID, slotID)
+				local _, _, _, _, _, _, hyperlink = GetContainerItemInfo(bagID, slotID)
 				local button = bagFrame.Bags[bagID][slotID]
-				local success, result = pcall(Search.Matches, Search, link, query)
+				local success, result = pcall(Search.Matches, Search, hyperlink, query)
 
 				if empty or (success and result) then
 					SetItemButtonDesaturated(button, button.locked or button.junkDesaturate)
@@ -449,7 +454,7 @@ function B:UpdateSlotColors(slot, isQuestItem, questId, isActiveQuest)
 
 	if questColors then
 		r, g, b, a = unpack(questColors)
-	elseif B.db.qualityColors and (slot.rarity and slot.rarity > ITEM_QUALITY_COMMON) then
+	elseif B.db.qualityColors and (slot.rarity and slot.rarity > 1) then
 		r, g, b = qR, qG, qB
 	else
 		local bag = slot.bagFrame.Bags[slot.BagID]
@@ -498,7 +503,8 @@ function B:UpdateSlot(frame, bagID, slotID)
 	local info = B:GetContainerItemInfo(bagID, slotID)
 
 	slot.name, slot.spellID, slot.itemID, slot.rarity, slot.locked, slot.readable, slot.itemLink = nil, nil, info.itemID, info.quality, info.isLocked, info.isReadable, info.hyperlink
-	slot.isJunk = (slot.rarity and slot.rarity == ITEMQUALITY_POOR) and not info.hasNoValue
+
+	slot.isJunk = (slot.rarity and slot.rarity == 0) and not info.hasNoValue
 	slot.isEquipment, slot.junkDesaturate = nil, slot.isJunk and B.db.junkDesaturate
 	slot.hasItem = (info.iconFileID and 1) or nil -- used for ShowInspectCursor
 
@@ -541,8 +547,6 @@ function B:UpdateSlot(frame, bagID, slotID)
 				slot.bindType:SetVertexColor(r, g, b)
 			end
 		end
-
-		slot.searchOverlay:SetShown(info.isFiltered)
 	else
 		slot.searchOverlay:SetShown(false)
 	end
@@ -1109,6 +1113,7 @@ function B:UpdateTokens()
 		if not (info and info.name) then break end
 
 		local button = currencies[i]
+		button.itemID = info.itemID
 		button.currencyID = info.currencyTypesID
 		button:Show()
 
