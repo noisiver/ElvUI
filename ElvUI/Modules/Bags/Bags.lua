@@ -1891,14 +1891,10 @@ function B:CloseBags()
 end
 
 function B:ShowBank(f)
-	local previousTab = _G.BankFrame.selectedTab
-
-	_G.BankFrame.selectedTab = 1
-
 	f.holderFrame:Show()
 	f.editBox:Point('RIGHT', f.fullBank and f.bagsButton or f.purchaseBagButton, 'LEFT', -5, 0)
 
-	if previousTab ~= _G.BankFrame.selectedTab then
+	if _G.BankFrame:IsShown() then
 		B:Layout(true)
 	else
 		B:UpdateLayout(f)
