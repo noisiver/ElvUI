@@ -28,7 +28,6 @@ local GetContainerItemCooldown = GetContainerItemCooldown
 local GetContainerItemID = GetContainerItemID
 local GetContainerItemInfo = GetContainerItemInfo
 local GetContainerItemLink = GetContainerItemLink
-local GetContainerItemQuestInfo = GetContainerItemQuestInfo
 local GetContainerNumFreeSlots = GetContainerNumFreeSlots
 local GetContainerNumSlots = GetContainerNumSlots
 local GetCurrentGuildBankTab = GetCurrentGuildBankTab
@@ -80,9 +79,6 @@ local FILTER_FLAG_CONSUMABLES = 3
 local FILTER_FLAG_TRADE_GOODS = 4
 local FILTER_FLAG_JUNK = 5
 local FILTER_FLAG_QUEST = 32 -- didnt exist
-
-local READY_TEX = [[Interface\RaidFrame\ReadyCheck-Ready]]
-local NOT_READY_TEX = [[Interface\RaidFrame\ReadyCheck-NotReady]]
 
 local BAG_FILTER_LABELS = {
 	[FILTER_FLAG_EQUIPMENT] = L["Equipment"],
@@ -1023,35 +1019,6 @@ function B:SetBagAssignments(holder, skip)
 	end
 end
 
-function B:UpdateDelayedContainer(frame)
-	for bagID, container in next, frame.DelayedContainers do
-		if bagID ~= BACKPACK_CONTAINER then
-			B:SetBagAssignments(container)
-		end
-
-		local bag = frame.Bags[bagID]
-		if bag and bag.needsUpdate then
-			B:UpdateBagSlots(frame, bagID)
-			bag.needsUpdate = nil
-		end
-
-		frame.DelayedContainers[bagID] = nil
-	end
-end
-
-function B:DelayedContainer(bagFrame, event, bagID)
-	local container = bagID and bagFrame.ContainerHolderByBagID[bagID]
-	if container then
-		bagFrame.DelayedContainers[bagID] = container
-
-		if not bagFrame:IsShown() then -- let it call layout
-			bagFrame.totalSlots = 0
-		else
-			bagFrame.Bags[bagID].needsUpdate = true
-		end
-	end
-end
-
 function B:OnEvent(event, ...)
 	if event == 'PLAYERBANKBAGSLOTS_CHANGED' then
 		local containerID, holder = next(self.notPurchased)
@@ -1078,12 +1045,8 @@ function B:OnEvent(event, ...)
 				bag.staleSlots[slotID] = true
 			end
 		end
-		B:UpdateContainerIcons()
 	elseif event == 'BAG_UPDATE' then
-			B:DelayedContainer(self, event, ...)
-
 			B:UpdateBagSlots(self, ...)
-			B:UpdateSlot(self, ...)
 			B:UpdateContainerIcons()
 	elseif (event == "QUEST_ACCEPTED" or event == "QUEST_REMOVED" or event == "QUEST_LOG_UPDATE") and self:IsShown() then
 		for slot in next, B.QuestSlots do
@@ -1264,7 +1227,7 @@ function B:SetBagShownTexture(icon, shown)
 	if shown then
 		icon:SetTexture(_G.READY_CHECK_READY_TEXTURE)
 	else
-		icon:SetTexture(READY_CHECK_NOT_READY_TEXTURE)
+		icon:SetTexture(_G.READY_CHECK_NOT_READY_TEXTURE)
 	end
 end
 
@@ -1306,7 +1269,6 @@ function B:ConstructContainerFrame(name, isBank)
 	f:SetFrameStrata(strata)
 
 	f.events = (isBank and bankEvents) or bagEvents
-	f.DelayedContainers = {}
 	f.firstOpen = true
 	f:Hide()
 
@@ -2358,9 +2320,11 @@ function B:Initialize()
 
 	B:SecureHook('BackpackTokenFrame_Update', 'UpdateTokens')
 
-	B:SecureHook('OpenAllBags')
-	B:SecureHook('CloseAllBags', 'CloseBags')
-	B:SecureHook('ToggleBag', 'ToggleBags')
+	B:SecureHook("OpenAllBags", "ToggleBackpack")
+	B:SecureHook("CloseAllBags", "CloseBags")
+	B:SecureHook("ToggleBag", "ToggleBags")
+	B:SecureHook("OpenBackpack", "OpenBags")
+	B:SecureHook("CloseBackpack", "CloseBags")
 	B:SecureHook('ToggleBackpack')
 
 	B:DisableBlizzard()
