@@ -12,11 +12,14 @@ local hooksecurefunc = hooksecurefunc
 
 local CreateFrame = CreateFrame
 local GameTooltip = GameTooltip
+local GetContainerNumFreeSlots = GetContainerNumFreeSlots
 local InCombatLockdown = InCombatLockdown
 local RegisterStateDriver = RegisterStateDriver
 local CalculateTotalNumberOfFreeBagSlots = CalculateTotalNumberOfFreeBagSlots
 
+local BACKPACK_CONTAINER = BACKPACK_CONTAINER
 local NUM_BAG_FRAMES = NUM_BAG_FRAMES
+local NUM_BAG_SLOTS = NUM_BAG_SLOTS
 
 local commandNames = {
 	[-1] = 'TOGGLEBACKPACK',
@@ -170,11 +173,16 @@ end
 function B:UpdateMainButtonCount()
 	local mainCount = _G[B.BagBar.buttons[1]:GetName().."Count"]
 	mainCount:SetShown(E.db.bags.bagBar.showCount)
-	local free, total = 0, 0
-	for i = 0, NUM_BAG_SLOTS do
-		free, total = free + GetContainerNumFreeSlots(i), total + GetContainerNumSlots(i)
+
+	local totalFree, freeSlots, bagFamily = 0
+	for i = BACKPACK_CONTAINER, NUM_BAG_SLOTS do
+		freeSlots, bagFamily = GetContainerNumFreeSlots(i)
+		if bagFamily == 0 then
+			totalFree = totalFree + freeSlots
+		end
 	end
-	mainCount:SetFormattedText("", total - free, total)
+
+	mainCount:SetFormattedText(totalFree)
 end
 
 function B:BagButton_OnClick(key)
@@ -269,6 +277,6 @@ function B:LoadBagBar()
 
 	E:CreateMover(B.BagBar, 'BagsMover', L["Bag Bar"], nil, nil, nil, nil, nil, 'bags,general')
 	B.BagBar:SetPoint('BOTTOMLEFT', B.BagBar.mover)
-
+	B:RegisterEvent('BAG_UPDATE', 'UpdateMainButtonCount')
 	B:SizeAndPositionBagBar()
 end
