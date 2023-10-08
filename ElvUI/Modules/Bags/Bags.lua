@@ -112,10 +112,10 @@ do
 	function B:GetContainerItemInfo(containerIndex, slotIndex)
 		if _G.GetContainerItemInfo then
 			local info = {}
-			info.iconFileID, info.stackCount, info.isLocked, info.quality, info.isReadable, info.hasLoot, info.hyperlink = GetContainerItemInfo(containerIndex, slotIndex)
+			info.iconFileID, info.stackCount, info.isLocked, _, info.isReadable, info.hasLoot, info.hyperlink = GetContainerItemInfo(containerIndex, slotIndex)
 			info.itemID = B:GetItemID(containerIndex, slotIndex)
-			if info.hyperlink then
-				_, _, _, info.itemLevel, _, info.itemType, info.itemSubType, _, _, _, info.itemPrice = GetItemInfo(info.hyperlink)
+			if info.itemID then
+				_, _, info.quality, info.itemLevel, _, info.itemType, info.itemSubType, _, _, _, info.itemPrice = GetItemInfo(info.itemID)
 				info.hasNoValue = (info.itemPrice and info.itemPrice == 0)
 			end
 			return info
@@ -496,10 +496,7 @@ function B:UpdateSlot(frame, bagID, slotID)
 	local info = B:GetContainerItemInfo(bagID, slotID)
 
 	slot.name, slot.spellID, slot.itemID, slot.rarity, slot.locked, slot.readable, slot.itemLink = nil, nil, info.itemID, info.quality, info.isLocked, info.isReadable, info.hyperlink
-	slot.isJunk = (slot.rarity and slot.rarity == -1) and info.itemSubType == "Junk" and not info.hasNoValue
-	-- if (slot.rarity and slot.rarity == -1) and (info.itemSubType == "Junk") and not info.hasNoValue then
-	-- 	print(slot.isJunk, slot.rarity, info.itemPrice, info.itemSubType, slot.itemLink)
-	-- end
+	slot.isJunk = (slot.rarity and slot.rarity == 0) and not info.hasNoValue
 	slot.isEquipment, slot.junkDesaturate = nil, slot.isJunk and B.db.junkDesaturate
 	slot.hasItem = (info.iconFileID and 1) or nil -- used for ShowInspectCursor
 
