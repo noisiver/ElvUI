@@ -1,6 +1,7 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
 
+local _G = _G
 local format = format
 local strjoin = strjoin
 
@@ -47,7 +48,11 @@ local function OnEvent(self)
 end
 
 local function OnClick()
-	OpenAllBags()
+	if _G.ContainerFrame1:IsShown() then
+		_G.CloseAllBags()
+	else
+		_G.OpenAllBags()
+	end
 end
 
 local function OnEnter()

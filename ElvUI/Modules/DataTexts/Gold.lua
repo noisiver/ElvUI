@@ -143,7 +143,11 @@ local function OnClick(self, btn)
 			Spent = 0
 		end
 	else
-		OpenAllBags()
+		if _G.ContainerFrame1:IsShown() then
+			_G.CloseAllBags()
+		else
+			_G.OpenAllBags()
+		end
 	end
 end
 

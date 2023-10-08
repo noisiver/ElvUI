@@ -33,19 +33,14 @@ Bags.args.general.args.generalGroup.values = {
 	questIcon = L["Quest Starter Icon"],
 	junkIcon = L["Junk Icon"],
 	junkDesaturate = L["Desaturate Junk"],
-	newItemGlow = L["New Item Glow"],
 	showBindType = L["Bind on Equip/Use Text"],
 	clearSearchOnClose = L["Clear Search On Close"],
-	reverseLoot = L["Reverse New Loot"],
 	reverseSlots = L["Reverse Bag Slots"],
-	useBlizzardCleanup = L["Use Blizzard Cleanup"],
-	scrapIcon = L["Scrap Icon"],
 	showAssignedIcon = L["Assigned Icon"]
 }
 
 local excludeUpdates = {
 	clearSearchOnClose = true,
-	useBlizzardCleanup = true,
 	auctionToggle = true
 }
 
@@ -55,8 +50,6 @@ Bags.args.general.args.generalGroup.set = function(_, key, value)
 	if key == 'showAssignedIcon' then
 		B:UpdateLayout(B.BagFrame)
 		B:SizeAndPositionBagBar()
-	elseif key == 'reverseLoot' then
-		SetInsertItemsLeftToRight(value)
 	elseif not excludeUpdates[key] then
 		B:UpdateLayouts()
 		B:UpdateAllBagSlots()
@@ -92,7 +85,7 @@ for i = 1, 12 or 11 do
 	local bag = 'bag'..i
 	local lastSlot = 5 or 4
 	if i >= 1 and i <= lastSlot then
-		Bags.args.general.args.playerGroup.args.split.args.splitbags.values[bag] = i == 5 and L["Reagent"] or format(L["Bag %d"], i)
+		Bags.args.general.args.playerGroup.args.split.args.splitbags.values[bag] = format(L["Bag %d"], i)
 	else
 		Bags.args.general.args.bankGroup.args.split.args.splitbank.values[bag] = format(L["Bank %d"], i - lastSlot)
 	end
@@ -139,6 +132,11 @@ Bags.args.general.args.itemLevelGroup.args.positionGroup.args.itemLevelyOffset =
 Bags.args.general.args.autoToggle = ACH:Group(L["Auto Toggle"], nil, 11)
 Bags.args.general.args.autoToggle.args.toggles = ACH:MultiSelect('', nil, 1, { bank = L["Bank"], mail = L["MAIL_LABEL"], guildBank = L["Guild Bank"], auctionHouse = L["Auction House"], professions = L["Professions"], trade = L["TRADE"], vendor = L["Vendor"] }, nil, nil, function(_, key) return E.db.bags.autoToggle[key] end, function(_, key, value) E.db.bags.autoToggle[key] = value B:AutoToggle() end)
 
+Bags.args.general.args.spinnerGroup = ACH:Group(E.NewSign..L["Sort Spinner"], nil, 12, nil, function(info) return E.db.bags.spinner[info[#info]] end, function(info, value) E.db.bags.spinner[info[#info]] = value end)
+Bags.args.general.args.spinnerGroup.args.enable = ACH:Toggle(L["Enable"], nil, 1)
+Bags.args.general.args.spinnerGroup.args.size = ACH:Range(L["Size"], nil, 2, { min = 20, max = 80, step = 1 })
+Bags.args.general.args.spinnerGroup.args.color = ACH:Color(L["COLOR"], nil, 3, nil, nil, function(info) local t = E.db.bags.spinner[info[#info]] local d = P.bags.spinner[info[#info]] return t.r, t.g, t.b, t.a, d.r, d.g, d.b end, function(info, r, g, b) local t = E.db.bags.spinner[info[#info]] t.r, t.g, t.b = r, g, b end)
+
 Bags.args.colorGroup = ACH:Group(L["Colors"], nil, 2, nil, function(info) local t = E.db.bags.colors[info[#info - 1]][info[#info]] local d = P.bags.colors[info[#info - 1]][info[#info]] return t.r, t.g, t.b, t.a, d.r, d.g, d.b end, function(info, r, g, b) local t = E.db.bags.colors[info[#info - 1]][info[#info]] t.r, t.g, t.b = r, g, b B:UpdateBagColors(info[#info - 1], info[#info], r, g, b) B:UpdateAllBagSlots() end, function() return not E.Bags.Initialized end)
 Bags.args.colorGroup.args.general = ACH:Group(L["General"], nil, 0, nil, function(info) return E.db.bags[info[#info]] end, function(info, value) E.db.bags[info[#info]] = value B:UpdateAllBagSlots() end, function() return not E.Bags.Initialized end)
 Bags.args.colorGroup.args.general.inline = true
@@ -167,7 +165,6 @@ Bags.args.colorGroup.args.profession.args.inscription = ACH:Color(L["Inscription
 Bags.args.colorGroup.args.profession.args.keyring = ACH:Color(L["Key Ring"])
 Bags.args.colorGroup.args.profession.args.leatherworking = ACH:Color(L["Leatherworking"])
 Bags.args.colorGroup.args.profession.args.mining = ACH:Color(L["Mining"])
-Bags.args.colorGroup.args.profession.args.reagent = ACH:Color(L["Reagent"])
 
 Bags.args.colorGroup.args.items = ACH:Group(L["Items"], nil, 3)
 Bags.args.colorGroup.args.items.inline = true
@@ -199,7 +196,7 @@ Bags.args.vendorGrays.args.interval = ACH:Range(L["Sell Interval"], L["Will atte
 Bags.args.vendorGrays.args.details = ACH:Toggle(L["Vendor Gray Detailed Report"], L["Displays a detailed report of every item sold when enabled."], 3)
 Bags.args.vendorGrays.args.progressBar = ACH:Toggle(L["Progress Bar"], nil, 4)
 
-Bags.args.bagSortingGroup = ACH:Group(L["Sorting"], nil, 5, nil, nil, nil, function() return (not E.Bags.Initialized) or E.db.bags.useBlizzardCleanup end)
+Bags.args.bagSortingGroup = ACH:Group(L["Sorting"], nil, 5, nil, nil, nil, function() return (not E.Bags.Initialized) end)
 Bags.args.bagSortingGroup.args.sortInverted = ACH:Toggle(L["Sort Inverted"], L["Direction the bag sorting will use to allocate the items."], 1)
 Bags.args.bagSortingGroup.args.description = ACH:Description(L["Here you can add items or search terms that you want to be excluded from sorting. To remove an item just click on its name in the list."], 3)
 Bags.args.bagSortingGroup.args.addEntryGroup = ACH:Group(L["Add Item or Search Syntax"], nil, 3)

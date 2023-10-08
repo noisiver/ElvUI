@@ -264,7 +264,6 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 			E.db.bags.bankSize = 42
 			E.db.bags.bankWidth = 474
 			E.db.bags.itemLevelCustomColorEnable = true
-			E.db.bags.scrapIcon = true
 			E.db.bags.split.bag1 = true
 			E.db.bags.split.bag2 = true
 			E.db.bags.split.bag3 = true

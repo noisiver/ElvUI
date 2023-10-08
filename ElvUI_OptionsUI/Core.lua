@@ -15,21 +15,11 @@ E.Config[1] = C
 E.Config[2] = L
 
 local _G = _G
-local pairs = pairs
-local format = string.format
-local sort, tinsert, tconcat, strmatch = sort, tinsert, table.concat, strmatch
+local sort, strmatch, strsplit = sort, strmatch, strsplit
+local format, gsub, ipairs, pairs = format, gsub, ipairs, pairs
+local tconcat, tinsert, tremove = table.concat, tinsert, tremove
 
 C.Values = {
-	FontFlags = {
-		NONE = L["None"],
-		OUTLINE = "Outline",
-		THICKOUTLINE = "Thick",
-		MONOCHROME = "|cffaaaaaaMono|r",
-		MONOCHROMEOUTLINE = "|cffaaaaaaMono|r Outline",
-		MONOCHROMETHICKOUTLINE = "|cffaaaaaaMono|r Thick",
-	},
-	FontSize = { min = 8, max = 64, step = 1 },
-	Strata = { BACKGROUND = "BACKGROUND", LOW = "LOW", MEDIUM = "MEDIUM", HIGH = "HIGH", DIALOG = "DIALOG", TOOLTIP = "TOOLTIP" },
 	GrowthDirection = {
 		DOWN_RIGHT = format(L["%s and then %s"], L["Down"], L["Right"]),
 		DOWN_LEFT = format(L["%s and then %s"], L["Down"], L["Left"]),
@@ -40,8 +30,23 @@ C.Values = {
 		LEFT_DOWN = format(L["%s and then %s"], L["Left"], L["Down"]),
 		LEFT_UP = format(L["%s and then %s"], L["Left"], L["Up"]),
 	},
-	AllPoints = { TOPLEFT = "TOPLEFT", LEFT = "LEFT", BOTTOMLEFT = "BOTTOMLEFT", RIGHT = "RIGHT", TOPRIGHT = "TOPRIGHT", BOTTOMRIGHT = "BOTTOMRIGHT", TOP = "TOP", BOTTOM = "BOTTOM", CENTER = "CENTER" },
-	Anchors = { TOPLEFT = "TOPLEFT", LEFT = "LEFT", BOTTOMLEFT = "BOTTOMLEFT", RIGHT = "RIGHT", TOPRIGHT = "TOPRIGHT", BOTTOMRIGHT = "BOTTOMRIGHT", TOP = "TOP", BOTTOM = "BOTTOM" },
+	FontFlags = {
+		NONE = L["None"],
+		OUTLINE = "Outline",
+		THICKOUTLINE = "Thick",
+		MONOCHROME = "|cffaaaaaaMono|r",
+		MONOCHROMEOUTLINE = "|cffaaaaaaMono|r Outline",
+		MONOCHROMETHICKOUTLINE = "|cffaaaaaaMono|r Thick",
+	},
+	FontSize = { min = 8, max = 64, step = 1 },
+	Roman = { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX" }, -- 1 to 20
+	AllPositions = { LEFT = 'LEFT', RIGHT = 'RIGHT', TOP = 'TOP', BOTTOM = 'BOTTOM', CENTER = 'CENTER' },
+	EdgePositions = { LEFT = 'LEFT', RIGHT = 'RIGHT', TOP = 'TOP', BOTTOM = 'BOTTOM' },
+	SidePositions = { LEFT = 'LEFT', RIGHT = 'RIGHT' },
+	TextPositions = { BOTTOMRIGHT = 'BOTTOMRIGHT', BOTTOMLEFT = 'BOTTOMLEFT', TOPRIGHT = 'TOPRIGHT', TOPLEFT = 'TOPLEFT', BOTTOM = 'BOTTOM', TOP = 'TOP' },
+	AllPoints = { TOPLEFT = 'TOPLEFT', LEFT = 'LEFT', BOTTOMLEFT = 'BOTTOMLEFT', RIGHT = 'RIGHT', TOPRIGHT = 'TOPRIGHT', BOTTOMRIGHT = 'BOTTOMRIGHT', TOP = 'TOP', BOTTOM = 'BOTTOM', CENTER = 'CENTER' },
+	Anchors = { TOPLEFT = 'TOPLEFT', LEFT = 'LEFT', BOTTOMLEFT = 'BOTTOMLEFT', RIGHT = 'RIGHT', TOPRIGHT = 'TOPRIGHT', BOTTOMRIGHT = 'BOTTOMRIGHT', TOP = 'TOP', BOTTOM = 'BOTTOM' },
+	Strata = { BACKGROUND = 'BACKGROUND', LOW = 'LOW', MEDIUM = 'MEDIUM', HIGH = 'HIGH', DIALOG = 'DIALOG', TOOLTIP = 'TOOLTIP' },
 	SmartAuraPositions = {
 		DISABLED = L["Disable"],
 		BUFFS_ON_DEBUFFS = L["Buffs on Debuffs"],
@@ -49,7 +54,6 @@ C.Values = {
 		FLUID_BUFFS_ON_DEBUFFS = L["Fluid Buffs on Debuffs"],
 		FLUID_DEBUFFS_ON_BUFFS = L["Fluid Debuffs on Buffs"],
 	},
-	Roman = { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX" } -- 1 to 20
 }
 do
 	C.StateSwitchGetText = function(_, TEXT)

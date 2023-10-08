@@ -248,9 +248,6 @@ P.bags = {
 	questIcon = true,
 	junkIcon = false,
 	junkDesaturate = false,
-	scrapIcon = false,
-	upgradeIcon = true,
-	newItemGlow = true,
 	ignoredItems = {},
 	itemLevel = true,
 	itemLevelThreshold = 1,
@@ -274,14 +271,11 @@ P.bags = {
 	countPosition = "BOTTOMRIGHT",
 	countxOffset = 0,
 	countyOffset = 2,
-	reverseLoot = false,
 	reverseSlots = false,
 	clearSearchOnClose = false,
 	disableBagSort = false,
 	disableBankSort = false,
 	showAssignedColor = true,
-	useBlizzardCleanup = false,
-	useBlizzardJunk = true,
 	strata = 'HIGH',
 	qualityColors = true,
 	specialtyColors = true,
@@ -290,7 +284,6 @@ P.bags = {
 	showAssignedIcon = true,
 	colors = {
 		profession = {
-			reagent			= { r = 0.18, g = 0.75, b = 0.50 },
 			ammoPouch		= { r = 1.00, g = 0.69, b = 0.41 },
 			cooking			= { r = 0.74, g = 0.05, b = 0.21 },
 			enchanting		= { r = 0.72, g = 0.22, b = 0.74 },
@@ -339,6 +332,11 @@ P.bags = {
 		professions = false,
 		guildBank = false,
 		trade = false,
+	},
+	spinner = {
+		enable = true,
+		size = 48,
+		color = { r = 1, g = 0.82, b = 0 }
 	},
 	bagBar = {
 		growthDirection = "VERTICAL",
