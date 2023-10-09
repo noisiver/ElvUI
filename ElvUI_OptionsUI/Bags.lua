@@ -132,7 +132,7 @@ Bags.args.general.args.itemLevelGroup.args.positionGroup.args.itemLevelyOffset =
 Bags.args.general.args.autoToggle = ACH:Group(L["Auto Toggle"], nil, 11)
 Bags.args.general.args.autoToggle.args.toggles = ACH:MultiSelect('', nil, 1, { bank = L["Bank"], mail = L["MAIL_LABEL"], guildBank = L["Guild Bank"], auctionHouse = L["Auction House"], professions = L["Professions"], trade = L["TRADE"], vendor = L["Vendor"] }, nil, nil, function(_, key) return E.db.bags.autoToggle[key] end, function(_, key, value) E.db.bags.autoToggle[key] = value B:AutoToggle() end)
 
-Bags.args.general.args.spinnerGroup = ACH:Group(E.NewSign..L["Sort Spinner"], nil, 12, nil, function(info) return E.db.bags.spinner[info[#info]] end, function(info, value) E.db.bags.spinner[info[#info]] = value end)
+Bags.args.general.args.spinnerGroup = ACH:Group(L["Sort Spinner"], nil, 12, nil, function(info) return E.db.bags.spinner[info[#info]] end, function(info, value) E.db.bags.spinner[info[#info]] = value end)
 Bags.args.general.args.spinnerGroup.args.enable = ACH:Toggle(L["Enable"], nil, 1)
 Bags.args.general.args.spinnerGroup.args.size = ACH:Range(L["Size"], nil, 2, { min = 20, max = 80, step = 1 })
 Bags.args.general.args.spinnerGroup.args.color = ACH:Color(L["COLOR"], nil, 3, nil, nil, function(info) local t = E.db.bags.spinner[info[#info]] local d = P.bags.spinner[info[#info]] return t.r, t.g, t.b, t.a, d.r, d.g, d.b end, function(info, r, g, b) local t = E.db.bags.spinner[info[#info]] t.r, t.g, t.b = r, g, b end)
