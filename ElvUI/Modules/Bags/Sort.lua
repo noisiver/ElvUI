@@ -24,13 +24,6 @@ local SplitGuildBankItem = SplitGuildBankItem
 local NUM_BAG_SLOTS = NUM_BAG_SLOTS
 local BANK_CONTAINER = BANK_CONTAINER
 
-local FILTER_FLAG_IGNORE = 1
-local FILTER_FLAG_EQUIPMENT = 2
-local FILTER_FLAG_CONSUMABLES = 3
-local FILTER_FLAG_TRADE_GOODS = 4
-local FILTER_FLAG_JUNK = 5
-local FILTER_FLAG_QUEST = 32 -- didnt exist
-
 local ARMOR = ARMOR
 local ENCHSLOT_WEAPON = ENCHSLOT_WEAPON
 
@@ -497,26 +490,8 @@ function B:ScanBags()
 	end
 end
 
-do
-	local assigned = {
-		[FILTER_FLAG_EQUIPMENT] = "Equipment",
-		[FILTER_FLAG_CONSUMABLES] = "Consumables",
-		[FILTER_FLAG_TRADE_GOODS] = "TradeGoods",
-		[FILTER_FLAG_JUNK] = "Junk",
-		[FILTER_FLAG_QUEST] = "QuestItems"
-	}
-
-	-- function B:IsAssignedBag(bagID)
-	-- 	local isBank = B.BankFrame.Bags[bagID]
-	-- 	return assigned[B:GetFilterFlagInfo(bagID, isBank)]
-	-- end
-end
-
 function B:IsSpecialtyBag(bagID)
 	if safe[bagID] or IsGuildBankBag(bagID) then return "Normal" end
-
-	-- local assigned = B:IsAssignedBag(bagID)
-	-- if assigned then return assigned end
 
 	local invSlot = ContainerIDToInventoryID(bagID)
 	if not invSlot then return "Normal" end
@@ -534,24 +509,8 @@ function B:CanItemGoInBag(bag, slot, targetBag)
 	if IsGuildBankBag(targetBag) then return true end
 
 	local item = bagIDs[B:Encode_BagSlot(bag, slot)]
-	local _, _, rarity, _, _, _, _, _, equipSlot, _, sellPrice, classID, _, bindType = GetItemInfo(item)
-
-	-- local assigned = B:IsAssignedBag(targetBag)
-	-- if assigned then
-	-- 	if assigned == "Consumables" then
-	-- 		return classID == 0
-	-- 	elseif assigned == "TradeGoods" then
-	-- 		return classID == 7
-	-- 	elseif assigned == "QuestItems" then
-	-- 		return classID == 12 or bindType == 4
-	-- 	elseif assigned == "Junk" then
-	-- 		return (rarity and rarity == 0) and sellPrice
-	-- 	elseif assigned == "Equipment" then
-	-- 		return B.IsEquipmentSlot[equipSlot]
-	-- 	end
-	-- end
-
 	local _, bagType = GetContainerNumFreeSlots(targetBag)
+	print(bagType)
 	if bagType == 0 then
 		return true -- target bag is normal
 	elseif bagType then
@@ -571,6 +530,7 @@ end
 
 function B.Stack(sourceBags, targetBags, canMove)
 	if not canMove then canMove = DefaultCanMove end
+
 	for _, bag, slot in B:IterateBags(targetBags, nil, "deposit") do
 		local bagSlot = B:Encode_BagSlot(bag, slot)
 		local itemID = bagIDs[bagSlot]
@@ -587,18 +547,22 @@ function B.Stack(sourceBags, targetBags, canMove)
 		if itemID and targetItems[itemID] and canMove(itemID, bag, slot) then
 			for i = #targetSlots, 1, -1 do
 				local targetedSlot = targetSlots[i]
-				if bagIDs[sourceSlot] and bagIDs[targetedSlot] == itemID and targetedSlot ~= sourceSlot and (bagStacks[targetedSlot] ~= bagMaxStacks[targetedSlot]) and not sourceUsed[targetedSlot] then
+				if bagIDs[targetedSlot] == itemID and targetedSlot ~= sourceSlot and not (bagStacks[targetedSlot] == bagMaxStacks[targetedSlot]) and not sourceUsed[targetedSlot] then
 					B:AddMove(sourceSlot, targetedSlot)
 					sourceUsed[sourceSlot] = true
 
 					if bagStacks[targetedSlot] == bagMaxStacks[targetedSlot] then
 						targetItems[itemID] = (targetItems[itemID] > 1) and (targetItems[itemID] - 1) or nil
 					end
+
 					if bagStacks[sourceSlot] == 0 then
 						targetItems[itemID] = (targetItems[itemID] > 1) and (targetItems[itemID] - 1) or nil
 						break
 					end
-					if not targetItems[itemID] then break end
+
+					if not targetItems[itemID] then
+						break
+					end
 				end
 			end
 		end
@@ -669,7 +633,7 @@ function B.Sort(bags, sorter, invertDirection)
 		local i = 1
 		for _, bag, slot in B:IterateBags(bags, nil, "both") do
 			local destination = B:Encode_BagSlot(bag, slot)
-			if not blackListedSlots[destination] --[[ and not B:IsSortIgnored(bag) ]] then
+			if not blackListedSlots[destination] then
 				local source = bagSorted[i]
 				if ShouldMove(source, destination) then
 					if not (bagLocked[source] or bagLocked[destination]) then
@@ -830,7 +794,7 @@ function B:StopStacking(message, noUpdate)
 
 	if not noUpdate then
 		-- Add a delayed update call, as BAG_UPDATE fires slightly delayed
-		-- and we don"t want the last few unneeded updates to be catched
+		-- and we don't want the last few unneeded updates to be catched
 		E:Delay(0.6, B.RegisterUpdateDelayed)
 	end
 

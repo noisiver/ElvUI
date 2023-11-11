@@ -1,5 +1,6 @@
 local E, L, V, P, G = unpack(select(2, ...))
 local S = E:GetModule("Skins")
+local B = E:GetModule("Bags")
 
 --Lua functions
 local _G = _G
@@ -20,24 +21,6 @@ local BANK_CONTAINER = BANK_CONTAINER
 S:AddCallback("Skin_Bags", function()
 	if E.private.bags.enable then return end
 	if not E.private.skins.blizzard.enable or not E.private.skins.blizzard.bags then return end
-
-	local professionColors = {
-		[0x0001] = {E.db.bags.colors.profession.quiver.r, E.db.bags.colors.profession.quiver.g, E.db.bags.colors.profession.quiver.b},
-		[0x0002] = {E.db.bags.colors.profession.ammoPouch.r, E.db.bags.colors.profession.ammoPouch.g, E.db.bags.colors.profession.ammoPouch.b},
-		[0x0004] = {E.db.bags.colors.profession.soulBag.r, E.db.bags.colors.profession.soulBag.g, E.db.bags.colors.profession.soulBag.b},
-		[0x0008] = {E.db.bags.colors.profession.leatherworking.r, E.db.bags.colors.profession.leatherworking.g, E.db.bags.colors.profession.leatherworking.b},
-		[0x0010] = {E.db.bags.colors.profession.inscription.r, E.db.bags.colors.profession.inscription.g, E.db.bags.colors.profession.inscription.b},
-		[0x0020] = {E.db.bags.colors.profession.herbs.r, E.db.bags.colors.profession.herbs.g, E.db.bags.colors.profession.herbs.b},
-		[0x0040] = {E.db.bags.colors.profession.enchanting.r, E.db.bags.colors.profession.enchanting.g, E.db.bags.colors.profession.enchanting.b},
-		[0x0080] = {E.db.bags.colors.profession.engineering.r, E.db.bags.colors.profession.engineering.g, E.db.bags.colors.profession.engineering.b},
-		[0x0200] = {E.db.bags.colors.profession.gems.r, E.db.bags.colors.profession.gems.g, E.db.bags.colors.profession.gems.b},
-		[0x0400] = {E.db.bags.colors.profession.mining.r, E.db.bags.colors.profession.mining.g, E.db.bags.colors.profession.mining.b},
-	}
-
-	local questColors = {
-		["questStarter"] = {E.db.bags.colors.items.questStarter.r, E.db.bags.colors.items.questStarter.g, E.db.bags.colors.items.questStarter.b},
-		["questItem"] =	{E.db.bags.colors.items.questItem.r, E.db.bags.colors.items.questItem.g, E.db.bags.colors.items.questItem.b}
-	}
 
 	-- ContainerFrame
 	for i = 1, NUM_CONTAINER_FRAMES do
@@ -144,19 +127,19 @@ S:AddCallback("Skin_Bags", function()
 
 			questIcon:Hide()
 
-			if professionColors[bagType] then
-				item:SetBackdropBorderColor(unpack(professionColors[bagType]))
+			if B.ProfessionColors[bagType] then
+				item:SetBackdropBorderColor(unpack(B.ProfessionColors[bagType]))
 				item.ignoreBorderColors = true
 			elseif link then
 				local isQuestItem, questId, isActive = GetContainerItemQuestInfo(id, item:GetID())
 				local _, _, quality = GetItemInfo(link)
 
 				if questId and not isActive then
-					item:SetBackdropBorderColor(unpack(questColors.questStarter))
+					item:SetBackdropBorderColor(unpack(B.QuestColors.questStarter))
 					item.ignoreBorderColors = true
 					questIcon:Show()
 				elseif questId or isQuestItem then
-					item:SetBackdropBorderColor(unpack(questColors.questItem))
+					item:SetBackdropBorderColor(unpack(B.QuestColors.questItem))
 					item.ignoreBorderColors = true
 				elseif quality then
 					item:SetBackdropBorderColor(GetItemQualityColor(quality))
@@ -271,14 +254,14 @@ S:AddCallback("Skin_Bags", function()
 				local isQuestItem, questId, isActive = GetContainerItemQuestInfo(BANK_CONTAINER, id)
 
 				if questId and not isActive then
-					button:SetBackdropBorderColor(unpack(questColors.questStarter))
+					button:SetBackdropBorderColor(unpack(B.QuestColors.questStarter))
 					button.ignoreBorderColors = true
 
 					if questTexture then
 						questTexture:Show()
 					end
 				elseif questId or isQuestItem then
-					button:SetBackdropBorderColor(unpack(questColors.questItem))
+					button:SetBackdropBorderColor(unpack(B.QuestColors.questItem))
 					button.ignoreBorderColors = true
 				else
 					local quality = select(3, GetItemInfo(link))

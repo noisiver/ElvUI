@@ -1,5 +1,5 @@
 local E, L, V, P, G = unpack(select(2, ...))
-local LC = E.Libs.Compat
+local LCS = E.Libs.LCS
 
 local _G = _G
 local select, wipe, date = select, wipe, date
@@ -36,77 +36,182 @@ local UnitInParty = UnitInParty
 local UnitInRaid = UnitInRaid
 local UnitIsUnit = UnitIsUnit
 
-local GetSpecialization = LC.GetSpecialization
-local GetSpecializationRole = LC.GetSpecializationRole
+local GetSpecialization = LCS.GetSpecialization
+local GetSpecializationRole = LCS.GetSpecializationRole
 
 local MAX_TALENT_TABS = MAX_TALENT_TABS
 local NONE = NONE
 
 local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
-local PLAYER_FACTION_GROUP = PLAYER_FACTION_GROUP
 local FACTION_HORDE = FACTION_HORDE
 local FACTION_ALLIANCE = FACTION_ALLIANCE
-local LOCALIZED_CLASS_NAMES_MALE = LOCALIZED_CLASS_NAMES_MALE
-local LOCALIZED_CLASS_NAMES_FEMALE = LOCALIZED_CLASS_NAMES_FEMALE
-local CUSTOM_CLASS_COLORS = CUSTOM_CLASS_COLORS
-local RAID_CLASS_COLORS = RAID_CLASS_COLORS
-local MAX_PLAYER_LEVEL_TABLE = MAX_PLAYER_LEVEL_TABLE
+local PLAYER_FACTION_GROUP = PLAYER_FACTION_GROUP
 
 local GameMenuButtonRatings = GameMenuButtonRatings
 local GameMenuButtonLogout = GameMenuButtonLogout
 local GameMenuFrame = GameMenuFrame
+local UIErrorsFrame = UIErrorsFrame
+
+E.SpecInfoBySpecClass = {} -- ['Protection Warrior'] = specInfo (table)
+E.SpecInfoBySpecID = {} -- [250] = specInfo (table)
+
+E.SpecByClass = {
+	DEATHKNIGHT	= { 250, 251, 252 },
+	DRUID		= { 102, 103, 104, 105 },
+	HUNTER		= { 253, 254, 255 },
+	MAGE		= { 62, 63, 64 },
+	PALADIN		= { 65, 66, 70 },
+	PRIEST		= { 256, 257, 258 },
+	ROGUE		= { 259, 260, 261 },
+	SHAMAN		= { 262, 263, 264 },
+	WARLOCK		= { 265, 266, 267 },
+	WARRIOR		= { 71, 72, 73 },
+}
+
+E.ClassName = { -- english locale
+	DEATHKNIGHT	= 'Death Knight',
+	DRUID		= 'Druid',
+	HUNTER		= 'Hunter',
+	MAGE		= 'Mage',
+	PALADIN		= 'Paladin',
+	PRIEST		= 'Priest',
+	ROGUE		= 'Rogue',
+	SHAMAN		= 'Shaman',
+	WARLOCK		= 'Warlock',
+	WARRIOR		= 'Warrior',
+}
+
+E.SpecName = { -- english locale
+	-- Death Knight
+	[250]	= 'Blood',
+	[251]	= 'Frost',
+	[252]	= 'Unholy',
+	-- Druids
+	[102]	= 'Balance',
+	[103]	= 'Feral',
+	[104]	= 'Guardian',
+	[105]	= 'Restoration',
+	-- Hunter
+	[253]	= 'Beast Mastery',
+	[254]	= 'Marksmanship',
+	[255]	= 'Survival',
+	-- Mage
+	[62]	= 'Arcane',
+	[63]	= 'Fire',
+	[64]	= 'Frost',
+	-- Paladin
+	[65]	= 'Holy',
+	[66]	= 'Protection',
+	[70]	= 'Retribution',
+	-- Priest
+	[256]	= 'Discipline',
+	[257]	= 'Holy',
+	[258]	= 'Shadow',
+	-- Rogue
+	[259]	= 'Assasination',
+	[260]	= 'Combat',
+	[261]	= 'Sublety',
+	-- Shaman
+	[262]	= 'Elemental',
+	[263]	= 'Enhancement',
+	[264]	= 'Restoration',
+	-- Walock
+	[265]	= 'Affliction',
+	[266]	= 'Demonology',
+	[267]	= 'Destruction',
+	-- Warrior
+	[71]	= 'Arms',
+	[72]	= 'Fury',
+	[73]	= 'Protection',
+}
 
 function E:ClassColor(class, usePriestColor)
 	if not class then return end
 
-	local color = (CUSTOM_CLASS_COLORS and CUSTOM_CLASS_COLORS[class]) or RAID_CLASS_COLORS[class]
-	if type(color) ~= "table" then return end
+	local color = (_G.CUSTOM_CLASS_COLORS and _G.CUSTOM_CLASS_COLORS[class]) or _G.RAID_CLASS_COLORS[class]
+	if type(color) ~= 'table' then return end
 
 	if not color.colorStr then
-		color.colorStr = E:RGBToHex(color.r, color.g, color.b, "ff")
+		color.colorStr = E:RGBToHex(color.r, color.g, color.b, 'ff')
 	elseif strlen(color.colorStr) == 6 then
-		color.colorStr = "ff"..color.colorStr
+		color.colorStr = 'ff'..color.colorStr
 	end
 
-	if (usePriestColor and class == "PRIEST") and tonumber(color.colorStr, 16) > tonumber(E.PriestColors.colorStr, 16) then
+	if usePriestColor and class == 'PRIEST' and tonumber(color.colorStr, 16) > tonumber(E.PriestColors.colorStr, 16) then
 		return E.PriestColors
 	else
 		return color
 	end
 end
 
+function E:InverseClassColor(class, usePriestColor, forceCap)
+	local color = E:CopyTable({}, E:ClassColor(class, usePriestColor))
+	local capColor = class == 'PRIEST' or forceCap
+
+	color.r = capColor and max(1-color.r,0.35) or (1-color.r)
+	color.g = capColor and max(1-color.g,0.35) or (1-color.g)
+	color.b = capColor and max(1-color.b,0.35) or (1-color.b)
+	color.colorStr = E:RGBToHex(color.r, color.g, color.b, 'ff')
+
+	return color
+end
+
 do -- other non-english locales require this
 	E.UnlocalizedClasses = {}
-	for k, v in pairs(LOCALIZED_CLASS_NAMES_MALE) do E.UnlocalizedClasses[v] = k end
-	for k, v in pairs(LOCALIZED_CLASS_NAMES_FEMALE) do E.UnlocalizedClasses[v] = k end
+	for k, v in pairs(_G.LOCALIZED_CLASS_NAMES_MALE) do E.UnlocalizedClasses[v] = k end
+	for k, v in pairs(_G.LOCALIZED_CLASS_NAMES_FEMALE) do E.UnlocalizedClasses[v] = k end
 
 	function E:UnlocalizedClassName(className)
-		return (className and className ~= "") and E.UnlocalizedClasses[className]
+		return E.UnlocalizedClasses[className]
 	end
 end
 
-function E:IsFoolsDay()
-	return strfind(date(), "04/01/") and not E.global.aprilFools
+do
+	function E:ScanTooltipTextures(clean, grabTextures)
+		local textures
+		for i = 1, 10 do
+			local tex = _G["ElvUI_ScanTooltipTexture"..i]
+			local texture = tex and tex:GetTexture()
+			if texture then
+				if grabTextures then
+					if not textures then textures = {} end
+					textures[i] = texture
+				end
+				if clean then
+					tex:SetTexture()
+				end
+			end
+		end
+
+		return textures
+	end
 end
 
-function E:ScanTooltipTextures(clean, grabTextures)
-	local textures
-	for i = 1, 10 do
-		local tex = _G["ElvUI_ScanTooltipTexture"..i]
-		local texture = tex and tex:GetTexture()
-		if texture then
-			if grabTextures then
-				if not textures then textures = {} end
-				textures[i] = texture
-			end
-			if clean then
-				tex:SetTexture()
-			end
+do
+	local function FindAura(key, value, unit, index, filter, ...)
+		local name, _, _, _, _, _, _, _, _, spellID = ...
+
+		if not name then
+			return
+		elseif key == 'name' and value == name then
+			return ...
+		elseif key == 'spellID' and value == spellID then
+			return ...
+		else
+			index = index + 1
+			return FindAura(key, value, unit, index, filter, UnitAura(unit, index, filter))
 		end
 	end
 
-	return textures
+	function E:GetAuraByID(unit, spellID, filter)
+		return FindAura('spellID', spellID, unit, 1, filter, UnitAura(unit, 1, filter))
+	end
+
+	function E:GetAuraByName(unit, name, filter)
+		return FindAura('name', name, unit, 1, filter, UnitAura(unit, 1, filter))
+	end
 end
+
 
 function E:GetThreatStatusColor(status, nothreat)
 	local color = ElvUF.colors.threat[status]
@@ -119,11 +224,6 @@ function E:GetThreatStatusColor(status, nothreat)
 			return .7, .7, .7, 1
 		end
 	end
-end
-
-function E:GetPlayerRole()
-	local role = UnitGroupRolesAssigned("player") or "NONE"
-	return (role == "NONE" and E.myspec and GetSpecializationRole(E.myspec)) or role
 end
 
 function E:GetTalentSpecInfo(isInspect)
@@ -151,15 +251,20 @@ function E:GetTalentSpecInfo(isInspect)
 	return specIdx, specName, specIcon
 end
 
+function E:GetPlayerRole()
+	local role = UnitGroupRolesAssigned("player") or "NONE"
+	return (role == "NONE" and E.myspec and GetSpecializationRole(E.myspec)) or role
+end
+
 function E:CheckRole()
 	E.myspec = GetSpecialization()
 	E.myrole = E:GetPlayerRole()
 end
 
 function E:IsDispellableByMe(debuffType)
-	if not self.DispelClasses[self.myclass] then return end
+	if not E.DispelClasses[E.myclass] then return end
 
-	if self.DispelClasses[self.myclass][debuffType] then return true end
+	if E.DispelClasses[E.myclass][debuffType] then return true end
 end
 
 do
@@ -373,29 +478,41 @@ function E:PLAYER_REGEN_ENABLED()
 	end
 end
 
-function E:PLAYER_REGEN_DISABLED()
-	local err
-
-	if IsAddOnLoaded("ElvUI_OptionsUI") then
-		local ACD = E.Libs.AceConfigDialog
-		if ACD and ACD.OpenFrames and ACD.OpenFrames.ElvUI then
-			ACD:Close("ElvUI")
-			err = true
-		end
+do
+	local function NoCombat()
+		UIErrorsFrame:AddMessage(ERR_NOT_IN_COMBAT, 1.0, 0.2, 0.2, 1.0)
 	end
 
-	if E.CreatedMovers then
-		for name in pairs(E.CreatedMovers) do
-			local mover = _G[name]
-			if mover and mover:IsShown() then
-				mover:Hide()
-				err = true
+	function E:PLAYER_REGEN_DISABLED()
+		local wasShown
+
+		if IsAddOnLoaded('ElvUI_OptionsUI') then
+			local ACD = E.Libs.AceConfigDialog
+			if ACD and ACD.OpenFrames and ACD.OpenFrames.ElvUI then
+				ACD:Close('ElvUI')
+				wasShown = true
 			end
 		end
+
+		if E.CreatedMovers then
+			for name in pairs(E.CreatedMovers) do
+				local mover = _G[name]
+				if mover and mover:IsShown() then
+					mover:Hide()
+					wasShown = true
+				end
+			end
+		end
+
+		if wasShown then
+			NoCombat()
+		end
 	end
 
-	if err then
-		E:Print(ERR_NOT_IN_COMBAT)
+	function E:AlertCombat()
+		local combat = InCombatLockdown()
+		if combat then NoCombat() end
+		return combat
 	end
 end
 
@@ -472,22 +589,110 @@ function E:SetupGameMenu()
 	E.PositionGameMenuButton()
 end
 
+function E:CompatibleTooltip(tt) -- knock off compatibility
+	if tt.GetTooltipData then return end -- real support exists
+
+	local info = { name = tt:GetName(), lines = {} }
+	info.leftTextName = info.name .. 'TextLeft'
+	info.rightTextName = info.name .. 'TextRight'
+
+	tt.GetTooltipData = function()
+		wipe(info.lines)
+
+		for i = 1, tt:NumLines() do
+			local left = _G[info.leftTextName..i]
+			local leftText = left and left:GetText() or nil
+
+			local right = _G[info.rightTextName..i]
+			local rightText = right and right:GetText() or nil
+
+			tinsert(info.lines, i, { lineIndex = i, leftText = leftText, rightText = rightText })
+		end
+
+		return info
+	end
+end
+
+function E:GetUnitSpecInfo(unit)
+	if not UnitIsPlayer(unit) then return end
+
+	E.ScanTooltip:SetOwner(UIParent, 'ANCHOR_NONE')
+	E.ScanTooltip:SetUnit(unit)
+	E.ScanTooltip:Show()
+
+	local _, specLine = TT:GetLevelLine(E.ScanTooltip, 1, true)
+	local specText = specLine and specLine.leftText
+	if specText then
+		return E.SpecInfoBySpecClass[specText]
+	end
+end
+
+function E:ScanTooltip_UnitInfo(unit)
+	E.ScanTooltip:SetOwner(UIParent, 'ANCHOR_NONE')
+	E.ScanTooltip:SetUnit(unit)
+	E.ScanTooltip:Show()
+
+	return E.ScanTooltip:GetTooltipData()
+end
+
+function E:ScanTooltip_InventoryInfo(unit, slot)
+	E.ScanTooltip:SetOwner(UIParent, 'ANCHOR_NONE')
+	E.ScanTooltip:SetInventoryItem(unit, slot)
+	E.ScanTooltip:Show()
+
+	return E.ScanTooltip:GetTooltipData()
+end
+
+function E:ScanTooltip_HyperlinkInfo(link)
+	E.ScanTooltip:SetOwner(UIParent, 'ANCHOR_NONE')
+	E.ScanTooltip:SetHyperlink(link)
+	E.ScanTooltip:Show()
+
+	return E.ScanTooltip:GetTooltipData()
+end
+
+function E:GetClassCoords(classFile, crop, get)
+	local t = _G.CLASS_ICON_TCOORDS[classFile]
+	if not t then return 0, 1, 0, 1 end
+
+	if get then
+		return t
+	elseif type(crop) == 'number' then
+		return t[1] + crop, t[2] - crop, t[3] + crop, t[4] - crop
+	elseif crop then
+		return t[1] + 0.022, t[2] - 0.025, t[3] + 0.022, t[4] - 0.025
+	else
+		return t[1], t[2], t[3], t[4]
+	end
+end
+
 function E:LoadAPI()
 	E:RegisterEvent("PLAYER_LEVEL_UP")
 	E:RegisterEvent("PLAYER_ENTERING_WORLD")
 	E:RegisterEvent("PLAYER_REGEN_ENABLED")
 	E:RegisterEvent("PLAYER_REGEN_DISABLED")
+	E:RegisterEvent("UI_SCALE_CHANGED", "PixelScaleChanged")
+
+	E:SetupGameMenu()
+
+	E:CompatibleTooltip(E.ScanTooltip)
+	E:CompatibleTooltip(E.ConfigTooltip)
+	E:CompatibleTooltip(E.SpellBookTooltip)
+	E:CompatibleTooltip(_G.GameTooltip)
+
+	E.ScanTooltip.GetUnitInfo = E.ScanTooltip_UnitInfo
+	E.ScanTooltip.GetHyperlinkInfo = E.ScanTooltip_HyperlinkInfo
+	E.ScanTooltip.GetInventoryInfo = E.ScanTooltip_InventoryInfo
+
 	E:RegisterEvent("SPELL_UPDATE_USABLE", "CheckRole")
 	E:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED", "CheckRole")
 	E:RegisterEvent("PLAYER_TALENT_UPDATE", "CheckRole")
 	E:RegisterEvent("CHARACTER_POINTS_CHANGED", "CheckRole")
 	E:RegisterEvent("UNIT_INVENTORY_CHANGED", "CheckRole")
 	E:RegisterEvent("UPDATE_BONUS_ACTIONBAR", "CheckRole")
+
 	E:RegisterEvent("UNIT_ENTERED_VEHICLE", "EnterVehicleHideFrames")
 	E:RegisterEvent("UNIT_EXITED_VEHICLE", "ExitVehicleShowFrames")
-	E:RegisterEvent("UI_SCALE_CHANGED", "PixelScaleChanged")
-
-	E:SetupGameMenu()
 
 	do -- setup cropIcon texCoords
 		local opt = E.db.general.cropIcon

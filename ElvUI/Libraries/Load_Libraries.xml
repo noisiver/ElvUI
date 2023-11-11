@@ -30,6 +30,7 @@
 	<Script file="LibDataBroker\LibDataBroker-1.1.lua"/>
 	<Script file="LibDualSpec-1.0\LibDualSpec-1.0.lua"/>
 	<Script file="LibElvUIPlugin-1.0\LibElvUIPlugin-1.0.lua"/>
+	<Script file="LibClassicSpecs\LibClassicSpecs.lua"/>
 	<Include file="LibItemSearch-1.2\LibItemSearch-1.2.xml"/>
 	<Script file="LibChatAnims\LibChatAnims.lua"/>
 	<Script file="LibAceConfigHelper\LibAceConfigHelper.lua"/>
@@ -38,7 +39,6 @@
 	<Script file="LibTranslit-1.0\LibTranslit-1.0.lua"/>
 	<Script file="LibAnim\LibAnim.lua"/>
 
-	<Script file="LibDispel\LibDispel.lua"/>
 	<Include file="oUF\oUF.xml"/>
 	<Include file="oUF_Plugins\oUF_Plugins.xml"/>
 </Ui>

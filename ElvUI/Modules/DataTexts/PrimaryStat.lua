@@ -1,13 +1,13 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule('DataTexts')
-local LC = E.Libs.Compat
+local LCS = E.Libs.LCS
 
 
 local _G = _G
 local strjoin = strjoin
 
 local UnitStat = UnitStat
-local GetSpecialization = LC.GetSpecialization
+local GetSpecialization = LCS.GetSpecialization
 
 local PRIMARY_STAT = gsub(SPEC_FRAME_PRIMARY_STAT, '[:：%s]-%%s$', '')
 local NOT_APPLICABLE = NOT_APPLICABLE

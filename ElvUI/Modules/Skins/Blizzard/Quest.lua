@@ -255,9 +255,9 @@ S:AddCallback("Skin_Quest", function()
 			icon:Size(E.PixelMode and 38 or 32)
 			icon:SetDrawLayer("OVERLAY")
 			icon:Point("TOPLEFT", E.PixelMode and 1 or 4, -(E.PixelMode and 1 or 4))
-			S:HandleIcon(icon)
+			S:HandleIcon(icon, item.backdrop)
 
-			count:SetParent(item.backdrop)
+			count:SetParent(item)
 			count:SetDrawLayer("OVERLAY")
 		end
 	end
@@ -269,12 +269,10 @@ S:AddCallback("Skin_Quest", function()
 			local r, g, b = GetItemQualityColor(quality)
 
 			frame:SetBackdropBorderColor(r, g, b)
-			frame.backdrop:SetBackdropBorderColor(r, g, b)
 
 			text:SetTextColor(r, g, b)
 		else
 			frame:SetBackdropBorderColor(unpack(E.media.bordercolor))
-			frame.backdrop:SetBackdropBorderColor(unpack(E.media.bordercolor))
 
 			text:SetTextColor(1, 1, 1)
 		end

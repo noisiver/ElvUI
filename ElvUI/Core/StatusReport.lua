@@ -1,6 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI)
 local LSM = E.Libs.LSM
-local LC = E.Libs.Compat
+local LCS = E.Libs.LCS
 
 local wipe, sort, unpack = wipe, sort, unpack
 local next, pairs, tinsert = next, pairs, tinsert
@@ -10,8 +10,7 @@ local GetAddOnInfo = GetAddOnInfo
 local GetCVarBool = GetCVarBool
 local GetNumAddOns = GetNumAddOns
 local GetRealZoneText = GetRealZoneText
-local GetSpecialization = LC.GetSpecialization
-local GetSpecializationInfo = LC.GetSpecializationInfo
+local GetSpecializationInfo = LCS.GetSpecializationInfo
 local UNKNOWN = UNKNOWN
 
 function E:AreOtherAddOnsEnabled()
@@ -19,7 +18,7 @@ function E:AreOtherAddOnsEnabled()
 
 	for i = 1, GetNumAddOns() do
 		local name = GetAddOnInfo(i)
-		if name ~= "ElvUI" and name ~= "ElvUI_OptionsUI" and name ~= "ElvUI_CPU" and E:IsAddOnEnabled(name) then
+		if name ~= "ElvUI" and name ~= "ElvUI_OptionsUI" and name ~= "ElvUI_Libraries" and name ~= "ElvUI_CPU" and E:IsAddOnEnabled(name) then
 			if EP[name] then plugins = true else addons = true end
 		end
 	end
@@ -31,55 +30,9 @@ function E:GetDisplayMode()
 	return GetCVarBool("gxMaximize") and "Fullscreen" or "Windowed"
 end
 
-local EnglishClassName = {
-	DEATHKNIGHT = "Death Knight",
-	DRUID = "Druid",
-	HUNTER = "Hunter",
-	MAGE = "Mage",
-	PALADIN = "Paladin",
-	PRIEST = "Priest",
-	ROGUE = "Rogue",
-	SHAMAN = "Shaman",
-	WARLOCK = "Warlock",
-	WARRIOR = "Warrior",
-}
-
-local EnglishSpecName = {
-	[250] = "Blood",
-	[251] = "Frost",
-	[252] = "Unholy",
-	[102] = "Balance",
-	[103] = "Feral",
-	[104] = "Guardian",
-	[105] = "Restoration",
-	[253] = "Beast Mastery",
-	[254] = "Marksmanship",
-	[255] = "Survival",
-	[62] = "Arcane",
-	[63] = "Fire",
-	[64] = "Frost",
-	[65] = "Holy",
-	[66] = "Protection",
-	[70] = "Retribution",
-	[256] = "Discipline",
-	[257] = "Holy",
-	[258] = "Shadow",
-	[259] = "Assasination",
-	[260] = "Combat",
-	[261] = "Sublety",
-	[262] = "Elemental",
-	[263] = "Enhancement",
-	[264] = "Restoration",
-	[265] = "Affliction",
-	[266] = "Demonoligy",
-	[267] = "Destruction",
-	[71] = "Arms",
-	[72] = "Fury",
-	[73] = "Protection",
-}
-
 local function GetSpecName()
-	return EnglishSpecName[GetSpecializationInfo(GetSpecialization())]
+	local info = E.myspec and E.SpecName[GetSpecializationInfo(E.myspec)]
+	return info and info.englishName
 end
 
 function E:CreateStatusContent(num, width, parent, anchorTo, content)
@@ -170,12 +123,7 @@ function E:CreateStatusFrame()
 	StatusFrame:SetFrameStrata("HIGH")
 	StatusFrame:CreateBackdrop("Transparent", nil, true)
 	StatusFrame.backdrop:SetBackdropColor(0, 0, 0, 0.6)
-	StatusFrame:SetClampedToScreen(true)
 	StatusFrame:SetMovable(true)
-	StatusFrame:EnableMouse(true)
-	StatusFrame:RegisterForDrag("LeftButton")
-	StatusFrame:SetScript("OnDragStart", function(frame) frame:StartMoving() frame:SetUserPlaced(false) end)
-	StatusFrame:SetScript("OnDragStop", function(frame) frame:StopMovingOrSizing() end)
 	StatusFrame:SetSize(0, 35)
 	StatusFrame:Hide()
 
@@ -213,7 +161,7 @@ function E:CreateStatusFrame()
 	--Sections
 	StatusFrame.Section1 = E:CreateStatusSection(300, 125, nil, 30, StatusFrame, "TOP", StatusFrame, "TOP", -30)
 	StatusFrame.Section2 = E:CreateStatusSection(300, 130, nil, 30, StatusFrame, "TOP", StatusFrame.Section1, "BOTTOM", 0)
-	StatusFrame.Section3 = E:CreateStatusSection(300, 185, nil, 30, StatusFrame, "TOP", StatusFrame.Section2, "BOTTOM", 0)
+	StatusFrame.Section3 = E:CreateStatusSection(300, 165, nil, 30, StatusFrame, "TOP", StatusFrame.Section2, "BOTTOM", 0)
 
 	PluginFrame.SectionP = E:CreateStatusSection(280, nil, nil, 30, PluginFrame, "TOP", PluginFrame, "TOP", -10)
 
@@ -229,7 +177,7 @@ function E:CreateStatusFrame()
 	StatusFrame.Section2.Content.Line2.Text:SetFormattedText("Client Language: |cff4beb2c%s|r", E.locale)
 	StatusFrame.Section3.Content.Line1.Text:SetFormattedText("Faction: |cff4beb2c%s|r", E.myfaction)
 	StatusFrame.Section3.Content.Line2.Text:SetFormattedText("Race: |cff4beb2c%s|r", E.myrace)
-	StatusFrame.Section3.Content.Line3.Text:SetFormattedText("Class: |cff4beb2c%s|r", EnglishClassName[E.myclass])
+	StatusFrame.Section3.Content.Line3.Text:SetFormattedText("Class: |cff4beb2c%s|r", E.ClassName[E.myclass])
 
 	return StatusFrame
 end
@@ -258,8 +206,7 @@ function E:UpdateStatusFrame()
 	local PluginSection = PluginFrame.SectionP
 	PluginSection.Header.Text:SetFormattedText("%sPlugins|r", valueColor)
 
-	local verWarning = E.recievedOutOfDateMessage and "ff3333" or E.shownUpdatedWhileRunningPopup and "ff9933"
-	StatusFrame.Section1.Content.Line1.Text:SetFormattedText("Version of ElvUI: |cff%s%.2f|r", verWarning or "33ff33", E.version)
+	StatusFrame.Section1.Content.Line1.Text:SetFormattedText("Version of ElvUI: |cff%s%.2f|r", (E.recievedOutOfDateMessage and "ff3333") or (E.updateRequestTriggered and "ff9933") or "33ff33", E.version)
 
 	local addons, plugins = E:AreOtherAddOnsEnabled()
 	StatusFrame.Section1.Content.Line2.Text:SetFormattedText("Other AddOns Enabled: |cff%s|r", (not addons and plugins and "ff9933Plugins") or (addons and "ff3333Yes") or "33ff33No")
@@ -302,7 +249,12 @@ function E:UpdateStatusFrame()
 	local Section3 = StatusFrame.Section3
 	Section3.Content.Line4.Text:SetFormattedText("Level: |cff4beb2c%s|r", E.mylevel)
 	Section3.Content.Line5.Text:SetFormattedText("Zone: |cff4beb2c%s|r", GetRealZoneText() or UNKNOWN)
-	Section3.Content.Line6.Text:SetFormattedText("Specialization: |cff4beb2c%s|r", GetSpecName() or UNKNOWN)
+
+	if E.Retail then
+		Section3.Content.Line6.Text:SetFormattedText("Specialization: |cff4beb2c%s|r", GetSpecName() or UNKNOWN)
+	elseif E.Classic then
+		Section3.Content.Line6.Text:SetFormattedText("Hardcore: |cff4beb2c%s|r", E.ClassicHC and "Yes" or "No")
+	end
 
 	StatusFrame.TitleLogoFrame.LogoTop:SetVertexColor(unpack(E.media.rgbvaluecolor))
 end

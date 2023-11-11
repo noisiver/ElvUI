@@ -1,17 +1,19 @@
-local E, L, V, P, G = unpack(select(2, ...))
+local E, L, V, P, G = unpack(ElvUI)
 local S = E:GetModule("Skins")
 
---Lua functions
 local _G = _G
-local unpack = unpack
---WoW API / Variables
+local select, unpack = select, unpack
+
+local CreateFrame = CreateFrame
 local GetCurrentGuildBankTab = GetCurrentGuildBankTab
 local GetGuildBankItemLink = GetGuildBankItemLink
 local GetItemQualityColor = GetItemQualityColor
+local hooksecurefunc = hooksecurefunc
 
 S:AddCallbackForAddon("Blizzard_GuildBankUI", "Skin_Blizzard_GuildBankUI", function()
-	if not E.private.skins.blizzard.enable or not E.private.skins.blizzard.gbank then return end
+	if not (E.private.skins.blizzard.enable and E.private.skins.blizzard.gbank) then return end
 
+	local GuildBankFrame = GuildBankFrame
 	GuildBankFrame:Width(639)
 	GuildBankFrame:StripTextures()
 	GuildBankFrame:CreateBackdrop("Transparent")
@@ -46,12 +48,18 @@ S:AddCallbackForAddon("Blizzard_GuildBankUI", "Skin_Blizzard_GuildBankUI", funct
 
 	S:HandleScrollBar(GuildBankTransactionsScrollFrameScrollBar)
 
-	S:HandleTab(GuildBankFrameTab1)
-	S:HandleTab(GuildBankFrameTab2)
-	S:HandleTab(GuildBankFrameTab3)
-	S:HandleTab(GuildBankFrameTab4)
+	for i = 1, 4 do
+		local tab = _G['GuildBankFrameTab'..i]
 
-	for i = 1, 6 do
+		S:HandleTab(tab)
+
+		if i == 1 then
+			tab:ClearAllPoints()
+			tab:Point('BOTTOMLEFT', GuildBankFrame, 'BOTTOMLEFT', -2, -26)
+		end
+	end
+
+	for i = 1, MAX_GUILDBANK_TABS do
 		local tab = _G["GuildBankTab"..i]
 		local button = _G["GuildBankTab"..i.."Button"]
 		local texture = _G["GuildBankTab"..i.."ButtonIconTexture"]
@@ -70,63 +78,21 @@ S:AddCallbackForAddon("Blizzard_GuildBankUI", "Skin_Blizzard_GuildBankUI", funct
 		texture:SetDrawLayer("ARTWORK")
 	end
 
-	local buttonMap = {}
+	for i = 1, NUM_GUILDBANK_COLUMNS do
+		local column = _G["GuildBankColumn"..i]
+		column:StripTextures()
 
-	for column = 1, NUM_GUILDBANK_COLUMNS do
-		_G["GuildBankColumn"..column]:StripTextures()
-
-		for index = 1, NUM_SLOTS_PER_GUILDBANK_GROUP do
-			local button = _G["GuildBankColumn"..column.."Button"..index]
-			local icon = _G["GuildBankColumn"..column.."Button"..index.."IconTexture"]
-			local texture = _G["GuildBankColumn"..column.."Button"..index.."NormalTexture"]
-			local count = _G["GuildBankColumn"..column.."Button"..index.."Count"]
-
-			if texture then
-				texture:SetTexture(nil)
-			end
-
+		for x = 1, NUM_SLOTS_PER_GUILDBANK_GROUP do
+			local button = _G["GuildBankColumn"..i.."Button"..x]
+			local icon = _G["GuildBankColumn"..i.."Button"..x.."IconTexture"]
+			button:StripTextures()
 			button:StyleButton()
-			button:SetTemplate("Default", true)
+			button:SetTemplate('Transparent')
 
 			icon:SetInside()
 			icon:SetTexCoord(unpack(E.TexCoords))
-			icon:SetDrawLayer("OVERLAY")
-
-			count:SetDrawLayer("OVERLAY")
-
-			buttonMap[#buttonMap + 1] = button
 		end
 	end
-
-	hooksecurefunc("GuildBankFrame_Update", function()
-		if GuildBankFrame.mode ~= "bank" then
-			GuildBankFrame.inset:Point("BOTTOMRIGHT", -29, 62)
-			return
-		else
-			GuildBankFrame.inset:Point("BOTTOMRIGHT", -8, 62)
-
-			GuildBankColumn1:Point("TOPLEFT", 20, -70)
-		end
-
-		local tab = GetCurrentGuildBankTab()
-		local _, link, quality
-
-		for i = 1, MAX_GUILDBANK_SLOTS_PER_TAB do
-			link = GetGuildBankItemLink(tab, i)
-
-			if link then
-				_, _, quality = GetItemInfo(link)
-
-				if quality and quality > 1 then
-					buttonMap[i]:SetBackdropBorderColor(GetItemQualityColor(quality))
-				else
-					buttonMap[i]:SetBackdropBorderColor(unpack(E.media.bordercolor))
-				end
-			else
-				buttonMap[i]:SetBackdropBorderColor(unpack(E.media.bordercolor))
-			end
-		end
-	end)
 
 	GuildBankLimitLabel:ClearAllPoints()
 	GuildBankLimitLabel:Point("BOTTOMLEFT", GuildBankMoneyLimitLabel, "TOPLEFT", -1, 11)

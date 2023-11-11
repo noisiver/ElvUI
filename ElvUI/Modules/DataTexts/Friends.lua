@@ -20,7 +20,6 @@ local UnitInRaid = UnitInRaid
 
 local GetNumFriends = GetNumFriends
 local GetFriendInfo = GetFriendInfo
-local InCombatLockdown = InCombatLockdown
 local InviteUnit = InviteUnit
 
 local menuList = {
@@ -57,7 +56,7 @@ local totalOnlineString = strjoin("", _G.FRIENDS_LIST_ONLINE, ": %s/%s")
 local tthead = {r=0.4, g=0.78, b=1}
 local activezone, inactivezone = {r=0.3, g=1.0, b=0.3}, {r=0.65, g=0.65, b=0.65}
 local displayString, db = ""
-local friendTable = {}
+local friendTable, info = {}, {}
 local friendOnline, friendOffline = gsub(_G.ERR_FRIEND_ONLINE_SS,"|Hplayer:%%s|h%[%%s%]|h",""), gsub(_G.ERR_FRIEND_OFFLINE_S,"%%s","")
 local dataValid = false
 local statusTable = {
@@ -79,26 +78,29 @@ local function SortAlphabeticName(a, b)
 	end
 end
 
+
+
 local function BuildFriendTable(total)
 	wipe(friendTable)
 
 	if total == 0 then return end
 
-	local name, level, class, area, connected, status, notes, className
-
 	for i = 1, total do
-		name, level, class, area, connected, status, notes = GetFriendInfo(i)
-		if connected then
-			local className = E:UnlocalizedClassName(className) or ""
-			local status = (afk and statusTable.AFK) or (dnd and statusTable.DND) or ""
+		info.name, info.level, info.className, info.area, info.connected, info.status, info.notes = GetFriendInfo(i)
+		info.afk = strfind(info.status, _G.AFK) and true or false
+		info.dnd = strfind(info.status, _G.DND) and true or false
+		-- print(info.name, info.level, info.className, info.area, info.connected, info.status, info.notes)
+		if info and info.connected then
+			local className = E:UnlocalizedClassName(info.className) or ""
+			local status = (info.afk and statusTable.AFK) or (info.dnd and statusTable.DND) or ""
 			friendTable[i] = {
-				name = name,		--1
-				level = level,		--2
-				class = className,	--3
-				zone = area,		--4
-				online = connected,	--5
-				status = status,	--6
-				notes = notes,		--7
+				name = info.name,			--1
+				level = info.level,			--2
+				class = className,			--3
+				zone = info.area,			--4
+				online = info.connected,	--5
+				status = status,			--6
+				notes = info.notes,			--7
 			}
 		end
 	end
@@ -140,9 +142,7 @@ local function Click(self, btn)
 
 		E:SetEasyMenuAnchor(E.EasyMenu, self)
 		EasyMenu(menuList, E.EasyMenu, nil, nil, nil, "MENU")
-	elseif InCombatLockdown() then
-		_G.UIErrorsFrame:AddMessage(E.InfoColor.._G.ERR_NOT_IN_COMBAT)
-	else
+	elseif not E:AlertCombat() then
 		ToggleFriendsFrame(1)
 	end
 end

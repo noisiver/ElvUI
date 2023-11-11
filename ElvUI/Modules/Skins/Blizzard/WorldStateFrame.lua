@@ -5,7 +5,7 @@ local S = E:GetModule("Skins")
 local _G = _G
 
 S:AddCallback("Skin_WorldStateFrame", function()
-	if not E.private.skins.blizzard.enable or not E.private.skins.blizzard.WorldStateFrame then return end
+	if not E.private.skins.blizzard.enable or not E.private.skins.blizzard.worldState then return end
 
 	local function captureBarCreate(id)
 		local bar = _G["WorldStateCaptureBar"..id]

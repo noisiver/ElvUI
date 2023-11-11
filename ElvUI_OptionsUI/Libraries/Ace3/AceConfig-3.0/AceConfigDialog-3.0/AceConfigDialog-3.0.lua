@@ -7,7 +7,7 @@ local LibStub = LibStub
 local gui = LibStub("AceGUI-3.0")
 local reg = LibStub("AceConfigRegistry-3.0-ElvUI")
 
-local MAJOR, MINOR = "AceConfigDialog-3.0-ElvUI", 86
+local MAJOR, MINOR = "AceConfigDialog-3.0-ElvUI", 88
 local AceConfigDialog, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceConfigDialog then return end
@@ -176,6 +176,7 @@ local stringIsLiteral = {
 	width = true,
 	image = true,
 	fontSize = true,
+	tooltipHyperlink = true
 }
 
 --Is Never a function or method
@@ -527,9 +528,18 @@ local function OptionOnMouseOver(widget, event)
 	local options = user.options
 	local path = user.path
 	local appName = user.appName
+	local tooltip = AceConfigDialog.tooltip
 
 	-- modified by ElvUI
 	if opt.descStyle and opt.descStyle ~= "tooltip" then return end
+
+	local tooltipHyperlink = GetOptionsMemberValue("tooltipHyperlink", opt, options, path, appName)
+	if tooltipHyperlink then
+		tooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
+		tooltip:SetHyperlink(tooltipHyperlink)
+		tooltip:Show()
+		return
+	end
 
 	local name = GetOptionsMemberValue("name", opt, options, path, appName)
 	local desc = GetOptionsMemberValue("desc", opt, options, path, appName)
@@ -555,7 +565,6 @@ local function OptionOnMouseOver(widget, event)
 	end
 
 	if descText or usageText or userText or softText or bigText then
-		local tooltip = AceConfigDialog.tooltip
 		tooltip:SetOwner(widget.frame, "ANCHOR_TOPRIGHT")
 		tooltip:SetText(name, 1, .82, 0, true)
 
@@ -1253,6 +1262,7 @@ local function FeedOptions(appName, options,container,rootframe,path,group,inlin
 					end
 
 					control.textChanged = v.textChanged
+					control.focusSelect = v.focusSelect
 					-- End ElvUI block
 
 					local text = GetOptionsMemberValue("get",v, options, path, appName)

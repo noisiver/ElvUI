@@ -55,6 +55,8 @@ local function OnEvent(self)
 
 				local data = E.ScanTooltip:GetTooltipData()
 				repairCost = data and data.repairCost
+			else
+				repairCost = select(3, E.ScanTooltip:SetInventoryItem("player", index))
 			end
 
 			totalRepairCost = totalRepairCost + (repairCost or 0)
@@ -78,15 +80,16 @@ local function OnEvent(self)
 end
 
 local function Click()
-	if InCombatLockdown() then _G.UIErrorsFrame:AddMessage(E.InfoColor.._G.ERR_NOT_IN_COMBAT) return end
-	ToggleCharacter("PaperDollFrame")
+	if not E:AlertCombat() then
+		ToggleCharacter("PaperDollFrame")
+	end
 end
 
 local function OnEnter()
 	DT.tooltip:ClearLines()
 
 	for slot, durability in pairs(invDurability) do
-		DT.tooltip:AddDoubleLine(format("|T%s:14:14:0:0:64:64:4:60:4:60|t %s", GetInventoryItemTexture("player", slot), GetInventoryItemLink("player", slot)), format(tooltipString, durability), 1, 1, 1, E:ColorGradient(durability * 0.01, 1, .1, .1, 1, 1, .1, .1, 1, .1))
+		DT.tooltip:AddDoubleLine(format("|T%s:24:24:0:0:64:64:4:60:4:60|t %s", GetInventoryItemTexture("player", slot), GetInventoryItemLink("player", slot)), format(tooltipString, durability), 1, 1, 1, E:ColorGradient(durability * 0.01, 1, .1, .1, 1, 1, .1, .1, 1, .1))
 	end
 
 	if totalRepairCost > 0 then

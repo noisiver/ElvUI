@@ -2,6 +2,7 @@ local E, L, V, P, G = unpack(select(2, ...))
 local M = E:GetModule("Minimap")
 local LSM = E.Libs.LSM
 
+local _G = _G
 local mod = mod
 local next = next
 local sort = sort
@@ -61,10 +62,10 @@ tinsert(menuList, { text = MAINMENU_BUTTON,
 
 			CloseMenus()
 			CloseAllWindows()
-			PlaySound(850) --IG_MAINMENU_OPEN
+			PlaySound(850) -- IG_MAINMENU_OPEN
 			ShowUIPanel(GameMenuFrame)
 		else
-			PlaySound(854) --IG_MAINMENU_QUIT
+			PlaySound(854) -- IG_MAINMENU_QUIT
 			HideUIPanel(GameMenuFrame)
 			MainMenuMicroButton_SetNormal()
 		end
@@ -79,12 +80,6 @@ end
 
 M.RightClickMenu = menuFrame
 M.RightClickMenuList = menuList
-
-
-function M:SetScale(frame, scale)
-	-- frame:SetScale(scale * E.uiscale)
-	frame:SetScale(scale)
-end
 
 function M:Minimap_OnMouseUp(btn)
 	local position = self:GetPoint()
@@ -112,7 +107,7 @@ function M:HandleTrackingButton()
 
 		tracking:ClearAllPoints()
 		tracking:Point(position, Minimap, xOffset, yOffset)
-		M:SetScale(tracking, scale)
+		tracking:SetScale(scale)
 
 		if MiniMapTrackingButtonBorder then
 			MiniMapTrackingButtonBorder:Hide()
@@ -140,8 +135,9 @@ function M:HideNonInstancePanels()
 	HideUIPanel(WorldMapFrame)
 end
 
-function M:ADDON_LOADED(_, addon)
+function M:ADDON_LOADED(event, addon)
 	if addon == "Blizzard_TimeManager" then
+		M:UnregisterEvent(event)
 		TimeManagerClockButton:Kill()
 	end
 end
@@ -165,13 +161,10 @@ function M:Minimap_OnMouseDown(btn)
 		HideDropDownMenu(1, nil, M.TrackingDropdown)
 	end
 
-	local position = self:GetPoint()
+	local position = M.MapHolder.mover:GetPoint()
 	if btn == "MiddleButton" or (btn == "RightButton" and IsShiftKeyDown()) then
-		if InCombatLockdown() then UIErrorsFrame:AddMessage(E.InfoColor..ERR_NOT_IN_COMBAT) return end
-		if position:match("LEFT") then
-			E:DropDown(menuList, menuFrame)
-		else
-			E:DropDown(menuList, menuFrame, -160, 0)
+		if not E:AlertCombat() then
+			E:DropDown(menuList, menuFrame, 155, nil, nil, position:match("LEFT") and 0 or -160, 0)
 		end
 	elseif btn == "RightButton" and M.TrackingDropdown then
 		ToggleDropDownMenu(1, nil, M.TrackingDropdown, "cursor")
@@ -269,7 +262,7 @@ function M:UpdateSettings()
 
 	local panel, holder = MinimapPanel, M.MapHolder
 	panel:SetShown(E.db.datatexts.panels.MinimapPanel.enable)
-	M:SetScale(panel, 1)
+	panel:SetScale(1)
 
 	local mmOffset = E.PixelMode and 1 or 3
 	local mmScale = E.db.general.minimap.scale
@@ -303,15 +296,19 @@ function M:UpdateSettings()
 	M.ClusterBackdrop:SetShown(E.db.general.minimap.clusterBackdrop and not noCluster)
 
 	MinimapZoneText:FontTemplate(locationFont, locaitonSize, locationOutline)
-	-- TimeManagerClockTicker:FontTemplate(LSM:Fetch("font", E.db.general.minimap.timeFont), E.db.general.minimap.timeFontSize, E.db.general.minimap.timeFontOutline)
 
-	if noCluster then
-		-- TimeManagerClockButton:Kill()
-	else
+	if TimeManagerClockTicker then
+		TimeManagerClockTicker:FontTemplate(LSM:Fetch("font", E.db.general.minimap.timeFont), E.db.general.minimap.timeFontSize, E.db.general.minimap.timeFontOutline)
+	end
+
+	if noCluster and TimeManagerClockButton then
+		TimeManagerClockButton:Kill()
+	elseif TimeManagerClockButton then
 		TimeManagerClockButton.Show = nil
 		TimeManagerClockButton:SetParent(MinimapCluster)
 		TimeManagerClockButton:Show()
 	end
+
 
 	local instance = MiniMapInstanceDifficulty
 	if M.ClusterHolder then
@@ -333,8 +330,7 @@ function M:UpdateSettings()
 			gameTime:SetParent(Minimap)
 			gameTime:SetFrameLevel(MinimapBackdrop:GetFrameLevel() + 2)
 			gameTime:Show()
-
-			M:SetScale(gameTime, scale)
+			gameTime:SetScale(scale)
 		end
 	end
 
@@ -343,7 +339,7 @@ function M:UpdateSettings()
 		local scale, position, xOffset, yOffset = M:GetIconSettings("mail")
 		mailFrame:ClearAllPoints()
 		mailFrame:Point(position, Minimap, xOffset, yOffset)
-		M:SetScale(mailFrame, scale)
+		mailFrame:SetScale(scale)
 	end
 
 	local battlefieldFrame = MiniMapBattlefieldFrame
@@ -351,7 +347,7 @@ function M:UpdateSettings()
 		local scale, position, xOffset, yOffset = M:GetIconSettings("battlefield")
 		battlefieldFrame:ClearAllPoints()
 		battlefieldFrame:Point(position, Minimap, xOffset, yOffset)
-		M:SetScale(battlefieldFrame, scale)
+		battlefieldFrame:SetScale(scale)
 
 		if BattlegroundShine then BattlegroundShine:Hide() end
 		if MiniMapBattlefieldBorder then MiniMapBattlefieldBorder:Hide() end
@@ -362,7 +358,7 @@ function M:UpdateSettings()
 		local scale, position, xOffset, yOffset = M:GetIconSettings("difficulty")
 		instance:ClearAllPoints()
 		instance:Point(position, Minimap, xOffset, yOffset)
-		M:SetScale(instance, scale)
+		instance:SetScale(scale)
 	end
 end
 
@@ -488,7 +484,7 @@ function M:Initialize()
 	mapHolder:Size(Minimap:GetSize())
 	E:CreateMover(mapHolder, "MinimapMover", L["Minimap"], nil, nil, MinimapPostDrag, nil, nil, "maps,minimap")
 	M.MapHolder = mapHolder
-	M:SetScale(mapHolder, 1)
+	mapHolder:SetScale(1)
 
 	local clusterHolder = CreateFrame("Frame", "ElvUI_MinimapClusterHolder", MinimapCluster)
 	clusterHolder.savedWidth, clusterHolder.savedHeight = MinimapCluster:GetSize()
@@ -501,7 +497,7 @@ function M:Initialize()
 	local clusterBackdrop = CreateFrame("Frame", "ElvUI_MinimapClusterBackdrop", MinimapCluster)
 	clusterBackdrop:Point("TOPRIGHT", 0, -1)
 	clusterBackdrop:SetTemplate()
-	M:SetScale(clusterBackdrop, 1)
+	clusterBackdrop:SetScale(1)
 	M.ClusterBackdrop = clusterBackdrop
 
 	M:ClusterPoint()
@@ -518,7 +514,7 @@ function M:Initialize()
 	if Minimap.backdrop then -- level to hybrid maps fixed values
 		Minimap.backdrop:SetFrameLevel(99)
 		Minimap.backdrop:SetFrameStrata("BACKGROUND")
-		M:SetScale(Minimap.backdrop, 1)
+		Minimap.backdrop:SetScale(1)
 	end
 
 	Minimap:SetScript("OnMouseWheel", M.Minimap_OnMouseWheel)
@@ -532,10 +528,10 @@ function M:Initialize()
 	Minimap.location:Point("TOP", Minimap, 0, -2)
 	Minimap.location:SetJustifyH("CENTER")
 	Minimap.location:SetJustifyV("MIDDLE")
-	Minimap.location:Hide() -- Fixes blizzard's font rendering issue, keep after M:SetScale
-	-- M:SetScale(Minimap.location, 1)
+	Minimap.location:Hide()
 
 	M:RegisterEvent("PLAYER_ENTERING_WORLD", "Update_ZoneText")
+	M:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateSettings")
 	M:RegisterEvent("ZONE_CHANGED_NEW_AREA", "Update_ZoneText")
 	M:RegisterEvent("ZONE_CHANGED_INDOORS", "Update_ZoneText")
 	M:RegisterEvent("ZONE_CHANGED", "Update_ZoneText")
@@ -555,10 +551,6 @@ function M:Initialize()
 	--Create the new minimap tracking dropdown frame and initialize it
 	M.TrackingDropdown = M:CreateMinimapTrackingDropdown()
 
-	if TimeManagerClockButton then
-		tinsert(killFrames, TimeManagerClockButton)
-	end
-
 	for _, frame in next, killFrames do
 		frame:Kill()
 	end
@@ -567,7 +559,11 @@ function M:Initialize()
 		MiniMapLFGFrameBorder:Hide()
 	end
 
-	M:RegisterEvent("ADDON_LOADED")
+	if TimeManagerClockButton then
+		tinsert(killFrames, TimeManagerClockButton)
+	else
+		M:RegisterEvent("ADDON_LOADED")
+	end
 	M:UpdateSettings()
 end
 

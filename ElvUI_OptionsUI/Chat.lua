@@ -9,7 +9,10 @@ local wipe = wipe
 local pairs = pairs
 local format = format
 local strlower = strlower
+local GetChannelList = GetChannelList
 local GameTooltip_Hide = GameTooltip_Hide
+
+local BINDING_HEADER_VOICE_CHAT = BINDING_HEADER_VOICE_CHAT
 
 local tabSelectorTable = {}
 local Chat = ACH:Group(L["Chat"], nil, 2, 'tab', function(info) return E.db.chat[info[#info]] end, function(info, value) E.db.chat[info[#info]] = value end)
@@ -18,7 +21,7 @@ E.Options.args.chat = Chat
 Chat.args.intro = ACH:Description(L["CHAT_DESC"], 1)
 Chat.args.enable = ACH:Toggle(L["Enable"], nil, 2, nil, nil, nil, function() return E.private.chat.enable end, function(_, value) E.private.chat.enable = value E.ShowPopup = true end)
 
-local General = ACH:Group(L["General"], nil, 3, nil, nil, nil, function() return not E.Chat.Initialized end)
+local General = ACH:Group(L["General"], nil, 10, nil, nil, nil, function() return not E.Chat.Initialized end)
 Chat.args.general = General
 
 General.args.url = ACH:Toggle(L["URL Links"], L["Attempt to create URL links inside the chat."], 1)
@@ -30,6 +33,7 @@ General.args.emotionIcons = ACH:Toggle(L["Emotion Icons"], L["Display emotion ic
 General.args.lfgIcons = ACH:Toggle(L["Role Icon"], L["Display LFG Icons in group chat."], 7, nil, nil, nil, nil, function(info, value) E.db.chat.lfgIcons = value CH:CheckLFGRoles() end, nil)
 General.args.useAltKey = ACH:Toggle(L["Use Alt Key"], L["Require holding the Alt key down to move cursor or cycle through messages in the editbox."], 8, nil, nil, nil, nil, function(info, value) E.db.chat.useAltKey = value CH:UpdateSettings() end)
 General.args.useBTagName = ACH:Toggle(L["Use Real ID BattleTag"], L["Use BattleTag instead of Real ID names in chat. Chat History will always use BattleTag."], 10)
+General.args.copyChatLines = ACH:Toggle(L["Copy Chat Lines"], L["Adds an arrow infront of the chat lines to copy the entire line."], 12)
 General.args.hideCopyButton = ACH:Toggle(L["Hide Copy Button"], nil, 13, nil, nil, nil, nil, function(info, value) E.db.chat.hideCopyButton = value CH:ToggleCopyChatButtons() end)
 General.args.spacer = ACH:Spacer(14, 'full')
 General.args.throttleInterval = ACH:Range(L["Spam Interval"], L["Prevent the same messages from displaying in chat more than once within this set amount of seconds, set to zero to disable."], 20, { min = 0, max = 120, step = 1 }, nil, nil, function(info, value) E.db.chat[info[#info]] = value if value == 0 then CH:DisableChatThrottle() end end)
@@ -43,7 +47,7 @@ General.args.editBoxPosition = ACH:Select(L["Chat EditBox Position"], L["Positio
 General.args.tabSelection = ACH:Group(L["Tab Selector"], nil, 30, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:UpdateChatTabColors() end)
 General.args.tabSelection.args.tabSelectedTextEnabled = ACH:Toggle(L["Colorize Selected Text"], nil, 1)
 General.args.tabSelection.args.tabSelectedTextColor = ACH:Color(L["Selected Text Color"], nil, 2, nil, nil, function(info) local t, d = E.db.chat[info[#info]], P.chat[info[#info]] return t.r, t.g, t.b, t.a, d.r, d.g, d.b end, function(info, r, g, b) local t = E.db.chat[info[#info]] t.r, t.g, t.b = r, g, b CH:UpdateChatTabColors() end, function() return not E.db.chat.tabSelectedTextEnabled end)
-General.args.tabSelection.args.tabSelector = ACH:Select(L["Selector Style"], nil, 3, function() wipe(tabSelectorTable) tabSelectorTable['NONE'] = 'None' for key, value in pairs(CH.TabStyles) do if key ~= 'NONE' then local color = CH.db.tabSelectorColor local hexColor = E:RGBToHex(color.r, color.g, color.b) local selectedColor = E.media.hexvaluecolor if CH.db.tabSelectedTextEnabled then color = E.db.chat.tabSelectedTextColor selectedColor = E:RGBToHex(color.r, color.g, color.b) end tabSelectorTable[key] = format(value, hexColor, format('%sName|r', selectedColor), hexColor) end end return tabSelectorTable end)
+General.args.tabSelection.args.tabSelector = ACH:Select(L["Selector Style"], nil, 3, function() wipe(tabSelectorTable) tabSelectorTable['NONE'] = 'None' for key, value in pairs(CH.TabStyles) do if key ~= 'NONE' then local color = CH.db.tabSelectorColor local hexColor = E:RGBToHex(color.r, color.g, color.b) local selectedColor = E.media.hexvaluecolor if CH.db.tabSelectedTextEnabled then color = E.db.chat.tabSelectedTextColor selectedColor = E:RGBToHex(color.r, color.g, color.b) end tabSelectorTable[key] = format(value, hexColor, format('%s'..L["Name"]..'|r', selectedColor), hexColor) end end return tabSelectorTable end)
 General.args.tabSelection.args.tabSelectorColor = ACH:Color(L["Selector Color"], nil, 4, nil, nil, function(info) local t, d = E.db.chat[info[#info]], P.chat[info[#info]] return t.r, t.g, t.b, t.a, d.r, d.g, d.b end, function(info, r, g, b) local t = E.db.chat[info[#info]] t.r, t.g, t.b = r, g, b E:UpdateMedia() end, function() return E.db.chat.tabSelector == 'NONE' end)
 
 General.args.historyGroup = ACH:Group(L["History"], nil, 65)
@@ -67,23 +71,12 @@ General.args.fontGroup.args.tabFont = ACH:SharedMediaFont(L["Tab Font"], nil, 3)
 General.args.fontGroup.args.tabFontOutline = ACH:FontFlags(L["Tab Font Outline"], nil, 5)
 General.args.fontGroup.args.tabFontSize = ACH:Range(L["Tab Font Size"], nil, 3, C.Values.FontSize)
 
-General.args.alerts = ACH:Group(L["Alerts"], nil, 85, nil, nil, nil, function() return not E.Chat.Initialized end)
-General.args.alerts.args.noAlertInCombat = ACH:Toggle(L["No Alert In Combat"], nil, 1)
-General.args.alerts.args.flashClientIcon = ACH:Toggle(L["Flash Client Icon"], nil, 2)
-
-General.args.alerts.args.keywordAlerts = ACH:Group(L["Keyword Alerts"], nil, 5)
-General.args.alerts.args.keywordAlerts.inline = true
-General.args.alerts.args.keywordAlerts.args.keywordSound = ACH:SharedMediaSound(L["Keyword Alert"], nil, 1, 'double')
-General.args.alerts.args.keywordAlerts.args.keywords = ACH:Input(L["Keywords"], L["List of words to color in chat if found in a message. If you wish to add multiple words you must separate the word with a comma. To search for your current name you can use %MYNAME%.\n\nExample:\n%MYNAME%, ElvUI, RBGs, Tank"], 2, 4, 'double', nil, function(info, value) E.db.chat[info[#info]] = value CH:UpdateChatKeywords() end)
-
-General.args.alerts.args.channelAlerts = ACH:Group(L["Channel Alerts"], nil, 10, nil, function(info) return E.db.chat.channelAlerts[info[#info]] end, function(info, value) E.db.chat.channelAlerts[info[#info]] = value end)
-General.args.alerts.args.channelAlerts.inline = true
-General.args.alerts.args.channelAlerts.args.GUILD = ACH:SharedMediaSound(L["Guild"], nil, nil, 'double')
-General.args.alerts.args.channelAlerts.args.OFFICER = ACH:SharedMediaSound(L["Officer"], nil, nil, 'double')
-General.args.alerts.args.channelAlerts.args.INSTANCE = ACH:SharedMediaSound(L["Instance"], nil, nil, 'double')
-General.args.alerts.args.channelAlerts.args.PARTY = ACH:SharedMediaSound(L["Party"], nil, nil, 'double')
-General.args.alerts.args.channelAlerts.args.RAID = ACH:SharedMediaSound(L["Raid"], nil, nil, 'double')
-General.args.alerts.args.channelAlerts.args.WHISPER = ACH:SharedMediaSound(L["Whisper"], nil, nil, 'double')
+General.args.voicechatGroup = ACH:Group(BINDING_HEADER_VOICE_CHAT, nil, 90)
+General.args.voicechatGroup.args.hideVoiceButtons = ACH:Toggle(L["Hide Voice Buttons"], L["Completely hide the voice buttons."], 1, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value E.ShowPopup = true end)
+General.args.voicechatGroup.args.pinVoiceButtons = ACH:Toggle(L["Pin Voice Buttons"], L["This will pin the voice buttons to the chat's tab panel. Unchecking it will create a voice button panel with a mover."], 2, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value E.ShowPopup = true end, function() return E.db.chat.hideVoiceButtons end)
+General.args.voicechatGroup.args.desaturateVoiceIcons = ACH:Toggle(L["Desaturate Voice Icons"], nil, 3, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:UpdateVoiceChatIcons() end, function() return E.db.chat.hideVoiceButtons end)
+General.args.voicechatGroup.args.mouseoverVoicePanel = ACH:Toggle(L["Mouseover"], nil, 4, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:ResetVoicePanelAlpha() end, function() return E.db.chat.hideVoiceButtons or E.db.chat.pinVoiceButtons end)
+General.args.voicechatGroup.args.voicePanelAlpha = ACH:Range(L["Alpha"], L["Change the alpha level of the frame."], 5, { min = 0, max = 1, step = 0.01 }, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:ResetVoicePanelAlpha() end, function() return E.db.chat.hideVoiceButtons or E.db.chat.pinVoiceButtons or not E.db.chat.mouseoverVoicePanel end)
 
 General.args.timestampGroup = ACH:Group(L["TIMESTAMPS_LABEL"], nil, 95)
 General.args.timestampGroup.args.timeStampLocalTime = ACH:Toggle(L["Local Time"], L["If not set to true then the server time will be displayed instead."], 1)
@@ -92,12 +85,44 @@ General.args.timestampGroup.args.useCustomTimeColor = ACH:Toggle(L["Custom Times
 General.args.timestampGroup.args.customTimeColor = ACH:Color('', nil, 4, nil, nil, function(info) local t, d = E.db.chat[info[#info]], P.chat[info[#info]] return t.r, t.g, t.b, t.a, d.r, d.g, d.b end, function(info, r, g, b) local t = E.db.chat[info[#info]] t.r, t.g, t.b = r, g, b end, nil, function() return (E.db.chat.timeStampFormat == 'NONE' or not E.db.chat.useCustomTimeColor) end)
 
 General.args.classColorMentionGroup = ACH:Group(L["Class Color Mentions"], nil, 100, nil, nil, nil, function() return not E.Chat.Initialized end)
-General.args.classColorMentionGroup.args.classColorMentionsChat = ACH:Toggle(L["Chat"], L["Use class color for the names of players when they are mentioned."], 1, nil, nil, nil, function(info) return E.db.chat[info[#info]] end, function(info, value) E.db.chat[info[#info]] = value end, function() return E.private.general.chatBubbles == 'disabled' end)
-General.args.classColorMentionGroup.args.classColorMentionsSpeech = ACH:Toggle(L["Chat Bubbles"], L["Use class color for the names of players when they are mentioned."], 2, nil, nil, nil, function(info) return E.private.general[info[#info]] end, function(info, value) E.private.general[info[#info]] = value E.ShowPopup = true end)
+General.args.classColorMentionGroup.args.classColorMentionsChat = ACH:Toggle(L["Chat"], L["Use class color for the names of players when they are mentioned."], 1, nil, nil, nil, function(info) return E.db.chat[info[#info]] end, function(info, value) E.db.chat[info[#info]] = value end)
+General.args.classColorMentionGroup.args.classColorMentionsSpeech = ACH:Toggle(L["Chat Bubbles"], L["Use class color for the names of players when they are mentioned."], 2, nil, nil, nil, function(info) return E.private.general[info[#info]] end, function(info, value) E.private.general[info[#info]] = value E.ShowPopup = true end, function() return E.private.general.chatBubbles == 'disabled' end)
 General.args.classColorMentionGroup.args.classColorMentionExcludeName = ACH:Input(L["Exclude Name"], L["Excluded names will not be class colored."], 3, nil, nil, C.Blank, function(_, value) if value == '' or gsub(value, '%s+', '') == '' then return end E.global.chat.classColorMentionExcludedNames[strlower(value)] = value end)
 General.args.classColorMentionGroup.args.classColorMentionExcludedNames = ACH:MultiSelect(L["Excluded Names"], nil, 4, function(info) return E.global.chat[info[#info]] end, nil, nil, C.Blank, function(info, value) E.global.chat[info[#info]][value] = nil GameTooltip_Hide() end)
 
-local Panels = ACH:Group(L["Panels"], nil, 85)
+local Alerts
+local function RepopulateAlertChannels()
+	wipe(Alerts.args.alertChannels.args)
+
+	local channels = { GetChannelList() }
+	for i = 2, #channels, 3 do
+		local channel = channels[i]
+		Alerts.args.alertChannels.args[channel] = ACH:SharedMediaSound(channel)
+	end
+end
+
+Alerts = ACH:Group(L["Alerts"], nil, 20, nil, function(info) local key = info[#info] if key == 'keywords' then RepopulateAlertChannels() end return E.db.chat[info[#info]] end, nil, function() return not E.Chat.Initialized end)
+Chat.args.alerts = Alerts
+
+Alerts.args.noAlertInCombat = ACH:Toggle(L["No Alert In Combat"], nil, 1)
+Alerts.args.flashClientIcon = ACH:Toggle(L["Flash Client Icon"], nil, 2)
+
+Alerts.args.keywordAlerts = ACH:Group(L["Keyword Alerts"], nil, 5)
+Alerts.args.keywordAlerts.inline = true
+Alerts.args.keywordAlerts.args.keywords = ACH:Input(L["Keywords"], L["List of words to color in chat if found in a message. If you wish to add multiple words you must separate the word with a comma. To search for your current name you can use %MYNAME%.\n\nExample:\n%MYNAME%, ElvUI, RBGs, Tank"], 1, 4, 'full', nil, function(info, value) E.db.chat[info[#info]] = value CH:UpdateChatKeywords() end)
+Alerts.args.keywordAlerts.args.keywordSound = ACH:SharedMediaSound(L["Keyword Alert"], nil, 2)
+
+Alerts.args.channelAlerts = ACH:Group(L["Channel Alerts"], nil, 10, nil, function(info) return E.db.chat.channelAlerts[info[#info]] end, function(info, value) E.db.chat.channelAlerts[info[#info]] = value end)
+Alerts.args.channelAlerts.inline = true
+
+for key, name in next, { GUILD = L["Guild"], OFFICER = L["Officer"], INSTANCE = L["Instance"], PARTY = L["Party"], RAID = L["Raid"], WHISPER = L["Whisper"] } do
+	Alerts.args.channelAlerts.args[key] = ACH:SharedMediaSound(name)
+end
+
+Alerts.args.alertChannels = ACH:Group(L["Channel Alerts"], nil, 15, nil, function(info) return E.db.chat.channelAlerts.CHANNEL[info[#info]] or 'None' end, function(info, value) E.db.chat.channelAlerts.CHANNEL[info[#info]] = value end)
+Alerts.args.alertChannels.inline = true
+
+local Panels = ACH:Group(L["Panels"], nil, 30)
 Chat.args.panels = Panels
 
 Panels.args.fadeUndockedTabs = ACH:Toggle(L["Fade Undocked Tabs"], L["Fades the text on chat tabs that are not docked at the left or right chat panel."], 1, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:UpdateChatTabs() end, nil, function() return not E.Chat.Initialized end)
@@ -105,16 +130,17 @@ Panels.args.fadeTabsNoBackdrop = ACH:Toggle(L["Fade Tabs No Backdrop"], L["Fades
 Panels.args.hideChatToggles = ACH:Toggle(L["Hide Chat Toggles"], nil, 3, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value CH:RefreshToggleButtons() LO:RepositionChatDataPanels() end)
 Panels.args.fadeChatToggles = ACH:Toggle(L["Fade Chat Toggles"], L["Fades the buttons that toggle chat windows when that window has been toggled off."], 4, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]]= value CH:RefreshToggleButtons() end, function() return E.db.chat.hideChatToggles end)
 
-Panels.args.tabGroup = ACH:Group(L["Tab Panels"], nil, 10, nil, nil, nil, nil, function() return not E.Chat.Initialized end)
-Panels.args.tabGroup.inline = true
-Panels.args.tabGroup.args.panelTabTransparency = ACH:Toggle(L["Tab Panel Transparency"], nil, 1, nil, nil, 250, nil, function(info, value) E.db.chat[info[#info]] = value LO:SetChatTabStyle() end, function() return not E.db.chat.panelTabBackdrop end)
-
-Panels.args.datatextGroup = ACH:Group(L["DataText Panels"], nil, 6)
+Panels.args.datatextGroup = ACH:Group(L["DataText Panels"], nil, 10)
 Panels.args.datatextGroup.inline = true
 Panels.args.datatextGroup.args.LeftChatDataPanelAnchor = ACH:Select(L["Left Position"], nil, 1, { BELOW_CHAT = L["Below Chat"], ABOVE_CHAT = L["Above Chat"] }, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value LO:RepositionChatDataPanels() end)
 Panels.args.datatextGroup.args.RightChatDataPanelAnchor = ACH:Select(L["Right Position"], nil, 1, { BELOW_CHAT = L["Below Chat"], ABOVE_CHAT = L["Above Chat"] }, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value LO:RepositionChatDataPanels() end)
 
-Panels.args.panels = ACH:Group(L["Chat Panels"], nil, 7)
+Panels.args.tabGroup = ACH:Group(L["Tab Panels"], nil, 15, nil, nil, nil, nil, function() return not E.Chat.Initialized end)
+Panels.args.tabGroup.inline = true
+Panels.args.tabGroup.args.panelTabTransparency = ACH:Toggle(L["Tab Panel Transparency"], nil, 1, nil, nil, 250, nil, function(info, value) E.db.chat[info[#info]] = value LO:SetChatTabStyle() end, function() return not E.db.chat.panelTabBackdrop end)
+Panels.args.tabGroup.args.panelTabBackdrop = ACH:Toggle(L["Tab Panel"], L["Toggle the chat tab panel backdrop."], 2, nil, nil, nil, nil, function(info, value) E.db.chat[info[#info]] = value LO:ToggleChatPanels() if E.db.chat.pinVoiceButtons and not E.db.chat.hideVoiceButtons then CH:ReparentVoiceChatIcon() end end)
+
+Panels.args.panels = ACH:Group(L["Chat Panels"], nil, 20)
 Panels.args.panels.inline = true
 
 Panels.args.panels.args.panelColor = ACH:Color(L["Backdrop Color"], nil, 1, true, nil, function(info) local t, d = E.db.chat[info[#info]], P.chat[info[#info]] return t.r, t.g, t.b, t.a, d.r, d.g, d.b, d.a end, function(info, r, g, b, a) local t = E.db.chat[info[#info]] t.r, t.g, t.b, t.a = r, g, b, a CH:Panels_ColorUpdate() end)

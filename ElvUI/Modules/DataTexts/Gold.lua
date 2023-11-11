@@ -7,7 +7,6 @@ local LC = E.Libs.Compat
 local type, wipe, pairs, ipairs, sort = type, wipe, pairs, ipairs, sort
 local format, strjoin, tinsert = format, strjoin, tinsert
 
-local _G = _G
 local EasyMenu = EasyMenu
 local GetMoney = GetMoney
 local IsLoggedIn = IsLoggedIn
@@ -143,10 +142,10 @@ local function OnClick(self, btn)
 			Spent = 0
 		end
 	else
-		if _G.ContainerFrame1:IsShown() then
-			_G.CloseAllBags()
+		if not ContainerFrame1:IsShown() then
+			OpenAllBags()
 		else
-			_G.OpenAllBags()
+			CloseAllBags()
 		end
 	end
 end

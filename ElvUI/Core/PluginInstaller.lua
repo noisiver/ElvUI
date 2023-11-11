@@ -167,7 +167,7 @@ function PI:CreateStepComplete()
 	imsg:Hide()
 	imsg:SetScript("OnShow", function(frame)
 		if frame.message then
-			PlaySound(888) -- LevelUp Sound
+			PlaySound(888) -- LEVELUP
 			frame.text:SetText(frame.message)
 			UIFrameFadeOut(frame, 3.5, 1, 0)
 			E:Delay(4, frame.Hide, frame)

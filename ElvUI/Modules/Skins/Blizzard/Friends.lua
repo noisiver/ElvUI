@@ -203,7 +203,7 @@ S:AddCallback("Skin_Friends", function()
 			if classFileName then
 				classTextColor = CUSTOM_CLASS_COLORS and CUSTOM_CLASS_COLORS[classFileName] or RAID_CLASS_COLORS[classFileName]
 				button.icon:Show()
-				button.icon:SetTexCoord(unpack(CLASS_ICON_TCOORDS[classFileName]))
+				button.icon:SetTexCoord(E:GetClassCoords(classFileName))
 			else
 				classTextColor = HIGHLIGHT_FONT_COLOR
 				button.icon:Hide()
@@ -336,7 +336,7 @@ S:AddCallback("Skin_Friends", function()
 						buttonText = _G["GuildFrameButton"..i.."Level"]
 						buttonText:SetTextColor(levelTextColor.r, levelTextColor.g, levelTextColor.b)
 					end
-					button.icon:SetTexCoord(unpack(CLASS_ICON_TCOORDS[classFileName]))
+					button.icon:SetTexCoord(E:GetClassCoords(classFileName))
 				end
 			end
 		else
@@ -681,7 +681,7 @@ S:AddCallback("Skin_Friends", function()
 			self:Point("TOPLEFT", RaidFrame, "TOPRIGHT", -33, -12)
 		end
 
-		PlaySound("UChatScrollButton")
+		PlaySound(1115) -- UChatScrollButton
 	end)
 
 	RaidInfoScrollFrameScrollBar:SetScript("OnShow", function(self)

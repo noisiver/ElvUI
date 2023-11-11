@@ -3,7 +3,7 @@ local DT = E:GetModule("DataTexts")
 local TT = E:GetModule("Tooltip")
 local LDB = E.Libs.LDB
 local LSM = E.Libs.LSM
-local LC = E.Libs.Compat
+local LCS = E.Libs.LCS
 
 local format, type, pcall, unpack = format, type, pcall, unpack
 local tinsert, ipairs, pairs, wipe, sort = tinsert, ipairs, pairs, wipe, sort
@@ -17,8 +17,8 @@ local GetBackpackCurrencyInfo = GetBackpackCurrencyInfo
 local GetCurrencyListSize = GetCurrencyListSize
 local GetCurrencyListInfo = GetCurrencyListInfo
 local ExpandCurrencyList = ExpandCurrencyList
-local GetNumSpecializations = LC.GetNumSpecializations
-local GetSpecializationInfo = LC.GetSpecializationInfo
+local GetNumTalentTabs = GetNumTalentTabs
+local GetSpecializationInfo = LCS.GetSpecializationInfo
 local InCombatLockdown = InCombatLockdown
 local IsInInstance = IsInInstance
 local MouseIsOver = MouseIsOver
@@ -29,7 +29,6 @@ local MISCELLANEOUS = MISCELLANEOUS
 local LFG_TYPE_DUNGEON = LFG_TYPE_DUNGEON
 local expansion = _G["EXPANSION_NAME"..GetExpansionLevel()]
 local QuickList = {}
-local iconString = '|T%s:16:16:0:0:64:64:4:60:4:60|t'
 
 DT.tooltip = CreateFrame("GameTooltip", "DataTextTooltip", E.UIParent, "GameTooltipTemplate")
 
@@ -704,6 +703,7 @@ do
 end
 
 function DT:PopulateData(currencyOnly)
+	local Collapsed = {}
 	local listSize, i = GetCurrencyListSize(), 1
 
 	while listSize >= i do
@@ -720,8 +720,19 @@ function DT:PopulateData(currencyOnly)
 		i = i + 1
 	end
 
+	for k = 1, listSize do
+		local info = DT:CurrencyListInfo(k)
+		if not info.name then
+			break
+		elseif info.isHeader and info.isHeaderExpanded and Collapsed[info.name] then
+			ExpandCurrencyList(k, false)
+		end
+	end
+
+	wipe(Collapsed)
+
 	if not currencyOnly then
-		for index = 1, GetNumSpecializations() do
+		for index = 1, GetNumTalentTabs() do
 			local id, name, _, icon, _, statID = GetSpecializationInfo(index)
 
 			if id then
@@ -805,9 +816,6 @@ function DT:Initialize()
 	local textSize = E.db.tooltip.textFontSize
 	DataTextTooltipTextLeft1:FontTemplate(font, textSize, fontOutline)
 	DataTextTooltipTextRight1:FontTemplate(font, textSize, fontOutline)
-
-	LDB.RegisterCallback(E, "LibDataBroker_DataObjectCreated", DT.SetupObjectLDB)
-	DT:RegisterLDB() -- LibDataBroker
 
 	-- DT:RegisterCustomCurrencyDT() -- Register all the user created currency datatexts from the "CustomCurrency" DT.
 
@@ -893,8 +901,4 @@ function DT:RegisterDatatext(name, category, events, onEvent, onUpdate, onClick,
 	return data
 end
 
-local function InitializeCallback()
-	DT:Initialize()
-end
-
-E:RegisterModule(DT:GetName(), InitializeCallback)
+E:RegisterModule(DT:GetName())

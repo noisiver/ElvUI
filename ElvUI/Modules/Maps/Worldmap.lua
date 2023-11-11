@@ -215,7 +215,7 @@ function M:Initialize()
 	if E.global.general.smallerWorldMap then
 		BlackoutWorld:SetTexture(nil)
 
-		WorldMapFrame:SetParent(UIParent)
+		WorldMapFrame:SetParent(E.UIParent)
 		WorldMapFrame.SetParent = E.noop
 
 		WorldMapFrame:EnableKeyboard(false)

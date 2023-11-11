@@ -3,7 +3,8 @@ local UF = E:GetModule("UnitFrames")
 local NP = E:GetModule("NamePlates")
 
 local _G = _G
-local pairs, pcall, unpack, type, next = pairs, pcall, unpack, type, next
+local pairs, pcall, unpack = pairs, pcall, unpack
+local strsub, type, next = strsub, type, next
 local hooksecurefunc = hooksecurefunc
 local getmetatable = getmetatable
 
@@ -39,7 +40,7 @@ local function DisablePixelSnap(frame)
 			frame:SetTexelSnappingBias(0)
 		elseif frame.GetStatusBarTexture then
 			local texture = frame:GetStatusBarTexture()
-			if texture and texture.SetSnapToPixelGrid then
+			if type(texture) == "table" and texture.SetSnapToPixelGrid then
 				texture:SetSnapToPixelGrid(false)
 				texture:SetTexelSnappingBias(0)
 			end
@@ -87,7 +88,7 @@ local function Size(frame, width, height, ...)
 	frame:SetSize(w, (height and E:Scale(height)) or w, ...)
 end
 
-local function SetShown(frame, shown, ...)
+local function SetShown(frame, shown)
 	if shown then
 		frame:Show()
 	else
@@ -95,7 +96,7 @@ local function SetShown(frame, shown, ...)
 	end
 end
 
-local function SetEnabled(frame, enabled, ...)
+local function SetEnabled(frame, enabled)
 	if enabled then
 		frame:Enable()
 	else
@@ -375,18 +376,17 @@ local function FontTemplate(fs, font, size, style, skip)
 	if not size then size = E.db.general.fontSize or P.general.fontSize end
 
 	-- shadow mode when using "NONE"
-	if style == "NONE" then
-		fs:SetShadowOffset(1, -0.5)
-		fs:SetShadowColor(0, 0, 0, 1)
+	if style and strsub(style, 0, 6) == 'SHADOW' then
+		style = strsub(style, 7) -- shadow isnt a real style
+		fs:SetShadowOffset(1, -1)
+		fs:SetShadowColor(0, 0, 0, style == '' and 1 or 0.6)
 	else
 		fs:SetShadowOffset(0, 0)
 		fs:SetShadowColor(0, 0, 0, 0)
 	end
 
-	-- convert because of bad values between versions
-
-	if style == "" then
-		style = "NONE"
+	if style == 'NONE' or not style then
+		style = '' -- none isnt a real style
 	end
 
 	if size > 0 then

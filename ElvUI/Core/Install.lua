@@ -276,6 +276,7 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 			E.db.chat.panelHeight = 236
 			E.db.chat.panelWidth = 472
 			E.db.chat.tabFontSize = 12
+			E.db.chat.copyChatLines = true
 		--DataTexts
 			E.db.datatexts.panels.LeftChatDataPanel[3] = "QuickJoin"
 		--DataBars
@@ -778,7 +779,7 @@ function E:Install()
 		imsg:Hide()
 		imsg:SetScript("OnShow", function(f)
 			if f.message then
-				PlaySound(888)
+				PlaySound(888) -- LEVELUP
 				f.text:SetText(f.message)
 				UIFrameFadeOut(f, 3.5, 1, 0)
 				E:Delay(4, f.Hide, f)

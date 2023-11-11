@@ -24,6 +24,5 @@ UnitFrames.lua
 Nameplates.lua
 # StyleFilters.lua
 Maps.lua
-ModuleControl.lua
 Search.lua
 Tags.lua

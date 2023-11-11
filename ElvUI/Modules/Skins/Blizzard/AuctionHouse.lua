@@ -438,12 +438,12 @@ S:AddCallbackForAddon("Blizzard_AuctionUI", "Skin_Blizzard_AuctionUI", function(
 
 	AuctionDressUpFrame:SetScript("OnShow", function()
 		S:SetUIPanelWindowInfo(AuctionFrame, "width", nil, 188)
-		PlaySound("igCharacterInfoOpen")
+		PlaySound(839) -- igCharacterInfoOpen
 	end)
 
 	AuctionDressUpFrame:SetScript("OnHide", function()
 		S:SetUIPanelWindowInfo(AuctionFrame, "width")
-		PlaySound("igCharacterInfoClose")
+		PlaySound(840) -- igCharacterInfoClose
 	end)
 
 	-- Progress Frame

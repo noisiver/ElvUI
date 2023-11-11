@@ -11,7 +11,7 @@
 -- @release $Id$
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 
-local MAJOR, MINOR = "AceConfigRegistry-3.0-ElvUI", 22
+local MAJOR, MINOR = "AceConfigRegistry-3.0-ElvUI", 24
 local AceConfigRegistry = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceConfigRegistry then return end
@@ -86,6 +86,7 @@ local basekeys={
 		dialogHidden=optmethodbool,
 		dropdownHidden=optmethodbool,
 	cmdHidden=optmethodbool,
+	tooltipHyperlink=optstringfunc,
 	icon=optstringnumberfunc,
 	iconCoords=optmethodtable,
 	handler=opttable,
@@ -152,6 +153,7 @@ local typedkeys={
 		multiline=optboolnumber,
 		luaSyntax=optbool, --ElvUI
 		disableButton=optbool, --ElvUI
+		focusSelect=optbool, --ElvUI
 		textChanged=optfunc, --ElvUI
 	},
 	toggle={

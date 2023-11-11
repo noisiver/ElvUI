@@ -1,5 +1,5 @@
 local E, L, V, P, G = unpack(ElvUI)
-local DT = E:GetModule('DataTexts')
+local DT = E:GetModule("DataTexts")
 local LC = E.Libs.Compat
 
 local format, strjoin = format, strjoin
@@ -7,31 +7,30 @@ local format, strjoin = format, strjoin
 local BreakUpLargeNumbers = LC.BreakUpLargeNumbers
 local GetCombatRating = GetCombatRating
 local GetCombatRatingBonus = GetCombatRatingBonus
-local GetSpeed = GetSpeed
+local UnitAttackSpeed = UnitAttackSpeed
 
-local CR_SPEED = CR_SPEED
-local CR_SPEED_TOOLTIP = CR_SPEED_TOOLTIP
+local SPEED = SPEED
+local CR_HIT_TAKEN_SPELL = CR_HIT_TAKEN_SPELL
+local CR_SPEED_TOOLTIP = SPEED..": %s [+%.2f%%]"
 local FONT_COLOR_CODE_CLOSE = FONT_COLOR_CODE_CLOSE
 local HIGHLIGHT_FONT_COLOR_CODE = HIGHLIGHT_FONT_COLOR_CODE
 local PAPERDOLLFRAME_TOOLTIP_FORMAT = PAPERDOLLFRAME_TOOLTIP_FORMAT
-local STAT_CATEGORY_ENHANCEMENTS = STAT_CATEGORY_ENHANCEMENTS
-local STAT_SPEED = STAT_SPEED
 
-local displayString, db = ''
+local displayString, db = ""
 
 local function OnEnter()
 	DT.tooltip:ClearLines()
-	DT.tooltip:AddDoubleLine(HIGHLIGHT_FONT_COLOR_CODE..format(PAPERDOLLFRAME_TOOLTIP_FORMAT, STAT_SPEED)..' '..format('%.2F%%', GetSpeed())..FONT_COLOR_CODE_CLOSE, nil, 1, 1, 1)
-	DT.tooltip:AddLine(format(CR_SPEED_TOOLTIP, BreakUpLargeNumbers(GetCombatRating(CR_SPEED)), GetCombatRatingBonus(CR_SPEED)), nil, nil, nil, true)
+	DT.tooltip:AddDoubleLine(HIGHLIGHT_FONT_COLOR_CODE..format(PAPERDOLLFRAME_TOOLTIP_FORMAT, SPEED).." "..format("%.2F%%", UnitAttackSpeed("player"))..FONT_COLOR_CODE_CLOSE, nil, 1, 1, 1)
+	DT.tooltip:AddLine(format(CR_SPEED_TOOLTIP, BreakUpLargeNumbers(GetCombatRating(CR_HIT_TAKEN_SPELL)), GetCombatRatingBonus(CR_HIT_TAKEN_SPELL)), nil, nil, nil, true)
 	DT.tooltip:Show()
 end
 
 local function OnEvent(self)
-	local speed = GetSpeed()
+	local speed = UnitAttackSpeed("player")
 	if db.NoLabel then
 		self.text:SetFormattedText(displayString, speed)
 	else
-		self.text:SetFormattedText(displayString, db.Label ~= '' and db.Label or STAT_SPEED, speed)
+		self.text:SetFormattedText(displayString, db.Label ~= "" and db.Label or SPEED, speed)
 	end
 end
 
@@ -40,7 +39,7 @@ local function ApplySettings(self, hex)
 		db = E.global.datatexts.settings[self.name]
 	end
 
-	displayString = strjoin('', db.NoLabel and '' or '%s:', hex, '%.'..db.decimalLength..'f%%|r')
+	displayString = strjoin("", db.NoLabel and "" or "%s:", hex, "%."..db.decimalLength.."f%%|r")
 end
 
-DT:RegisterDatatext('Speed', STAT_CATEGORY_ENHANCEMENTS, { 'UNIT_STATS', 'UNIT_AURA', 'PLAYER_DAMAGE_DONE_MODS' }, OnEvent, nil, nil, OnEnter, nil, STAT_SPEED, nil, ApplySettings)
+DT:RegisterDatatext("Speed", L["Enhancements"], { "UNIT_STATS", "UNIT_AURA", "PLAYER_DAMAGE_DONE_MODS" }, OnEvent, nil, nil, OnEnter, nil, SPEED, nil, ApplySettings)

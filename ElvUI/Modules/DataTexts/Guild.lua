@@ -20,7 +20,6 @@ local SetItemRef = SetItemRef
 local ToggleFriendsFrame = ToggleFriendsFrame
 local UnitInParty = UnitInParty
 local UnitInRaid = UnitInRaid
-local InCombatLockdown = InCombatLockdown
 local IsAltKeyDown = IsAltKeyDown
 local InviteUnit = InviteUnit
 
@@ -84,7 +83,6 @@ local function BuildGuildTable()
 		if not name then return end
 
 		local statusInfo = onlinestatus[memberstatus] or ""
-		zone = not connected and zone
 
 		if connected then
 			guildTable[#guildTable + 1] = {
@@ -179,7 +177,7 @@ local function Click(self, btn)
 					name = name.." |cffaaaaaa*|r"
 				elseif not info.zone then
 					menuCountInvites = menuCountInvites + 1
-					menuList[2].menuList[menuCountInvites] = {text = name, arg1 = info.name, arg2 = info.guid, notCheckable=true, func = inviteClick}
+					menuList[2].menuList[menuCountInvites] = {text = name, arg1 = info.name, notCheckable=true, func = inviteClick}
 				end
 
 				menuCountWhispers = menuCountWhispers + 1
@@ -189,9 +187,7 @@ local function Click(self, btn)
 
 		E:SetEasyMenuAnchor(E.EasyMenu, self)
 		EasyMenu(menuList, E.EasyMenu, nil, nil, nil, "MENU")
-	elseif InCombatLockdown() then
-		_G.UIErrorsFrame:AddMessage(E.InfoColor.._G.ERR_NOT_IN_COMBAT)
-	else
+	elseif not E:AlertCombat() then
 		ToggleFriendsFrame(3)
 	end
 end

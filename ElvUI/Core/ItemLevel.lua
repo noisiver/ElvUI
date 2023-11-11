@@ -2,6 +2,7 @@ local E, L, V, P, G = unpack(ElvUI)
 local LC = E.Libs.Compat
 
 local _G = _G
+local pi = math.pi
 local tinsert, strmatch = tinsert, strmatch
 local select, tonumber, format = select, tonumber, format
 local next, max, wipe = next, max, wipe
@@ -115,7 +116,7 @@ function E:CalculateAverageItemLevel(iLevelDB, unit)
 	link = GetInventoryItemLink(unit, 16)
 	if link then
 		mainItemLevel = iLevelDB[16]
-		_, _, mainQuality, _, _, _, _, _, mainEquipLoc, _, _, mainItemClass, mainItemSubClass = GetItemInfo(link)
+		_, _, mainQuality, _, _, mainItemClass, mainItemSubClass, _, mainEquipLoc = GetItemInfo(link)
 	elseif GetInventoryItemTexture(unit, 16) then
 		isOK = false
 	end
@@ -145,11 +146,20 @@ function E:CalculateAverageItemLevel(iLevelDB, unit)
 		isOK = false
 	end
 
-	return isOK and format("%0.2f", E:Round(total / 16, 2))
+	return isOK and E:Round(total / 16, 2)
+end
+
+function E:ColorizeItemLevel(num)
+	if num >= 0 then
+		return .1, 1, .1
+	else
+		return E:ColorGradient(-(pi/num), 1, .1, .1, 1, 1, .1, .1, 1, .1)
+	end
 end
 
 function E:GetPlayerItemLevel()
-	return format("%0.2f", E:Round((select(2, GetAverageItemLevel())), 2))
+	local average, equipped = GetAverageItemLevel()
+	return E:Round(average, 2), E:Round(equipped, 2)
 end
 
 do

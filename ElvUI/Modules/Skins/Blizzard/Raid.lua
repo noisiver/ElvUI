@@ -1,77 +1,80 @@
-local E, L, V, P, G = unpack(select(2, ...))
-local S = E:GetModule("Skins")
+local E, L, V, P, G = unpack(ElvUI)
+local S = E:GetModule('Skins')
 
---Lua functions
 local _G = _G
-local ipairs = ipairs
-local unpack = unpack
---WoW API / Variables
+local ipairs, unpack = ipairs, unpack
+local hooksecurefunc = hooksecurefunc
+local CLASS_SORT_ORDER = CLASS_SORT_ORDER
 
-S:AddCallbackForAddon("Blizzard_RaidUI", "Skin_Blizzard_RaidUI", function()
+local StripAllTextures = {
+	'RaidGroup1',
+	'RaidGroup2',
+	'RaidGroup3',
+	'RaidGroup4',
+	'RaidGroup5',
+	'RaidGroup6',
+	'RaidGroup7',
+	'RaidGroup8'
+}
+
+function S:Blizzard_RaidUI()
 	if E.private.skins.blizzard.enable and E.private.skins.blizzard.friends then
-		RaidClassButton1:HookScript("OnShow", function()
+		_G.RaidClassButton1:HookScript("OnShow", function()
 			S:SetUIPanelWindowInfo(FriendsFrame, "width", nil, 21)
 		end)
-		RaidClassButton1:HookScript("OnHide", function()
+		_G.RaidClassButton1:HookScript("OnHide", function()
 			S:SetUIPanelWindowInfo(FriendsFrame, "width")
 		end)
 	end
 
-	if not E.private.skins.blizzard.enable or not E.private.skins.blizzard.raid then return end
+	if not (E.private.skins.blizzard.enable and E.private.skins.blizzard.raid) then return end
 
-	local StripAllTextures = {
-		RaidGroup1,
-		RaidGroup2,
-		RaidGroup3,
-		RaidGroup4,
-		RaidGroup5,
-		RaidGroup6,
-		RaidGroup7,
-		RaidGroup8
-	}
+	-- Raid Frame Tab
+	S:HandleButton(_G.RaidFrameRaidBrowserButton)
+	S:HandleButton(_G.RaidFrameReadyCheckButton)
+
+	_G.RaidFrameConvertToRaidButton:Point('BOTTOMRIGHT', -6, 4)
 
 	for _, object in ipairs(StripAllTextures) do
-		object:StripTextures()
+		local obj = _G[object]
+		if obj then
+			obj:StripTextures()
+		end
 	end
 
-	RaidFrameRaidBrowserButton:Point("TOPLEFT", RaidFrame, 45, -33)
-
-	S:HandleButton(RaidFrameRaidBrowserButton)
-	S:HandleButton(RaidFrameReadyCheckButton)
---	S:HandleButton(RaidFrameRaidInfoButton)		-- skinned in Friends.lua
-
-	for i = 1, MAX_RAID_GROUPS * 5 do
-		S:HandleButton(_G["RaidGroupButton"..i], true)
+	for i = 1, _G.MAX_RAID_GROUPS * 5 do
+		S:HandleButton(_G['RaidGroupButton'..i], true)
 	end
 
 	for i = 1, 8 do
 		for j = 1, 5 do
-			local slot = _G["RaidGroup"..i.."Slot"..j]
+			local slot = _G['RaidGroup'..i..'Slot'..j]
 			slot:StripTextures()
-			slot:SetTemplate("Transparent")
+			slot:SetTemplate('Transparent')
 		end
 	end
 
-	do
-		local prevButton
-		local button, icon, count, coords
+	_G.RaidClassButton1:ClearAllPoints()
+	_G.RaidClassButton1:Point('TOPLEFT', _G.RaidFrame, 'TOPRIGHT', -50, -50)
 
+	do -- Classes on the right side of the Raid Control
+		local prevButton
 		for index = 1, 13 do
-			button = _G["RaidClassButton"..index]
-			icon = _G["RaidClassButton"..index.."IconTexture"]
-			count = _G["RaidClassButton"..index.."Count"]
+			local button = _G['RaidClassButton'..index]
+			local icon = _G['RaidClassButton'..index..'IconTexture']
+			local count = _G['RaidClassButton'..index..'Count']
 
 			button:StripTextures()
-			button:SetTemplate("Default")
+			button:SetTemplate()
 			button:Size(22)
 
 			button:ClearAllPoints()
 			if index == 1 then
-				button:Point("TOPLEFT", RaidFrame, "TOPRIGHT", -33, -44)
+				button:Point('TOPLEFT', _G.RaidFrame, 'TOPRIGHT', -33, -48)
 			elseif index == 11 then
-				button:Point("TOP", prevButton, "BOTTOM", 0, -25)
+				button:Point('TOP', prevButton, 'BOTTOM', 0, -25)
 			else
-				button:Point("TOP", prevButton, "BOTTOM", 0, -5)
+				button:Point('TOP', prevButton, 'BOTTOM', 0, -5)
 			end
 			prevButton = button
 
@@ -87,66 +90,59 @@ S:AddCallbackForAddon("Blizzard_RaidUI", "Skin_Blizzard_RaidUI", function()
 				icon:SetTexture([[Interface\RaidFrame\UI-RaidFrame-MainAssist]])
 				icon:SetTexCoord(unpack(E.TexCoords))
 			else
-				coords = CLASS_ICON_TCOORDS[CLASS_SORT_ORDER[index]]
 				icon:SetTexture([[Interface\WorldStateFrame\Icons-Classes]])
-				icon:SetTexCoord(coords[1] + 0.02, coords[2] - 0.02, coords[3] + 0.02, coords[4] - 0.02)
+				icon:SetTexCoord(E:GetClassCoords(CLASS_SORT_ORDER[index], 0.02))
 			end
 
-			count:FontTemplate(nil, 12, "OUTLINE")
+			count:FontTemplate(nil, 12, 'OUTLINE')
+			count:SetTextHeight(12) -- fixes blur
 		end
 	end
 
-	hooksecurefunc("RaidPulloutButton_OnDragStart", function(frame)
-		if InCombatLockdown() then return end
-
-		local scale = GetScreenHeightScale()
-		local cursorX, cursorY = GetCursorPosition()
-		frame:SetPoint("TOP", nil, "BOTTOMLEFT", cursorX * scale, cursorY * scale)
-	end)
-
-	local nSkinned = 0
-	hooksecurefunc("RaidPullout_GetFrame", function()
-		if nSkinned < NUM_RAID_PULLOUT_FRAMES then
-			nSkinned = NUM_RAID_PULLOUT_FRAMES
-
-			local pfButton = _G["RaidPullout"..nSkinned]
-			pfButton:CreateBackdrop("Transparent")
-			pfButton.backdrop:Point("TOPLEFT", 9, -17)
-			pfButton.backdrop:Point("BOTTOMRIGHT", -7, 7)
-
-			_G["RaidPullout"..nSkinned.."MenuBackdrop"]:SetBackdrop(nil)
+	hooksecurefunc('RaidPullout_GetFrame', function()
+		for i = 1, _G.NUM_RAID_PULLOUT_FRAMES do
+			local rp = _G['RaidPullout'..i]
+			if rp and not rp.backdrop then
+				S:HandleFrame(rp, true, nil, 9, -17, -7, 10)
+			end
 		end
 	end)
 
-	local MAX_RAID_AURAS = MAX_RAID_AURAS
-	local pfButtonSubFrames = {"HealthBar", "ManaBar", "Target", "TargetTarget"}
+	local bars = { 'HealthBar', 'ManaBar', 'Target', 'TargetTarget' }
+	hooksecurefunc('RaidPullout_Update', function(pullOutFrame)
+		local pfName = pullOutFrame:GetName()
+		local pfBName, pfBObj, pfTot
 
-	hooksecurefunc("RaidPullout_Update", function(pullOutFrame)
-		for _, pfButton in ipairs(pullOutFrame.buttons) do
-			if not pfButton.backdrop then
-				local pfBName = pfButton:GetName()
-				local pfTot = _G[pfBName.."TargetTargetFrame"]
+		for i = 1, pullOutFrame.numPulloutButtons do
+			pfBName = pfName..'Button'..i
+			pfBObj = _G[pfBName]
+			pfTot = _G[pfBName..'TargetTargetFrame']
 
-				for _, sName in ipairs(pfButtonSubFrames) do
-					local sBar = _G[pfBName..sName]
+			if not pfBObj.backdrop then
+				local sBar
+
+				for _, v in ipairs(bars) do
+					sBar = _G[pfBName..v]
 					sBar:StripTextures()
 					sBar:SetStatusBarTexture(E.media.normTex)
 				end
 
-				pfButton:CreateBackdrop("Default")
-				pfButton.backdrop:Point("TOPLEFT", E.PixelMode and 0 or -1, -(E.PixelMode and 10 or 9))
-				pfButton.backdrop:Point("BOTTOMRIGHT", E.PixelMode and 0 or 1, E.PixelMode and -2 or 0)
+				_G[pfBName..'ManaBar']:Point('TOP', '$parentHealthBar', 'BOTTOM', 0, 0)
+				_G[pfBName..'Target']:Point('TOP', '$parentManaBar', 'BOTTOM', 0, -1)
 
+				pfBObj:CreateBackdrop()
+				pfBObj.backdrop:Point('TOPLEFT', E.PixelMode and 0 or -1, -(E.PixelMode and 10 or 9))
+				pfBObj.backdrop:Point('BOTTOMRIGHT', E.PixelMode and 0 or 1, E.PixelMode and 1 or 0)
+			end
+
+			if not pfTot.backdrop then
 				pfTot:StripTextures()
-				pfTot:CreateBackdrop("Default")
-				pfTot.backdrop:Point("TOPLEFT", E.PixelMode and 10 or 9, -(E.PixelMode and 15 or 14))
-				pfTot.backdrop:Point("BOTTOMRIGHT", -(E.PixelMode and 10 or 9), E.PixelMode and 8 or 7)
-
-				for i = 1, MAX_RAID_AURAS do
-					S:HandleIcon(_G[pfBName.."Aura"..i.."Icon"])
-					_G[pfBName.."Aura"..i.."Border"]:Hide()
-				end
+				pfTot:CreateBackdrop()
+				pfTot.backdrop:Point('TOPLEFT', E.PixelMode and 10 or 9, -(E.PixelMode and 15 or 14))
+				pfTot.backdrop:Point('BOTTOMRIGHT', -(E.PixelMode and 10 or 9), E.PixelMode and 8 or 7)
 			end
 		end
 	end)
-end)
+end
+
+S:AddCallbackForAddon('Blizzard_RaidUI')

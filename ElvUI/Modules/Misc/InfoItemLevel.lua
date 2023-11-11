@@ -1,6 +1,7 @@
 local E, L, V, P, G = unpack(ElvUI)
 local M = E:GetModule("Misc")
 local LSM = E.Libs.LSM
+local LC = E.Libs.Compat
 
 local _G = _G
 local wipe = wipe
@@ -9,6 +10,7 @@ local pairs = pairs
 local unpack = unpack
 local UnitGUID = UnitGUID
 local CreateFrame = CreateFrame
+local GetItemLevelColor = LC.GetItemLevelColor
 
 local InspectItems = {
     "HeadSlot",
@@ -168,7 +170,7 @@ function M:UpdateAverageString(frame, which, iLevelDB)
 	if AvgItemLevel then
 		if isCharPage then
 			frame.ItemLevelText:SetText(AvgItemLevel)
-			-- frame.ItemLevelText:SetTextColor(CharacterAttributesFrame:GetTextColor())
+			frame.ItemLevelText:SetTextColor(GetItemLevelColor(frame.unit))
 		else
 			frame.ItemLevelText:SetFormattedText(L["Item level: %.2f"], AvgItemLevel)
 		end
@@ -238,8 +240,8 @@ function M:CreateSlotStrings(frame, which)
 		frame.ItemLevelText = InspectPaperDollFrame:CreateFontString(nil, "ARTWORK")
 		frame.ItemLevelText:Point("BOTTOMLEFT", 6, 6)
 	else
-		frame.ItemLevelText = CharacterAttributesFrame:CreateFontString(nil, "ARTWORK")
-		frame.ItemLevelText:Point("BOTTOM", CharacterAttributesFrame, "BOTTOM", 0, 0)
+		frame.ItemLevelText = CharacterModelFrame:CreateFontString(nil, "ARTWORK")
+		frame.ItemLevelText:Point("BOTTOM", CharacterModelFrame, "BOTTOM", 0, 0)
 	end
 	frame.ItemLevelText:FontTemplate(nil, which == "Inspect" and 12 or 20)
 

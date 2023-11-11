@@ -5,6 +5,7 @@
 	<Script file="Kill.lua"/>
 	<Script file="WatchFrame.lua"/>
 	<Script file="Vehicle.lua"/>
+	<Script file="GuildBank.lua"/>
 	<Script file="GM.lua"/>
 	<Script file="Durability.lua"/>
 	<Script file="CaptureBar.lua"/>

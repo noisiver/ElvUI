@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...))
+local E, L, V, P, G = unpack(ElvUI)
 
 local CopyTable = CopyTable -- Our function doesn't exist yet.
 local next = next
@@ -10,67 +10,88 @@ P.dbConverted = nil
 
 --Core
 P.general = {
-	messageRedirect = _G.DEFAULT_CHAT_FRAME:GetName(),
-	smoothingAmount = 0.33,
+	messageRedirect = DEFAULT_CHAT_FRAME:GetName(),
+	smoothingAmount = 0.33, -- AMOUNT should match in general/smoothie file
 	taintLog = false,
 	stickyFrames = true,
 	loginmessage = true,
-	interruptAnnounce = "NONE",
-	autoRepair = "NONE",
+	interruptAnnounce = 'NONE',
+	autoRepair = 'NONE',
 	autoTrackReputation = false,
 	autoAcceptInvite = false,
+	hideErrorFrame = true,
+	hideZoneText = false,
+	enhancedPvpMessages = true,
+	objectiveFrameHeight = 480,
+	objectiveFrameAutoHide = true,
+	objectiveFrameAutoHideInKeystone = false,
+	bonusObjectivePosition = 'LEFT',
+	talkingHeadFrameScale = 0.9,
+	talkingHeadFrameBackdrop = false,
+	vehicleSeatIndicatorSize = 128,
+	resurrectSound = false,
+	questRewardMostValueIcon = true,
+	questXPPercent = true,
+	durabilityScale = 1,
+	lockCameraDistanceMax = true,
+	cameraDistanceMax = 15,
+	afk = true,
+	afkChat = true,
+	afkSpin = true,
+	cropIcon = 2,
+	objectiveTracker = true,
+	numberPrefixStyle = 'ENGLISH',
+	tagUpdateRate = 0.2, -- eventTimerThreshold
+	decimalLength = 1,
+	fontSize = 12,
+	font = 'PT Sans Narrow',
+	fontStyle = 'OUTLINE',
 	topPanel = false,
-	customGlow = {
-		style = "Pixel Glow",
-		color = { r = 0.09, g = 0.52, b = 0.82, a = 0.9 },
-		useColor = false,
-		speed = 0.3,
-		lines = 8,
-		size = 1,
-	},
-	topPanelSettings = {
-		transparent = true,
-		height = 22,
-		width = 0
-	},
 	bottomPanel = true,
 	bottomPanelSettings = {
 		transparent = true,
 		height = 22,
 		width = 0
 	},
-	hideErrorFrame = true,
-	hideZoneText = false,
-	enhancedPvpMessages = true,
-	objectiveFrameHeight = 480,
-	objectiveFrameAutoHide = true,
-	bonusObjectivePosition = "LEFT",
-	vehicleSeatIndicatorSize = 128,
-	resurrectSound = false,
-	questRewardMostValueIcon = true,
-	questXPPercent = true,
+	topPanelSettings = {
+		transparent = true,
+		height = 22,
+		width = 0
+	},
+	debuffColors = { -- handle colors of LibDispel
+		none = { r = 0.8, g = 0, b = 0 },
+		Magic = { r = 0.2, g = 0.6, b = 1 },
+		Curse = { r = 0.6, g = 0, b = 1 },
+		Disease = { r = 0.6, g = 0.4, b = 0 },
+		Poison = { r = 0, g = 0.6, b = 0 },
+
+		-- These dont exist in Blizzards color table
+		EnemyNPC = { r = 0.9, g = 0.1, b = 0.1 },
+		BadDispel = { r = 0.05, g = 0.85, b = 0.94 },
+		Bleed = { r = 1, g = 0.2, b = 0.6 },
+		Stealable = { r = 0.93, g = 0.91, b = 0.55 },
+	},
+	bordercolor = { r = 0, g = 0, b = 0 }, -- updated in E.Initialize
+	backdropcolor = { r = 0.1, g = 0.1, b = 0.1 },
+	backdropfadecolor = { r = .06, g = .06, b = .06, a = 0.8 },
+	valuecolor = { r = 0.09, g = 0.52, b = 0.82 },
 	itemLevel = {
 		displayCharacterInfo = true,
 		displayInspectInfo = true,
+		itemLevelRarity = true,
 		itemLevelFont = "PT Sans Narrow",
 		itemLevelFontSize = 12,
 		itemLevelFontOutline = "OUTLINE",
 	},
-	durabilityScale = 1,
-	lockCameraDistanceMax = true,
-	cameraDistanceMax = 15,
-	afk = true,
-	afkChat = true,
-	numberPrefixStyle = "ENGLISH",
-	decimalLength = 1,
-	font = "PT Sans Narrow",
-	fontSize = 12,
-	fontStyle = "OUTLINE",
-	bordercolor = {r = 0, g = 0, b = 0},
-	backdropcolor = {r = 0.1, g = 0.1, b = 0.1},
-	backdropfadecolor = {r = 0.06, g = 0.06, b = 0.06, a = 0.8},
-	valuecolor = {r = 0.99, g = 0.48, b = 0.17},
-	cropIcon = 2,
+	customGlow = {
+		style = "Pixel Glow",
+		color = { r = 0.09, g = 0.52, b = 0.82, a = 0.9 },
+		useColor = false,
+		duration = 1,
+		speed = 0.3,
+		lines = 8,
+		size = 1,
+	},
 	minimap = {
 		size = 175,
 		scale = 1,
@@ -155,13 +176,66 @@ P.general = {
 		nameFontSize = 12,
 		nameFontOutline = "OUTLINE",
 	},
-	objectiveTracker = true,
 	totems = { -- totem tracker
 		growthDirection = "VERTICAL",
 		sortDirection = "DESCENDING",
 		size = 40,
 		spacing = 4,
 	},
+	privateAuras = {
+		enable = true,
+		countdownFrame = true,
+		countdownNumbers = true,
+		icon = {
+			offset = 3,
+			point = 'LEFT',
+			amount = 2,
+			size = 32
+		},
+		duration = {
+			enable = true,
+			point = 'BOTTOM',
+			offsetX = 0,
+			offsetY = -1
+		},
+		parent = {
+			point = 'TOP',
+			offsetX = 0,
+			offsetY = 0
+		}
+	},
+	queueStatus = {
+		enable = true,
+		scale = 0.5,
+		position = 'BOTTOMRIGHT',
+		xOffset = -2,
+		yOffset = 2,
+		font = 'Expressway',
+		fontSize = 11,
+		fontOutline = 'OUTLINE',
+		frameStrata = 'MEDIUM',
+		frameLevel = 20
+	},
+	guildBank = {
+		itemQuality = true,
+		itemLevel = true,
+		itemLevelThreshold = 1,
+		itemLevelFont = 'Homespun',
+		itemLevelFontSize = 10,
+		itemLevelFontOutline = 'MONOCHROMEOUTLINE',
+		itemLevelCustomColorEnable = false,
+		itemLevelCustomColor = { r = 1, g = 1, b = 1 },
+		itemLevelPosition = 'BOTTOMRIGHT',
+		itemLevelxOffset = 0,
+		itemLevelyOffset = 2,
+		countFont = 'Homespun',
+		countFontSize = 10,
+		countFontOutline = 'MONOCHROMEOUTLINE',
+		countFontColor = { r = 1, g = 1, b = 1 },
+		countPosition = 'BOTTOMRIGHT',
+		countxOffset = 0,
+		countyOffset = 2,
+	}
 }
 
 --DataBars
@@ -197,7 +271,7 @@ for _, databar in next, {"experience", "reputation", "threat", "petExperience"} 
 		textFormat = "NONE",
 		fontSize = 11,
 		font = "PT Sans Narrow",
-		fontOutline = "NONE",
+		fontOutline = "SHADOW",
 		xOffset = 0,
 		yOffset = 0,
 		displayText = true,
@@ -206,6 +280,7 @@ for _, databar in next, {"experience", "reputation", "threat", "petExperience"} 
 		clickThrough = false,
 		hideInCombat = false,
 		orientation = "AUTOMATIC",
+		reverseFill = false,
 		showBubbles = false,
 		frameStrata = "LOW",
 		frameLevel = 1
@@ -275,20 +350,16 @@ P.bags = {
 	clearSearchOnClose = false,
 	disableBagSort = false,
 	disableBankSort = false,
-	showAssignedColor = true,
 	strata = 'HIGH',
 	qualityColors = true,
 	specialtyColors = true,
 	showBindType = false,
 	transparent = false,
-	showAssignedIcon = true,
 	colors = {
 		profession = {
 			ammoPouch		= { r = 1.00, g = 0.69, b = 0.41 },
-			cooking			= { r = 0.74, g = 0.05, b = 0.21 },
 			enchanting		= { r = 0.72, g = 0.22, b = 0.74 },
 			engineering		= { r = 0.91, g = 0.46, b = 0.18 },
-			fishing			= { r = 0.22, g = 0.46, b = 0.90 },
 			gems			= { r = 0.03, g = 0.65, b = 0.75 },
 			herbs			= { r = 0.28, g = 0.74, b = 0.07 },
 			inscription		= { r = 0.32, g = 0.34, b = 0.98 },
@@ -297,13 +368,6 @@ P.bags = {
 			mining			= { r = 0.54, g = 0.40, b = 0.04 },
 			quiver			= { r = 1.00, g = 0.69, b = 0.41 },
 			soulBag			= { r = 1.00, g = 0.69, b = 0.41 },
-		},
-		assignment = {
-			equipment		= { r = 0.00, g = 0.50, b = 0.47 },
-			consumables		= { r = 0.45, g = 0.74, b = 0.52 },
-			tradegoods		= { r = 0.74, g = 0.23, b = 0.49 },
-			quest			= { r = 0.60, g = 0.20, b = 0.20 },
-			junk			= { r = 0.26, g = 0.26, b = 0.26 },
 		},
 		items = {
 			questStarter	= { r = 1.00, g = 0.96, b = 0.41 },
@@ -1165,7 +1229,7 @@ P.chat = {
 	fade = true,
 	inactivityTimer = 100,
 	font = "PT Sans Narrow",
-	fontOutline = "NONE",
+	fontOutline = "SHADOW",
 	fontSize = 10,
 	sticky = true,
 	emotionIcons = true,
@@ -1176,6 +1240,7 @@ P.chat = {
 	lfgIcons = true,
 	maxLines = 100,
 	channelAlerts = {
+		CHANNEL = {},
 		GUILD = "None",
 		OFFICER = "None",
 		INSTANCE = "None",
@@ -1201,6 +1266,7 @@ P.chat = {
 	tabSelectedTextColor = { r = 1, g = 1, b = 1 },
 	tabSelectorColor = { r = .3, g = 1, b = .3 },
 	timeStampFormat = "NONE",
+	timeStampLocalTime = false,
 	keywords = "ElvUI",
 	separateSizes = false,
 	panelWidth = 412,
@@ -1231,7 +1297,8 @@ P.chat = {
 	socialQueueMessages = false,
 	tabFont = "PT Sans Narrow",
 	tabFontSize = 12,
-	tabFontOutline = "NONE",
+	tabFontOutline = "SHADOW",
+	copyChatLines = false,
 	useBTagName = false,
 	panelColor = {r = .06, g = .06, b = .06, a = 0.8},
 	pinVoiceButtons = true,
@@ -1243,10 +1310,9 @@ P.chat = {
 
 --Datatexts
 P.datatexts = {
-
 	font = "PT Sans Narrow",
 	fontSize = 12,
-	fontOutline = "NONE",
+	fontOutline = "SHADOW",
 	wordWrap = false,
 	panels = {
 		LeftChatDataPanel = {
@@ -1319,10 +1385,10 @@ P.tooltip = {
 	role = true,
 	gender = false,
 	font = "PT Sans Narrow",
-	fontOutline = "NONE",
+	fontOutline = "SHADOW",
 	textFontSize = 12, -- is fontSize (has old name)
 	headerFont = "PT Sans Narrow",
-	headerFontOutline = "NONE",
+	headerFontOutline = "SHADOW",
 	headerFontSize = 13,
 	smallTextFontSize = 12,
 	colorAlpha = 0.8,
@@ -1335,10 +1401,10 @@ P.tooltip = {
 	},
 	healthBar = {
 		text = true,
-		height = 7,
-		font = "Homespun",
-		fontSize = 10,
-		fontOutline = "OUTLINE",
+		height = 12,
+		font = "PT Sans Narrow",
+		fontSize = 12,
+		fontOutline = "SHADOW",
 		statusPosition = "BOTTOM",
 	},
 	useCustomFactionColors = false,
@@ -1362,8 +1428,8 @@ P.unitframe = {
 	fontSize = 10,
 	fontOutline = "MONOCHROMEOUTLINE",
 	debuffHighlighting = "FILL",
-	smartRaidFilter = true,
 	targetOnMouseDown = false,
+	smartRaidFilter = true,
 	auraBlacklistModifier = "SHIFT",
 	thinBorders = false,
 	cooldown = {

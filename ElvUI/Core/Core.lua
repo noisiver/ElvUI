@@ -2,6 +2,7 @@ local ElvUI = select(2, ...)
 ElvUI[2] = ElvUI[1].Libs.ACL:GetLocale("ElvUI", ElvUI[1]:GetLocale()) -- Locale doesn't exist yet, make it exist.
 local E, L, V, P, G = unpack(ElvUI)
 local LC = E.Libs.Compat
+local LCS = E.Libs.LCS
 
 local _G = _G
 local tonumber, pairs, ipairs, error, unpack, select, tostring = tonumber, pairs, ipairs, error, unpack, select, tostring
@@ -24,10 +25,11 @@ local IsInInstance = IsInInstance
 local UnitGUID = UnitGUID
 local UnitLevel = UnitLevel
 local GetBindingKey = GetBindingKey
-local SetBinding = SetBinding
 local SaveBindings = SaveBindings
+local SetBinding = SetBinding
+local UIParent = UIParent
 local GetCurrentBindingSet = GetCurrentBindingSet
-local GetSpecialization = LC.GetSpecialization
+local GetSpecialization = LCS.GetSpecialization
 local GetPhysicalScreenSize = LC.GetPhysicalScreenSize
 
 local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
@@ -41,7 +43,7 @@ local ActionBars = E:GetModule("ActionBars")
 local AFK = E:GetModule("AFK")
 local Auras = E:GetModule("Auras")
 local Bags = E:GetModule("Bags")
--- local Blizzard = E:GetModule("Blizzard")
+local Blizzard = E:GetModule("Blizzard")
 local Chat = E:GetModule("Chat")
 local DataBars = E:GetModule("DataBars")
 local DataTexts = E:GetModule("DataTexts")
@@ -119,21 +121,11 @@ E.InverseAnchors = {
 	TOPRIGHT = "BOTTOMLEFT"
 }
 
-E.ModuleCallbacks = {["CallPriority"] = {}}
-E.InitialModuleCallbacks = {["CallPriority"] = {}}
-
 E.HealingClasses = {
 	PALADIN = 1,
 	SHAMAN = 3,
 	DRUID = 3,
 	PRIEST = {1, 2}
-}
-
--- E.DispelFilter = E.Libs.Dispel:GetMyDispelTypes()
-
-E.BadDispels = {
-	[34914]		= "Vampiric Touch",		-- horrifies
-	[47843]	= "Unstable Affliction"	-- silences
 }
 
 --Workaround for people wanting to use white and it reverting to their class color.

@@ -1,239 +1,241 @@
 local E, L, V, P, G = unpack(select(2, ...))
 local LSM = E.Libs.LSM
-local M = [[Interface\AddOns\ElvUI\Media\]]
 
-function E:TextureString(texString, dataString)
-	return "|T"..texString..(dataString or "").."|t"
-end
+local format, ipairs, type, pcall = format, ipairs, type, pcall
+local westAndRU = LSM.LOCALE_BIT_ruRU + LSM.LOCALE_BIT_western
 
 E.Media = {
-	Arrows = {
-		Arrow0 = M..[[Arrows\Arrow0.tga]],
-		Arrow1 = M..[[Arrows\Arrow1.tga]],
-		Arrow2 = M..[[Arrows\Arrow2.tga]],
-		Arrow3 = M..[[Arrows\Arrow3.tga]],
-		Arrow4 = M..[[Arrows\Arrow4.tga]],
-		Arrow5 = M..[[Arrows\Arrow5.tga]],
-		Arrow6 = M..[[Arrows\Arrow6.tga]],
-		Arrow7 = M..[[Arrows\Arrow7.tga]],
-		Arrow8 = M..[[Arrows\Arrow8.tga]],
-		Arrow9 = M..[[Arrows\Arrow9.tga]],
-		Arrow10 = M..[[Arrows\Arrow10.tga]],
-		Arrow11 = M..[[Arrows\Arrow11.tga]],
-		Arrow12 = M..[[Arrows\Arrow12.tga]],
-		Arrow13 = M..[[Arrows\Arrow13.tga]],
-		Arrow14 = M..[[Arrows\Arrow14.tga]],
-		Arrow15 = M..[[Arrows\Arrow15.tga]],
-		Arrow16 = M..[[Arrows\Arrow16.tga]],
-		Arrow17 = M..[[Arrows\Arrow17.tga]],
-		Arrow18 = M..[[Arrows\Arrow18.tga]],
-		Arrow19 = M..[[Arrows\Arrow19.tga]],
-		Arrow20 = M..[[Arrows\Arrow20.tga]],
-		Arrow21 = M..[[Arrows\Arrow21.tga]],
-		Arrow22 = M..[[Arrows\Arrow22.tga]],
-		Arrow23 = M..[[Arrows\Arrow23.tga]],
-		Arrow24 = M..[[Arrows\Arrow24.tga]],
-		Arrow25 = M..[[Arrows\Arrow25.tga]],
-		Arrow26 = M..[[Arrows\Arrow26.tga]],
-		Arrow27 = M..[[Arrows\Arrow27.tga]],
-		Arrow28 = M..[[Arrows\Arrow28.tga]],
-		Arrow29 = M..[[Arrows\Arrow29.tga]],
-		Arrow30 = M..[[Arrows\Arrow30.tga]],
-		Arrow31 = M..[[Arrows\Arrow31.tga]],
-		Arrow32 = M..[[Arrows\Arrow32.tga]],
-		Arrow33 = M..[[Arrows\Arrow33.tga]],
-		Arrow34 = M..[[Arrows\Arrow34.tga]],
-		Arrow35 = M..[[Arrows\Arrow35.tga]],
-		Arrow36 = M..[[Arrows\Arrow36.tga]],
-		Arrow37 = M..[[Arrows\Arrow37.tga]],
-		Arrow38 = M..[[Arrows\Arrow38.tga]],
-		Arrow39 = M..[[Arrows\Arrow39.tga]],
-		Arrow40 = M..[[Arrows\Arrow40.tga]],
-		Arrow41 = M..[[Arrows\Arrow41.tga]],
-		Arrow42 = M..[[Arrows\Arrow42.tga]],
-		Arrow43 = M..[[Arrows\Arrow43.tga]],
-		Arrow44 = M..[[Arrows\Arrow44.tga]],
-		Arrow45 = M..[[Arrows\Arrow45.tga]],
-		Arrow46 = M..[[Arrows\Arrow46.tga]],
-		Arrow47 = M..[[Arrows\Arrow47.tga]],
-		Arrow48 = M..[[Arrows\Arrow48.tga]],
-		Arrow49 = M..[[Arrows\Arrow49.tga]],
-		Arrow50 = M..[[Arrows\Arrow50.tga]],
-		Arrow51 = M..[[Arrows\Arrow51.tga]],
-		Arrow52 = M..[[Arrows\Arrow52.tga]],
-		Arrow53 = M..[[Arrows\Arrow53.tga]],
-		Arrow54 = M..[[Arrows\Arrow54.tga]],
-		Arrow55 = M..[[Arrows\Arrow55.tga]],
-		Arrow56 = M..[[Arrows\Arrow56.tga]],
-		Arrow57 = M..[[Arrows\Arrow57.tga]],
-		Arrow58 = M..[[Arrows\Arrow58.tga]],
-		Arrow59 = M..[[Arrows\Arrow59.tga]],
-		Arrow60 = M..[[Arrows\Arrow60.tga]],
-		Arrow61 = M..[[Arrows\Arrow61.tga]],
-		Arrow62 = M..[[Arrows\Arrow62.tga]],
-		Arrow63 = M..[[Arrows\Arrow63.tga]],
-		Arrow64 = M..[[Arrows\Arrow64.tga]],
-		Arrow65 = M..[[Arrows\Arrow65.tga]],
-		Arrow66 = M..[[Arrows\Arrow66.tga]],
-		Arrow67 = M..[[Arrows\Arrow67.tga]],
-		Arrow68 = M..[[Arrows\Arrow68.tga]],
-		Arrow69 = M..[[Arrows\Arrow69.tga]],
-		Arrow70 = M..[[Arrows\Arrow70.tga]],
-		Arrow71 = M..[[Arrows\Arrow71.tga]],
-		Arrow72 = M..[[Arrows\Arrow72.tga]],
-		ArrowRed = M..[[Arrows\ArrowRed.tga]],
-		ArrowUp = M..[[Textures\ArrowUp.tga]],
-		OldArrow2 = M..[[Arrows\OldArrow2.tga]],
-		RLArrow = M..[[Arrows\RLArrow.tga]]
-	},
-	Fonts = {
-		ActionMan = M..[[Fonts\ActionMan.ttf]],
-		ContinuumMedium = M..[[Fonts\ContinuumMedium.ttf]],
-		DieDieDie = M..[[Fonts\DieDieDie.ttf]],
-		Expressway = M..[[Fonts\Expressway.ttf]],
-		Homespun = M..[[Fonts\Homespun.ttf]],
-		Invisible = M..[[Fonts\Invisible.ttf]],
-		PTSansNarrow = M..[[Fonts\PTSansNarrow.ttf]]
-	},
-	Sounds = {
-		AwwCrap = M..[[Sounds\AwwCrap.ogg]],
-		BbqAss = M..[[Sounds\BbqAss.ogg]],
-		DumbShit = M..[[Sounds\DumbShit.ogg]],
-		HarlemShake = M..[[Sounds\HarlemShake.ogg]],
-		HelloKitty = M..[[Sounds\HelloKitty.ogg]],
-		MamaWeekends = M..[[Sounds\MamaWeekends.ogg]],
-		RunFast = M..[[Sounds\RunFast.ogg]],
-		ElvUIAska = M..[[Sounds\SndIncMsg.ogg]],
-		StopRunningSlimeBall = M..[[Sounds\StopRunningSlimeBall.ogg]],
-		Warning = M..[[Sounds\Warning.ogg]],
-		Whisper = M..[[Sounds\Whisper.ogg]],
-		YankieBangBang = M..[[Sounds\YankieBangBang.ogg]],
-		Resurrect = M..[[Sounds\Resurrect.ogg]]
-	},
-	ChatEmojis = {
-		Angry = M..[[ChatEmojis\Angry.tga]],
-		Blush = M..[[ChatEmojis\Blush.tga]],
-		BrokenHeart = M..[[ChatEmojis\BrokenHeart.tga]],
-		CallMe = M..[[ChatEmojis\CallMe.tga]],
-		Cry = M..[[ChatEmojis\Cry.tga]],
-		Facepalm = M..[[ChatEmojis\Facepalm.tga]],
-		Grin = M..[[ChatEmojis\Grin.tga]],
-		Heart = M..[[ChatEmojis\Heart.tga]],
-		HeartEyes = M..[[ChatEmojis\HeartEyes.tga]],
-		Joy = M..[[ChatEmojis\Joy.tga]],
-		Kappa = M..[[ChatEmojis\Kappa.tga]],
-		Meaw = M..[[ChatEmojis\Meaw.tga]],
-		MiddleFinger = M..[[ChatEmojis\MiddleFinger.tga]],
-		Murloc = M..[[ChatEmojis\Murloc.tga]],
-		OkHand = M..[[ChatEmojis\OkHand.tga]],
-		OpenMouth = M..[[ChatEmojis\OpenMouth.tga]],
-		Poop = M..[[ChatEmojis\Poop.tga]],
-		Rage = M..[[ChatEmojis\Rage.tga]],
-		SadKitty = M..[[ChatEmojis\SadKitty.tga]],
-		Scream = M..[[ChatEmojis\Scream.tga]],
-		ScreamCat = M..[[ChatEmojis\ScreamCat.tga]],
-		SemiColon = M..[[ChatEmojis\SemiColon.tga]],
-		SlightFrown = M..[[ChatEmojis\SlightFrown.tga]],
-		Smile = M..[[ChatEmojis\Smile.tga]],
-		Smirk = M..[[ChatEmojis\Smirk.tga]],
-		Sob = M..[[ChatEmojis\Sob.tga]],
-		StuckOutTongue = M..[[ChatEmojis\StuckOutTongue.tga]],
-		StuckOutTongueClosedEyes = M..[[ChatEmojis\StuckOutTongueClosedEyes.tga]],
-		Sunglasses = M..[[ChatEmojis\Sunglasses.tga]],
-		Thinking = M..[[ChatEmojis\Thinking.tga]],
-		ThumbsUp = M..[[ChatEmojis\ThumbsUp.tga]],
-		Wink = M..[[ChatEmojis\Wink.tga]],
-		ZZZ = M..[[ChatEmojis\ZZZ.tga]]
-	},
-	ChatLogos = {
-		ElvRainbow = M..[[ChatLogos\ElvRainbow.tga]],
-		ElvMelon = M..[[ChatLogos\ElvMelon.tga]],
-		ElvBlue = M..[[ChatLogos\ElvBlue.tga]],
-		ElvGreen = M..[[ChatLogos\ElvGreen.tga]],
-		ElvOrange = M..[[ChatLogos\ElvOrange.tga]],
-		ElvPink = M..[[ChatLogos\ElvPink.tga]],
-		ElvPurple = M..[[ChatLogos\ElvPurple.tga]],
-		ElvYellow = M..[[ChatLogos\ElvYellow.tga]],
-		ElvRed = M..[[ChatLogos\ElvRed.tga]],
-		Bathrobe = M..[[ChatLogos\Bathrobe.tga]],
-		HelloKitty = M..[[ChatLogos\HelloKitty.tga]],
-		Illuminati = M..[[ChatLogos\Illuminati.tga]],
-		MrHankey = M..[[ChatLogos\MrHankey.tga]],
-		Rainbow = M..[[ChatLogos\Rainbow.tga]],
-		TyroneBiggums = M..[[ChatLogos\TyroneBiggums.tga]]
-	},
-	Textures = {
-		AllianceLogo = M..[[Textures\Alliance-Logo.blp]],
-		Arrow = M..[[Textures\Arrow.tga]],
-		ArrowRight = M..[[Textures\ArrowRight.tga]],
-		ArrowUp = M..[[Textures\ArrowUp.tga]],
-		Backpack = M..[[Textures\Backpack.blp]],
-		BagJunkIcon = M..[[Textures\BagJunkIcon.blp]],
-		BagQuestIcon = M..[[Textures\BagQuestIcon.tga]],
-		Black8x8 = M..[[Textures\Black8x8.tga]],
-		BubbleTex = M..[[Textures\BubbleTex.tga]],
-		White8x8 = [[Interface\BUTTONS\WHITE8X8]], -- not elvui
-		Broom = M..[[Textures\Broom.blp]],
-		ChatEmojis = M..[[Textures\ChatEmojis]],
-		ChatLogos = M..[[Textures\ChatLogos]],
-		ChestPlate = M..[[Textures\ChestPlate]],
-		Close = M..[[Textures\Close.tga]],
-		Coins = M..[[Textures\Coins.tga]],
-		Combat = M..[[Textures\Combat.tga]],
-		Copy = M..[[Textures\Copy.tga]],
-		Cross = M..[[Textures\Cross.tga]],
-		DPS = M..[[Textures\DPS.tga]],
-		ExitVehicle = M..[[Textures\ExitVehicle.tga]],
-		FabricSilk = M..[[Textures\FabricSilk.tga]],
-		GoldCoins = M..[[Textures\GoldCoins.tga]],
-		GreenPotion = M..[[Textures\GreenPotion.tga]],
-		GlowTex = M..[[Textures\GlowTex.tga]],
-		Healer = M..[[Textures\Healer.tga]],
-		Help = M..[[Textures\Help.tga]],
-		HelloKitty = M..[[Textures\HelloKitty.tga]],
-		HelloKittyChat = M..[[Textures\HelloKittyChat.tga]],
-		Highlight = M..[[Textures\Highlight.tga]],
-		Invisible = M..[[Textures\Invisible.tga]],
-		LeaderHQ = M..[[Textures\LeaderHQ.tga]],
-		LogoBottom = M..[[Textures\LogoBottom.tga]],
-		LogoBottomSmall = M..[[Textures\LogoBottomSmall.tga]],
-		LogoTop = M..[[Textures\LogoTop.tga]],
-		LogoTopSmall = M..[[Textures\LogoTopSmall.tga]],
-		Minus = M..[[Textures\Minus.tga]],
-		MinusButton = M..[[Textures\MinusButton.tga]],
-		HordeLogo = M..[[Textures\Horde-Logo.blp]],
-		Leader = M..[[Textures\Leader.tga]],
-		LevelUpTex = M..[[Textures\LevelUpTex.blp]],
-		Logo = M..[[Textures\Logo.tga]],
-		Mail = M..[[Textures\Mail.tga]],
-		Melli = M..[[Textures\Melli.tga]],
-		Minimalist = M..[[Textures\Minimalist.tga]],
-		Nameplates = M..[[Textures\Nameplates.blp]],
-		NormTex = M..[[Textures\NormTex.tga]],
-		NormTex2 = M..[[Textures\NormTex2.tga]],
-		Pause = M..[[Textures\Pause.tga]],
-		PetBroom = M..[[Textures\PetBroom.tga]],
-		Planks = M..[[Textures\Planks.tga]],
-		Play = M..[[Textures\Play.tga]],
-		Plus = M..[[Textures\Plus.tga]],
-		PlusButton = M..[[Textures\PlusButton.tga]],
-		PvPIcons = M..[[Textures\PVP-Icons.blp]],
-		RaidIcons = M..[[Textures\RaidIcons.blp]],
-		Reset = M..[[Textures\Reset.tga]],
-		Resting = M..[[Textures\Resting.tga]],
-		Resting1 = M..[[Textures\Resting1.tga]],
-		RoleIcons = M..[[Textures\RoleIcons.tga]],
-		Scroll = M..[[Textures\Scroll.tga]],
-		SkullIcon = M..[[Textures\SkullIcon.tga]],
-		Smooth = M..[[Textures\Smooth.tga]],
-		Spark = M..[[Textures\Spark.tga]],
-		StreamBackground = M..[[Textures\StreamBackground]],
-		StreamCircle = M..[[Textures\StreamCircle]],
-		StreamFrame = M..[[Textures\StreamFrame]],
-		StreamSpark = M..[[Textures\StreamSpark]],
-		Tank = M..[[Textures\Tank.tga]]
+	Fonts = {},
+	Sounds = {},
+	Arrows = {},
+	MailIcons = {},
+	RestIcons = {},
+	ChatEmojis = {},
+	ChatLogos = {},
+	Textures = {},
+	CombatIcons = {
+		DEFAULT = [[Interface\CharacterFrame\UI-StateIcon]],
+		PLATINUM = [[Interface\Challenges\ChallengeMode_Medal_Platinum]],
+		ATTACK = [[Interface\CURSOR\Attack]],
+		ALERT = [[Interface\DialogFrame\UI-Dialog-Icon-AlertNew]],
+		ALERT2 = [[Interface\OptionsFrame\UI-OptionsFrame-NewFeatureIcon]],
+		ARTHAS = [[Interface\LFGFRAME\UI-LFR-PORTRAIT]],
+		SKULL = [[Interface\LootFrame\LootPanel-Icon]]
 	}
 }
+
+local MediaKey = {
+	font	= 'Fonts',
+	sound	= 'Sounds',
+	arrow	= 'Arrows',
+	mail	= 'MailIcons',
+	resting = 'RestIcons',
+	emoji	= 'ChatEmojis',
+	logo	= 'ChatLogos',
+	texture	= 'Textures'
+}
+
+local MediaPath = {
+	font	= [[Interface\AddOns\ElvUI\Media\Fonts\]],
+	sound	= [[Interface\AddOns\ElvUI\Media\Sounds\]],
+	arrow	= [[Interface\AddOns\ElvUI\Media\Arrows\]],
+	mail	= [[Interface\AddOns\ElvUI\Media\MailIcons\]],
+	resting = [[Interface\AddOns\ElvUI\Media\RestIcons\]],
+	emoji	= [[Interface\AddOns\ElvUI\Media\ChatEmojis\]],
+	logo	= [[Interface\AddOns\ElvUI\Media\ChatLogos\]],
+	texture	= [[Interface\AddOns\ElvUI\Media\Textures\]]
+}
+
+do
+	local t, d = '|T%s%s|t', ''
+	function E:TextureString(texture, data)
+		return format(t, texture, data or d)
+	end
+end
+
+local function AddMedia(Type, File, Name, CustomType, Mask)
+	local path = MediaPath[Type]
+	if path then
+		local key = File:gsub('%.%w-$','')
+		local file = path .. File
+
+		local pathKey = MediaKey[Type]
+		if pathKey then E.Media[pathKey][key] = file end
+
+		if Name then -- Register to LSM
+			local nameKey = (Name == true and key) or Name
+			if type(CustomType) == 'table' then
+				for _, name in ipairs(CustomType) do
+					LSM:Register(name, nameKey, file, Mask)
+				end
+			else
+				LSM:Register(CustomType or Type, nameKey, file, Mask)
+			end
+		end
+	end
+end
+
+-- Name as true will add the Key as it's name
+AddMedia('font','ActionMan.ttf',			'Action Man')
+AddMedia('font','ContinuumMedium.ttf',		'Continuum Medium')
+AddMedia('font','DieDieDie.ttf',			'Die Die Die!')
+AddMedia('font','PTSansNarrow.ttf',			'PT Sans Narrow', nil, westAndRU)
+AddMedia('font','Expressway.ttf',			true, nil, westAndRU)
+AddMedia('font','Homespun.ttf',				true, nil, westAndRU)
+AddMedia('font','Invisible.ttf')
+
+AddMedia('sound','AwwCrap.ogg',					'Awww Crap')
+AddMedia('sound','BbqAss.ogg',					'BBQ Ass')
+AddMedia('sound','DumbShit.ogg',				'Dumb Shit')
+AddMedia('sound','MamaWeekends.ogg',			'Mama Weekends')
+AddMedia('sound','RunFast.ogg',					'Runaway Fast')
+AddMedia('sound','StopRunningSlimeBall.ogg',	'Stop Running')
+AddMedia('sound','Whisper.ogg',					'Whisper Alert')
+AddMedia('sound','YankieBangBang.ogg',			'Big Yankie Devil')
+
+AddMedia('texture','GlowTex',		'ElvUI GlowBorder', 'border')
+AddMedia('texture','NormTex',		'ElvUI Gloss',	'statusbar')
+AddMedia('texture','NormTex2',		'ElvUI Norm',	'statusbar')
+AddMedia('texture','NormTex3',		'ElvUI Norm1',	'statusbar')
+AddMedia('texture','White8x8',		'ElvUI Blank', {'statusbar','background'})
+AddMedia('texture','Minimalist',	true, 'statusbar')
+AddMedia('texture','Melli',			true, 'statusbar')
+
+for i = 0, 7 do -- mail icons
+	AddMedia('mail','Mail'..i)
+end
+
+for i = 0, 2 do -- resting icons
+	AddMedia('resting','Resting'..i)
+end
+
+-- nameplate target arrows
+AddMedia('arrow', 'ArrowRed')
+for i = 0, 72 do
+	AddMedia('arrow', 'Arrow'..i)
+end
+
+AddMedia('texture', 'AllianceLogo')
+AddMedia('texture', 'Arrow')
+AddMedia('texture', 'ArrowRight')
+AddMedia('texture', 'ArrowUp')
+AddMedia('texture', 'Backpack')
+AddMedia('texture', 'BagJunkIcon')
+AddMedia('texture', 'BagQuestIcon')
+AddMedia('texture', 'Black8x8')
+AddMedia('texture', 'BubbleTex')
+AddMedia('texture', 'White8x8')
+AddMedia('texture', 'Broom')
+AddMedia('texture', 'ChatEmojis')
+AddMedia('texture', 'ChatLogos')
+AddMedia('texture', 'ChestPlate')
+AddMedia('texture', 'Close')
+AddMedia('texture', 'Coins')
+AddMedia('texture', 'Combat')
+AddMedia('texture', 'Copy')
+AddMedia('texture', 'Cross')
+AddMedia('texture', 'DPS')
+AddMedia('texture', 'ExitVehicle')
+AddMedia('texture', 'FabricSilk')
+AddMedia('texture', 'GoldCoins')
+AddMedia('texture', 'GreenPotion')
+AddMedia('texture', 'GlowTex')
+AddMedia('texture', 'Healer')
+AddMedia('texture', 'Help')
+AddMedia('texture', 'HelloKitty')
+AddMedia('texture', 'HelloKittyChat')
+AddMedia('texture', 'Highlight')
+AddMedia('texture', 'Invisible')
+AddMedia('texture', 'LeaderHQ')
+AddMedia('texture', 'LogoBottom')
+AddMedia('texture', 'LogoBottomSmall')
+AddMedia('texture', 'LogoTop')
+AddMedia('texture', 'LogoTopSmall')
+AddMedia('texture', 'Minus')
+AddMedia('texture', 'MinusButton')
+AddMedia('texture', 'HordeLogo')
+AddMedia('texture', 'Leader')
+AddMedia('texture', 'LevelUpTex')
+AddMedia('texture', 'Logo')
+AddMedia('texture', 'Mail')
+AddMedia('texture', 'Melli')
+AddMedia('texture', 'Minimalist')
+AddMedia('texture', 'Nameplates')
+AddMedia('texture', 'NormTex')
+AddMedia('texture', 'NormTex2')
+AddMedia('texture', 'Pause')
+AddMedia('texture', 'PetBroom')
+AddMedia('texture', 'Planks')
+AddMedia('texture', 'Play')
+AddMedia('texture', 'Plus')
+AddMedia('texture', 'PlusButton')
+AddMedia('texture', 'Reset')
+AddMedia('texture', 'Resize')
+AddMedia('texture', 'Resize2')
+AddMedia('texture', 'PvPIcons')
+AddMedia('texture', 'RaidIcons')
+AddMedia('texture', 'Resting')
+AddMedia('texture', 'Resting1')
+AddMedia('texture', 'RoleIcons')
+AddMedia('texture', 'Scroll')
+AddMedia('texture', 'SkullIcon')
+AddMedia('texture', 'Smooth')
+AddMedia('texture', 'Spark')
+AddMedia('texture', 'StreamBackground')
+AddMedia('texture', 'StreamCircle')
+AddMedia('texture', 'StreamFrame')
+AddMedia('texture', 'StreamSpark')
+AddMedia('texture', 'Tank')
+
+AddMedia('emoji', 'Angry')
+AddMedia('emoji', 'Blush')
+AddMedia('emoji', 'BrokenHeart')
+AddMedia('emoji', 'CallMe')
+AddMedia('emoji', 'Cry')
+AddMedia('emoji', 'Facepalm')
+AddMedia('emoji', 'Grin')
+AddMedia('emoji', 'Heart')
+AddMedia('emoji', 'HeartEyes')
+AddMedia('emoji', 'Joy')
+AddMedia('emoji', 'Kappa')
+AddMedia('emoji', 'Meaw')
+AddMedia('emoji', 'MiddleFinger')
+AddMedia('emoji', 'Murloc')
+AddMedia('emoji', 'OkHand')
+AddMedia('emoji', 'OpenMouth')
+AddMedia('emoji', 'Poop')
+AddMedia('emoji', 'Rage')
+AddMedia('emoji', 'SadKitty')
+AddMedia('emoji', 'Scream')
+AddMedia('emoji', 'ScreamCat')
+AddMedia('emoji', 'SemiColon')
+AddMedia('emoji', 'SlightFrown')
+AddMedia('emoji', 'Smile')
+AddMedia('emoji', 'Smirk')
+AddMedia('emoji', 'Sob')
+AddMedia('emoji', 'StuckOutTongue')
+AddMedia('emoji', 'StuckOutTongueClosedEyes')
+AddMedia('emoji', 'Sunglasses')
+AddMedia('emoji', 'Thinking')
+AddMedia('emoji', 'ThumbsUp')
+AddMedia('emoji', 'Wink')
+AddMedia('emoji', 'ZZZ')
+
+AddMedia('logo', 'ElvRainbow')
+AddMedia('logo', 'ElvMelon')
+AddMedia('logo', 'ElvBlue')
+AddMedia('logo', 'ElvGreen')
+AddMedia('logo', 'ElvOrange')
+AddMedia('logo', 'ElvPink')
+AddMedia('logo', 'ElvPurple')
+AddMedia('logo', 'ElvYellow')
+AddMedia('logo', 'ElvRed')
+AddMedia('logo', 'Bathrobe')
+AddMedia('logo', 'HelloKitty')
+AddMedia('logo', 'Illuminati')
+AddMedia('logo', 'MrHankey')
+AddMedia('logo', 'Rainbow')
+AddMedia('logo', 'TyroneBiggums')
 
 LSM:Register("border", "ElvUI GlowBorder", E.Media.Textures.GlowTex)
 LSM:Register("font", "Continuum Medium", E.Media.Fonts.ContinuumMedium)
@@ -259,3 +261,44 @@ LSM:Register("statusbar", "ElvUI Norm", E.Media.Textures.NormTex2)
 LSM:Register("statusbar", "Minimalist", E.Media.Textures.Minimalist)
 LSM:Register("statusbar", "ElvUI Blank", E.Media.Textures.White8x8)
 LSM:Register("background", "ElvUI Blank", E.Media.Textures.White8x8)
+
+
+do -- LSM Font Preloader ~Simpy
+	local preloader = CreateFrame('Frame')
+	preloader:SetPoint('TOP', UIParent, 'BOTTOM', 0, -500)
+	preloader:SetSize(100, 100)
+
+	local cacheFont = function(key, data)
+		local loadFont = preloader:CreateFontString()
+		loadFont:SetAllPoints()
+
+		if pcall(loadFont.SetFont, loadFont, data, 14) then
+			pcall(loadFont.SetText, loadFont, 'cache')
+		end
+	end
+
+	-- Preload ElvUI Invisible
+	cacheFont('Invisible', E.Media.Fonts.Invisible)
+
+	-- Lets load all the fonts in LSM to prevent fonts not being ready
+	local sharedFonts = LSM:HashTable('font')
+	for key, data in next, sharedFonts do
+		cacheFont(key, data)
+	end
+
+	-- this helps fix most of the issues with fonts or textures reverting to default because the addon providing them is loading after ElvUI
+	local callMedia = function(mediaType) E:UpdateMedia(mediaType) end
+
+	-- Now lets hook it so we can preload any other AddOns add to LSM
+	hooksecurefunc(LSM, 'Register', function(_, mediaType, key, data)
+		if not mediaType or type(mediaType) ~= 'string' then return end
+
+		local mtype = mediaType:lower()
+		if mtype == 'font' then
+			cacheFont(key, data)
+			callMedia(mtype)
+		elseif mtype == 'background' or mtype == 'statusbar' then
+			callMedia(mtype)
+		end
+	end)
+end

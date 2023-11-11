@@ -3,7 +3,6 @@ local DT = E:GetModule("DataTexts")
 
 local _G = _G
 local strjoin = strjoin
-local InCombatLockdown = InCombatLockdown
 
 local NOT_APPLICABLE = NOT_APPLICABLE
 
@@ -13,7 +12,6 @@ local mapInfo = E.MapInfo
 
 local function Update(self, elapsed)
 	if inRestrictedArea or not mapInfo.coordsWatching then return end
-	print(mapInfo)
 
 	self.timeSinceUpdate = (self.timeSinceUpdate or 0) + elapsed
 
@@ -34,8 +32,9 @@ local function OnEvent(self)
 end
 
 local function Click()
-	if InCombatLockdown() then _G.UIErrorsFrame:AddMessage(E.InfoColor.._G.ERR_NOT_IN_COMBAT) return end
-	_G.ToggleFrame(_G.WorldMapFrame)
+	if not E:AlertCombat() then
+		_G.ToggleFrame(_G.WorldMapFrame)
+	end
 end
 
 local function ApplySettings(_, hex)

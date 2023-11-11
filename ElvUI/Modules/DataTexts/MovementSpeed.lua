@@ -1,11 +1,13 @@
 local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
 
-local strjoin = string.join
+local strjoin = strjoin
 local IsFalling = IsFalling
 local IsFlying = IsFlying
 local IsSwimming = IsSwimming
 local GetUnitSpeed = GetUnitSpeed
+
+local BASE_MOVEMENT_SPEED = 7
 
 local displayString, db = ""
 local beforeFalling, wasFlying
@@ -15,12 +17,9 @@ local function DelayUpdate(self)
 	local unitSpeed = GetUnitSpeed("player")
 	local speed
 
-	if IsSwimming() then
+	if IsSwimming() or IsFlying() then
 		speed = unitSpeed
 		wasFlying = false
-	elseif IsFlying() then
-		speed = unitSpeed
-		wasFlying = true
 	else
 		speed = unitSpeed
 		wasFlying = false
@@ -32,7 +31,7 @@ local function DelayUpdate(self)
 		beforeFalling = speed
 	end
 
-	local percent = speed / 7 * 100
+	local percent = speed / BASE_MOVEMENT_SPEED * 100
 	if db.NoLabel then
 		self.text:SetFormattedText(displayString, percent)
 	else
@@ -42,9 +41,9 @@ local function DelayUpdate(self)
 	delayed = nil
 end
 
-local function OnEvent(self)
+local function OnEvent(self, event)
 	if not delayed then
-		delayed = E:ScheduleRepeatingTimer(DelayUpdate, 0.5, self)
+		delayed = E:ScheduleRepeatingTimer(DelayUpdate, 1, self)
 	end
 end
 

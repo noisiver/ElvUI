@@ -2,15 +2,14 @@ local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule("DataTexts")
 
 local date = date
-local InCombatLockdown = InCombatLockdown
-
-local displayString
 
 local SHORTDATE = "%2$d/%1$02d/%3$02d";
 local SHORTDATENOYEAR = "%2$d/%1$02d";
 local SHORTDATENOYEAR_EU = "%1$d/%2$d";
 local SHORTDATE_EU = "%1$d/%2$d/%3$02d";
 local locale = E:GetLocale()
+
+local displayString
 
 local function FormatShortDate(day, month, year)
     if year then
@@ -29,8 +28,9 @@ local function FormatShortDate(day, month, year)
 end
 
 local function OnClick()
-	if InCombatLockdown() then UIErrorsFrame:AddMessage(E.InfoColor..ERR_NOT_IN_COMBAT) return end
-	GameTimeFrame:Click()
+    if not E:AlertCombat() then
+	    GameTimeFrame:Click()
+    end
 end
 
 local function OnEvent(self)

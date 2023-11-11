@@ -30,7 +30,7 @@
 -- @name AceAddon-3.0.lua
 -- @release $Id$
 
-local MAJOR, MINOR = "AceAddon-3.0", 12
+local MAJOR, MINOR = "AceAddon-3.0", 13
 local AceAddon, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceAddon then return end -- No Upgrade needed.
@@ -49,12 +49,8 @@ local select, pairs, next, type, unpack = select, pairs, next, type, unpack
 local loadstring, assert, error = loadstring, assert, error
 local setmetatable, getmetatable, rawset, rawget = setmetatable, getmetatable, rawset, rawget
 
--- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
--- List them here for Mikk's FindGlobals script
--- GLOBALS: LibStub, IsLoggedIn, geterrorhandler
-
 --[[
-	xpcall safecall implementation
+	 xpcall safecall implementation
 ]]
 local xpcall = xpcall
 
@@ -641,8 +637,8 @@ local BlizzardEarlyLoadAddons = {
 
 -- Event Handling
 local function onEvent(this, event, arg1)
-	-- 2011-08-17 nevcairiel - ignore the load event of Blizzard_DebugTools, so a potential startup error isn't swallowed up
-	if (event == "ADDON_LOADED" and (arg1 == nil or not BlizzardEarlyLoadAddons[arg1])) or event == "PLAYER_LOGIN" then
+	-- 2020-08-28 nevcairiel - ignore the load event of Blizzard addons which occur early in the loading process
+	if (event == "ADDON_LOADED"  and (arg1 == nil or not BlizzardEarlyLoadAddons[arg1])) or event == "PLAYER_LOGIN" then
 		-- if a addon loads another addon, recursion could happen here, so we need to validate the table on every iteration
 		while(#AceAddon.initializequeue > 0) do
 			local addon = tremove(AceAddon.initializequeue, 1)

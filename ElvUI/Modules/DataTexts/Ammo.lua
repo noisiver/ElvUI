@@ -5,13 +5,12 @@ local B = E:GetModule("Bags")
 local select, wipe = select, wipe
 local format, strjoin = format, strjoin
 
-local _G = _G
+local GetAuctionItemSubClasses = GetAuctionItemSubClasses
 local GetItemInfo = GetItemInfo
 local GetItemCount = GetItemCount
 local GetInventoryItemCount = GetInventoryItemCount
 local GetInventoryItemID = GetInventoryItemID
 local ContainerIDToInventoryID = ContainerIDToInventoryID
-local GetContainerItemInfo = GetContainerItemInfo
 local GetContainerNumSlots = GetContainerNumSlots
 local GetContainerNumFreeSlots = GetContainerNumFreeSlots
 local GetItemQualityColor = GetItemQualityColor
@@ -21,10 +20,12 @@ local NUM_BAG_FRAMES = NUM_BAG_FRAMES
 local INVTYPE_AMMO = INVTYPE_AMMO
 local INVSLOT_RANGED = INVSLOT_RANGED
 local INVSLOT_AMMO = INVSLOT_AMMO
-local LE_ITEM_CLASS_QUIVER = LE_ITEM_CLASS_QUIVER
-local LE_ITEM_CLASS_CONTAINER = LE_ITEM_CLASS_CONTAINER
 
-local iconString = "|T%s:16:16:0:0:64:64:4:55:4:55|t"
+local QUIVER = select(1, GetAuctionItemSubClasses(8))
+local POUCH = select(2, GetAuctionItemSubClasses(8))
+local SOULBAG = select(2, GetAuctionItemSubClasses(3))
+
+local iconString = "|T%s:24:24:0:0:64:64:4:55:4:55|t"
 local displayString = ""
 local itemName = {}
 
@@ -94,7 +95,7 @@ local function OnEnter()
 
 		for containerIndex = 0, NUM_BAG_FRAMES do
 			for slotIndex = 1, GetContainerNumSlots(containerIndex) do
-				local info = GetContainerItemInfo(containerIndex, slotIndex)
+				local info = B:GetContainerItemInfo(containerIndex, slotIndex)
 				if info and info.itemID and not itemCount[info.itemID] then
 					local name, _, quality, _, _, _, _, _, equipLoc, texture = GetItemInfo(info.hyperlink)
 					local count = GetItemCount(info.itemID)
@@ -112,8 +113,8 @@ local function OnEnter()
 	for i = 1, NUM_BAG_SLOTS do
 		local itemID = GetInventoryItemID("player", ContainerIDToInventoryID(i))
 		if itemID then
-			local name, _, quality, _, _, _, itemSubType, _, _, texture, itemClassID, itemSubClassID = GetItemInfo(itemID)
-			if itemSubClassID == LE_ITEM_CLASS_QUIVER or itemClassID == LE_ITEM_CLASS_CONTAINER and itemSubClassID == 1 then
+			local name, _, quality, _, _, itemType, itemSubType, _, _, texture = GetItemInfo(itemID)
+			if (itemSubType == QUIVER or itemSubType == POUCH or itemSubType == SOULBAG) or (itemType == "Container" and (itemSubType == QUIVER or itemSubType == POUCH or itemSubType == SOULBAG)) then
 				local free, total = GetContainerNumFreeSlots(i), GetContainerNumSlots(i)
 				local used = total - free
 
@@ -132,17 +133,17 @@ local function OnClick(_, btn)
 			for i = 1, NUM_BAG_SLOTS do
 				local itemID = GetInventoryItemID("player", ContainerIDToInventoryID(i))
 				if itemID then
-					local itemClassID, itemSubClassID = select(11, GetItemInfo(itemID))
-					if itemSubClassID == LE_ITEM_CLASS_QUIVER or itemClassID == LE_ITEM_CLASS_CONTAINER and itemSubClassID == 1 then
-						_G.ToggleBag(i)
+					local itemType, itemSubType = select(6, GetItemInfo(itemID))
+					if (itemSubType == QUIVER or itemSubType == POUCH or itemSubType == SOULBAG) or (itemType == "Container" and (itemSubType == QUIVER or itemSubType == POUCH or itemSubType == SOULBAG)) then
+						ToggleBag(i)
 					end
 				end
 			end
 		else
-			if _G.ContainerFrame1:IsShown() then
-				_G.CloseAllBags()
+			if not ContainerFrame1:IsShown() then
+				OpenAllBags()
 			else
-				_G.OpenAllBags()
+				CloseAllBags()
 			end
 		end
 	end

@@ -6,10 +6,13 @@ local _G = _G
 local tinsert, xpcall, next, ipairs, pairs = tinsert, xpcall, next, ipairs, pairs
 local unpack, assert, type, strfind = unpack, assert, type, strfind
 
+local CreateFrame = CreateFrame
 local hooksecurefunc = hooksecurefunc
 local IsAddOnLoaded = IsAddOnLoaded
 local UIPanelWindows = UIPanelWindows
 local UpdateUIPanelPositions = UpdateUIPanelPositions
+
+local SEARCH = SEARCH
 
 S.allowBypass = {}
 S.addonsToLoad = {}
@@ -303,6 +306,123 @@ function S:SkinTalentListButtons(frame)
 
 		frame.Inset:Point("TOPLEFT", 4, -60)
 		frame.Inset:Point("BOTTOMRIGHT", -6, 26)
+	end
+end
+
+--[[ do
+	local function colorVertex(border, r, g, b, a)
+		if border.customFunc then
+			local br, bg, bb = unpack(E.media.bordercolor)
+			border.customFunc(border, r, g, b, a, br, bg, bb)
+		elseif border.customBackdrop then
+			border.customBackdrop:SetBackdropBorderColor(r, g, b)
+		end
+	end
+
+	local function borderHide(border, value)
+		if value == 0 then return end -- hiding blizz border
+
+		local br, bg, bb = unpack(E.media.bordercolor)
+		if border.customFunc then
+			local r, g, b, a = border:GetVertexColor()
+			border.customFunc(border, r, g, b, a, br, bg, bb)
+		elseif border.customBackdrop then
+			border.customBackdrop:SetBackdropBorderColor(br, bg, bb)
+		end
+	end
+
+	local function borderShow(border)
+		border:Hide(0)
+	end
+
+	local function borderShown(border, show)
+		if show then
+			border:Hide(0)
+		else
+			borderHide(border)
+		end
+	end
+
+	function S:HandleIconBorder(button, backdrop, customFunc)
+		if not backdrop then
+			local parent = button:GetParent()
+			backdrop = parent.backdrop or parent
+		end
+
+		local border = button
+
+		local _, _, quality = GetItemInfo(button)
+		local r, g, b, a = GetItemQualityColor(quality)
+		if customFunc then
+			border.customFunc = customFunc
+			local br, bg, bb = unpack(E.media.bordercolor)
+			customFunc(border, r, g, b, a, br, bg, bb)
+		elseif r then
+			backdrop:SetBackdropBorderColor(r, g, b, a)
+		else
+			local br, bg, bb = unpack(E.media.bordercolor)
+			backdrop:SetBackdropBorderColor(br, bg, bb)
+		end
+
+		if border.customBackdrop ~= backdrop then
+			border.customBackdrop = backdrop
+		end
+
+		if not border.IconBorderHooked then
+			border.IconBorderHooked = true
+			border:Hide()
+
+			hooksecurefunc(border, 'SetVertexColor', colorVertex)
+			hooksecurefunc(border, 'SetShown', borderShown)
+			hooksecurefunc(border, 'Show', borderShow)
+			hooksecurefunc(border, 'Hide', borderHide)
+		end
+	end
+end ]]
+
+do
+	local keys = {
+		'zoomInButton',
+		'zoomOutButton',
+		'rotateLeftButton',
+		'rotateRightButton',
+		'resetButton',
+	}
+
+	local function UpdateLayout(frame)
+		local last
+		for _, name in next, keys do
+			local button = frame[name]
+			if button then
+				if not button.isSkinned then
+					S:HandleButton(button)
+					button:Size(22)
+
+					if button.Icon then
+						button.Icon:SetInside(nil, 2, 2)
+					end
+				end
+
+				if button:IsShown() then
+					button:ClearAllPoints()
+
+					if last then
+						button:Point('LEFT', last, 'RIGHT', 1, 0)
+					else
+						button:Point('LEFT', 6, 0)
+					end
+
+					last = button
+				end
+			end
+		end
+	end
+
+	function S:HandleModelSceneControlButtons(frame)
+		if not frame.isSkinned then
+			frame.isSkinned = true
+			hooksecurefunc(frame, 'UpdateLayout', UpdateLayout)
+		end
 	end
 end
 
@@ -629,6 +749,79 @@ function S:HandleEditBox(frame, template)
 	end
 end
 
+function S:HandleSearchBox(frame, unskinned)
+	assert(frame, "doesn't exist!")
+
+	frame:SetTextInsets(16, 20, 0, 0)
+
+	frame.Instructions = frame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	frame.Instructions:SetText(SEARCH)
+	frame.Instructions:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, 0)
+	frame.Instructions:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, 0)
+	frame.Instructions:SetTextColor(0.35, 0.35, 0.35)
+	frame.Instructions:SetJustifyH("LEFT")
+	frame.Instructions:SetJustifyV("MIDDLE")
+
+	frame.searchIcon = frame:CreateTexture(nil, "OVERLAY")
+	frame.searchIcon:SetTexture([[Interface\Common\UI-Searchbox-Icon]])
+	frame.searchIcon:SetVertexColor(0.6, 0.6, 0.6)
+	frame.searchIcon:Size(14)
+	frame.searchIcon:Point("LEFT", 0, -2)
+
+	frame.clearButton = CreateFrame("Button", nil, frame)
+	frame.clearButton:Size(14)
+	frame.clearButton:Point("RIGHT", -3, 0)
+
+	frame.clearButton.texture = frame.clearButton:CreateTexture()
+	frame.clearButton.texture:SetTexture([[Interface\FriendsFrame\ClearBroadcastIcon]])
+	frame.clearButton.texture:SetAlpha(0.5)
+	frame.clearButton.texture:Size(17)
+	frame.clearButton.texture:Point("CENTER", 0, 0)
+
+	frame.clearButton:SetScript("OnEnter", function(self) self.texture:SetAlpha(1.0) end)
+	frame.clearButton:SetScript("OnLeave", function(self) self.texture:SetAlpha(0.5) end)
+	frame.clearButton:SetScript("OnMouseDown", function(self) if self:IsEnabled() then self.texture:Point("CENTER", 1, -1) end end)
+	frame.clearButton:SetScript("OnMouseUp", function(self) self.texture:Point("CENTER") end)
+	frame.clearButton:SetScript("OnClick", function(self)
+		local editBox = self:GetParent()
+		editBox:SetText("")
+		editBox:ClearFocus()
+	end)
+
+	frame:SetScript("OnShow", nil)
+	frame:SetScript("OnEditFocusLost", function(self)
+		if self:GetText() == "" then
+			self.searchIcon:SetVertexColor(0.6, 0.6, 0.6)
+			self.clearButton:Hide()
+		end
+	end)
+	frame:SetScript("OnEditFocusGained", function(self)
+		self.searchIcon:SetVertexColor(1.0, 1.0, 1.0)
+		self.clearButton:Show()
+	end)
+	frame:HookScript("OnTextChanged", function(self)
+		if not self:HasFocus() and self:GetText() == "" then
+			self.searchIcon:SetVertexColor(0.6, 0.6, 0.6)
+			self.clearButton:Hide()
+		else
+			self.searchIcon:SetVertexColor(1.0, 1.0, 1.0)
+			self.clearButton:Show()
+		end
+		if self:GetText() == "" then
+			self.Instructions:Show()
+		else
+			self.Instructions:Hide()
+		end
+	end)
+
+	if not unskinned or frame.backdrop then return end
+
+	frame.backdrop = frame:CreateTexture(nil, "BACKGROUND")
+	frame.backdrop:SetTexture([[Interface\Common\Common-Input-Border]])
+	frame.backdrop:Point("TOPLEFT", -5, 0)
+	frame.backdrop:Point("BOTTOMRIGHT", 2, -12)
+end
+
 function S:HandleDropDownBox(frame, width, pos, template)
 	assert(frame, "doesn't exist!")
 
@@ -771,43 +964,34 @@ function S:HandleColorSwatch(frame, size)
 	frame.isSkinned = true
 end
 
-function S:HandleIcon(icon, parent)
-	parent = parent or icon:GetParent()
-
+function S:HandleIcon(icon, backdrop)
 	icon:SetTexCoord(unpack(E.TexCoords))
-	parent:CreateBackdrop("Default")
-	icon:SetParent(parent.backdrop)
-	parent.backdrop:SetOutside(icon)
+
+	if backdrop and not icon.backdrop then
+		icon:CreateBackdrop()
+	end
 end
 
-function S:HandleItemButton(b, shrinkIcon)
+function S:HandleItemButton(b, setInside)
 	if b.isSkinned then return end
 
-	local icon = b.icon or b.IconTexture or b.iconTexture
-	local texture
-	if b:GetName() and _G[b:GetName().."IconTexture"] then
-		icon = _G[b:GetName().."IconTexture"]
-	elseif b:GetName() and _G[b:GetName().."Icon"] then
-		icon = _G[b:GetName().."Icon"]
-	end
-
-	if icon and icon:GetTexture() then
-		texture = icon:GetTexture()
-	end
+	local name = b:GetName()
+	local icon = b.icon or b.Icon or b.IconTexture or b.iconTexture or (name and (_G[name..'IconTexture'] or _G[name..'Icon']))
+	local texture = icon and icon.GetTexture and icon:GetTexture()
 
 	b:StripTextures()
-	b:CreateBackdrop("Default", true)
+	b:CreateBackdrop(nil, true, nil, nil, nil, nil, nil, true)
 	b:StyleButton()
 
 	if icon then
 		icon:SetTexCoord(unpack(E.TexCoords))
 
-		if shrinkIcon then
-			b.backdrop:SetAllPoints()
+		if setInside then
 			icon:SetInside(b)
 		else
-			b.backdrop:SetOutside(icon)
+			b.backdrop:SetOutside(icon, 1, 1)
 		end
+
 		icon:SetParent(b.backdrop)
 
 		if texture then

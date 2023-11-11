@@ -1,99 +1,152 @@
---Lua functions
-local _G = _G
-local loadstring = loadstring
-local pcall = pcall
-local print = print
-local select = select
-local tostring = tostring
-local type = type
-local find, format, match = string.find, string.format, string.match
-local tconcat = table.concat
---WoW API / Variables
-local FrameStackTooltip_Toggle = FrameStackTooltip_Toggle
-local GetMouseFocus = GetMouseFocus
-local tostringall = tostringall
+local print, strmatch, strlower = print, strmatch, strlower
+local _G, UNKNOWN, format, type, next, select = _G, UNKNOWN, format, type, next, select
 
+local CreateFrame = CreateFrame
 local WorldFrame = WorldFrame
+local hooksecurefunc = hooksecurefunc
+local LoadAddOn = LoadAddOn
+local GetAddOnInfo = GetAddOnInfo
+local SlashCmdList = SlashCmdList
+local GetMouseFocus = GetMouseFocus
+local IsAddOnLoaded = IsAddOnLoaded
+local UIParentLoadAddOn = UIParentLoadAddOn
+-- GLOBALS: ElvUI_CPU, ElvUI
 
-local DEFAULT_CHAT_FRAME = DEFAULT_CHAT_FRAME
-local oldAddMessage
+local function GetName(frame, text)
+	if frame.GetName then
+		return frame:GetName()
+	else
+		return text or 'nil'
+	end
+end
 
-local function printNoTimestamp(...)
-	if oldAddMessage or DEFAULT_CHAT_FRAME.OldAddMessage then
-		if not oldAddMessage then
-			oldAddMessage = DEFAULT_CHAT_FRAME.OldAddMessage
-		end
+local function IsTrue(value)
+	return value == 'true' or value == '1'
+end
 
-		if select("#", ...) > 1 then
-			oldAddMessage(DEFAULT_CHAT_FRAME, tconcat({tostringall(...)}, ", "))
+local function AddCommand(name, keys, func)
+	if not SlashCmdList[name] then
+		SlashCmdList[name] = func
+
+		if type(keys) == 'table' then
+			for i, key in next, keys do
+				_G['SLASH_'..name..i] = key
+			end
 		else
-			oldAddMessage(DEFAULT_CHAT_FRAME, ...)
-		end
-	elseif CHAT_TIMESTAMP_FORMAT then
-		local tsformat = CHAT_TIMESTAMP_FORMAT
-		CHAT_TIMESTAMP_FORMAT = nil
-		print(...)
-		CHAT_TIMESTAMP_FORMAT = tsformat
-	else
-		print(...)
-	end
-end
-
-local function updateCopyChat()
-	if CopyChatFrame and CopyChatFrame:IsShown() then
-		CopyChatFrame:Hide()
-		ElvUI[1]:GetModule("Chat"):CopyChat(DEFAULT_CHAT_FRAME)
-	end
-end
-
-local function getObject(objName)
-	local obj
-
-	if objName == "" then
-		obj = GetMouseFocus()
-	else
-		obj = _G[objName]
-
-		if not obj then
-			local pass
-
-			if find(objName, "^[%.:]([A-z0-9_]+)") then
-				local _obj = GetMouseFocus()
-
-				if _obj and _obj ~= WorldFrame then
-					local res = match(objName, "^[%.:]([A-z0-9_]+)")
-
-					if res and _obj[res] and _obj:GetName() then
-						objName = format("%s%s", _obj:GetName(), objName)
-					end
-
-					pass = true
-				end
-			elseif find(objName, "[%.()%[%]'\"]") then
-				pass = true
-			end
-
-			if pass then
-				local success, ret = pcall(loadstring(format("return %s", objName)))
-				if success then
-					ret = ret == "string" and _G[ret] or ret
-
-					if type(ret) == "table" and ret.GetName then
-						obj = ret
-					end
-				end
-			end
+			_G['SLASH_'..name..'1'] = keys
 		end
 	end
-
-	if not obj then
-		printNoTimestamp(format("Object |cffFFD100%s|r not found!", objName))
-	elseif not obj.GetParent then
-		printNoTimestamp(format("Object |cffFFD100%s|r doesn't have Widget API!", objName))
-	else
-		return obj ~= WorldFrame and obj or nil
-	end
 end
+
+-- /rl, /reloadui, /reload NOTE: /reload is from SLASH_RELOAD
+AddCommand('RELOADUI', {'/rl','/reloadui'}, _G.ReloadUI)
+
+AddCommand('GETPOINT', '/getpoint', function(arg)
+	local frame = (arg ~= '' and _G[arg]) or GetMouseFocus()
+	if not frame then return end
+
+	local point, relativeTo, relativePoint, xOffset, yOffset = frame:GetPoint()
+	print(GetName(frame), point, GetName(relativeTo), relativePoint, xOffset, yOffset)
+end)
+
+AddCommand('FRAME', '/frame', function(arg)
+	local frameName, tinspect = strmatch(arg, '^(%S+)%s*(%S*)$')
+	local frame = (frameName ~= '' and _G[frameName]) or GetMouseFocus()
+	if not frame then return end
+
+	_G.FRAME = frame -- Set the global variable FRAME to = whatever we are mousing over to simplify messing with frames that have no name.
+	ElvUI[1]:Print('_G.FRAME set to: ', GetName(frame, UNKNOWN))
+end)
+
+AddCommand('TEXLIST', '/texlist', function(arg)
+	local frame = (arg ~= '' and _G[arg]) or _G.FRAME or GetMouseFocus()
+	if not frame then return end
+
+	for _, region in next, { frame:GetRegions() } do
+		if region.IsObjectType and region:IsObjectType('Texture') then
+			print(region:GetTexture(), region:GetName(), region:GetDrawLayer())
+		end
+	end
+end)
+
+AddCommand('FRAMELIST', '/framelist', function(arg)
+	if not _G.FrameStackTooltip then
+		UIParentLoadAddOn('Blizzard_DebugTools')
+	end
+
+	local copyChat, showHidden, showRegions, showAnchors = strmatch(arg, '^(%S+)%s*(%S*)%s*(%S*)%s*(%S*)$')
+
+	local wasShown = _G.FrameStackTooltip:IsShown()
+	if not wasShown then
+		_G.FrameStackTooltip_Toggle(IsTrue(showHidden), IsTrue(showRegions), IsTrue(showAnchors))
+	end
+
+	print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+	for i = 2, _G.FrameStackTooltip:NumLines() do
+		local text = _G['FrameStackTooltipTextLeft'..i]:GetText()
+		if text and text ~= '' then
+			print(text)
+		end
+	end
+	print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+
+	if _G.CopyChatFrame and IsTrue(copyChat) then
+		if _G.CopyChatFrame:IsShown() then
+			_G.CopyChatFrame:Hide()
+		end
+
+		ElvUI[1]:GetModule('Chat'):CopyChat(_G.ChatFrame1)
+	end
+
+	if not wasShown then
+		_G.FrameStackTooltip_Toggle()
+	end
+end)
+
+AddCommand('ECPU', '/ecpu', function()
+	if not IsAddOnLoaded('ElvUI_CPU') then
+		local _, _, _, _, loadable, reason = GetAddOnInfo('ElvUI_CPU')
+		print(loadable, reason)
+		if not loadable then
+			if reason == 'MISSING' then
+				print('ElvUI_CPU addon is missing.')
+			elseif reason == 'DISABLED' then
+				print('ElvUI_CPU addon is disabled.')
+			else
+				local loaded, rsn = LoadAddOn('ElvUI_CPU')
+				if loaded then
+					ElvUI_CPU:ToggleFrame()
+				else
+					print(format('ElvUI_CPU addon cannot be loaded: %s.', strlower(rsn)))
+				end
+			end
+		end
+	elseif not ElvUI_CPU.frame:IsShown() then
+		ElvUI_CPU.frame:Show()
+	else
+		ElvUI_CPU.frame:Hide()
+	end
+end)
+
+AddCommand('REGLIST', '/reglist', function(arg)
+	local frame = (arg ~= '' and _G[arg]) or GetMouseFocus()
+	if not frame then return end
+
+	for i = 1, frame:GetNumRegions() do
+		local region = select(i, frame:GetRegions())
+		print(i, region:GetObjectType(), region:GetName(), region:GetDrawLayer())
+	end
+end)
+
+AddCommand('CHILDLIST', '/childlist', function(arg)
+	local frame = (arg ~= '' and _G[arg]) or GetMouseFocus()
+	if not frame then return end
+
+	for i = 1, frame:GetNumChildren() do
+		local obj = select(i, frame:GetChildren())
+		print(i, obj:GetObjectType(), obj:GetName(), obj:GetFrameStrata(), obj:GetFrameLevel())
+	end
+end)
 
 local FrameStackHighlight = CreateFrame("Frame", "FrameStackHighlight")
 FrameStackHighlight:SetFrameStrata("TOOLTIP")
@@ -106,13 +159,13 @@ FrameStackHighlightHitRect:SetTexture(0, 0, 1, 0.5)
 FrameStackHighlightHitRect:SetBlendMode("ADD")
 
 hooksecurefunc("FrameStackTooltip_Toggle", function()
-	if not FrameStackTooltip:IsVisible() then
+	if not _G.FrameStackTooltip:IsVisible() then
 		FrameStackHighlight:Hide()
 	end
 end)
 
 local _timeSinceLast = 0
-FrameStackTooltip:HookScript("OnUpdate", function(_, elapsed)
+_G.FrameStackTooltip:HookScript("OnUpdate", function(_, elapsed)
 	_timeSinceLast = _timeSinceLast - elapsed
 	if _timeSinceLast <= 0 then
 		_timeSinceLast = FRAMESTACK_UPDATE_TIME
@@ -139,139 +192,3 @@ FrameStackTooltip:HookScript("OnUpdate", function(_, elapsed)
 		end
 	end
 end)
-
-SLASH_FRAME1 = "/frame"
-SlashCmdList.FRAME = function(frame)
-	frame = getObject(frame)
-	if not frame then return end
-
-	local parent = frame:GetParent()
-	local parentName = parent and parent.GetName and parent:GetName()
-
-	printNoTimestamp("|cffCC0000----------------------------")
-
-	printNoTimestamp(format("Name: |cffFFD100%s|r; ObjectType: |cffFFD100%s|r", frame:GetName() or "nil", frame:GetObjectType()))
-	printNoTimestamp(format("Parent: |cffFFD100%s|r", parentName or (parent and tostring(parent)) or "nil"))
-
-	if frame.GetFrameStrata then
-		printNoTimestamp(format("Strata: |cffFFD100%s|r; FrameLevel: |cffFFD100%d|r", frame:GetFrameStrata(), frame:GetFrameLevel()))
-	else
-		printNoTimestamp(format("DrawLayer: |cffFFD100%s|r", frame:GetDrawLayer()))
-	end
-
-	if frame.GetScale then
-		printNoTimestamp(format("Width: |cffFFD100%.0f|r; Height: |cffFFD100%.0f|r; Scale: |cffFFD100%s|r", frame:GetWidth(), frame:GetHeight(), frame:GetScale()))
-	else
-		printNoTimestamp(format("Width: |cffFFD100%.0f|r; Height: |cffFFD100%.0f|r", frame:GetWidth(), frame:GetHeight()))
-	end
-
-	local point, relativeTo, relativePoint, x, y, relativeName
-	for i = 1, frame:GetNumPoints() do
-		point, relativeTo, relativePoint, x, y = frame:GetPoint(i)
-		relativeName = relativeTo and relativeTo.GetName and (relativeTo:GetName() or tostring(relativeTo)) or "nil"
-
-		if point == relativePoint and relativeTo == parent then
-			printNoTimestamp(format("Point %d: |cffFFD100\"%s\", %.0f, %.0f|r", i, point, x, y))
-		else
-			printNoTimestamp(format("Point %d: |cffFFD100\"%s\", %s, \"%s\", %.0f, %.0f|r", i, point, relativeName, relativePoint, x, y))
-		end
-	end
-
-	printNoTimestamp("|cffCC0000----------------------------")
-
-	updateCopyChat()
-end
-
-SLASH_FRAMELIST1 = "/framelist"
-SlashCmdList.FRAMELIST = function(showHidden)
-	if not FrameStackTooltip then
-		UIParentLoadAddOn("Blizzard_DebugTools")
-	end
-
-	local isPreviouslyShown = FrameStackTooltip:IsShown()
-	if not isPreviouslyShown then
-		if showHidden == "true" then
-			FrameStackTooltip_Toggle(true)
-		else
-			FrameStackTooltip_Toggle()
-		end
-	end
-
-	printNoTimestamp("|cffCC0000----------------------------|r")
-	for i = 2, FrameStackTooltip:NumLines() do
-		local text = _G["FrameStackTooltipTextLeft"..i]:GetText()
-		if text and text ~= "" then
-			printNoTimestamp(text)
-		end
-	end
-	printNoTimestamp("|cffCC0000----------------------------|r")
-
-	updateCopyChat()
-
-	if not isPreviouslyShown then
-		FrameStackTooltip_Toggle()
-	end
-end
-
-SLASH_TEXLIST1 = "/texlist"
-SlashCmdList.TEXLIST = function(frame)
-	frame = getObject(frame)
-	if not frame then return end
-
-	for i = 1, frame:GetNumRegions() do
-		local region = select(i, frame:GetRegions())
-		if region.IsObjectType and region:IsObjectType("Texture") and region:GetTexture() then
-			printNoTimestamp(region:GetTexture(), region:GetName(), region:GetDrawLayer())
-		end
-	end
-
-	updateCopyChat()
-end
-
-SLASH_REGLIST1 = "/reglist"
-SlashCmdList.REGLIST = function(frame)
-	frame = getObject(frame)
-	if not frame then return end
-
-	for i = 1, frame:GetNumRegions() do
-		local region = select(i, frame:GetRegions())
-		printNoTimestamp(i, region:GetObjectType(), region:GetName(), region:GetDrawLayer())
-	end
-
-	updateCopyChat()
-end
-
-SLASH_CHILDLIST1 = "/childlist"
-SlashCmdList.CHILDLIST = function(frame)
-	frame = getObject(frame)
-	if not frame then return end
-
-	for i = 1, frame:GetNumChildren() do
-		local obj = select(i, frame:GetChildren())
-		printNoTimestamp(i, obj:GetObjectType(), obj:GetName(), obj:GetFrameStrata(), obj:GetFrameLevel())
-	end
-
-	updateCopyChat()
-end
-
-SLASH_GETPOINT1 = "/getpoint"
-SlashCmdList.GETPOINT = function(frame)
-	frame = getObject(frame)
-	if not frame then return end
-
-	local parent = frame:GetParent()
-	local point, relativeTo, relativePoint, x, y, relativeName
-
-	for i = 1, frame:GetNumPoints() do
-		point, relativeTo, relativePoint, x, y = frame:GetPoint(i)
-		relativeName = relativeTo and relativeTo.GetName and (relativeTo:GetName() or tostring(relativeTo)) or "nil"
-
-		if point == relativePoint and relativeTo == parent then
-			printNoTimestamp(format("\"%s\", %.0f, %.0f", point, x, y))
-		else
-			printNoTimestamp(format("\"%s\", %s, \"%s\", %.0f, %.0f", point, relativeName, relativePoint, x, y))
-		end
-	end
-
-	updateCopyChat()
-end

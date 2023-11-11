@@ -10,32 +10,39 @@ local pairs, type, unpack, assert = pairs, type, unpack, assert
 local tremove, tContains, tinsert, wipe = tremove, tContains, tinsert, wipe
 local format, error, ipairs, ceil = format, error, ipairs, ceil
 
+local _G = _G
+local pairs, type, unpack, assert = pairs, type, unpack, assert
+local tremove, tContains, tinsert, wipe = tremove, tContains, tinsert, wipe
+local format, error, ipairs, ceil = format, error, ipairs, ceil
+
 local CreateFrame = CreateFrame
 local IsAddOnLoaded = IsAddOnLoaded
-local PickupContainerItem = PickupContainerItem
 local DeleteCursorItem = DeleteCursorItem
 local MoneyFrame_Update = MoneyFrame_Update
 local UnitIsDeadOrGhost, InCinematic = UnitIsDeadOrGhost, InCinematic
 local PurchaseSlot, GetBankSlotCost = PurchaseSlot, GetBankSlotCost
 local SetCVar, EnableAddOn, DisableAddOn = SetCVar, EnableAddOn, DisableAddOn
-local ReloadUI, PlaySound = ReloadUI, PlaySound
+local ReloadUI, PlaySound, StopMusic = ReloadUI, PlaySound, StopMusic
 local StaticPopup_Resize = StaticPopup_Resize
 local GetBindingFromClick = GetBindingFromClick
+
 local AutoCompleteEditBox_OnEnterPressed = AutoCompleteEditBox_OnEnterPressed
 local AutoCompleteEditBox_OnTextChanged = AutoCompleteEditBox_OnTextChanged
 local ChatEdit_FocusActiveWindow = ChatEdit_FocusActiveWindow
+local PickupContainerItem = PickupContainerItem
+
 local STATICPOPUP_TEXTURE_ALERT = STATICPOPUP_TEXTURE_ALERT
 local STATICPOPUP_TEXTURE_ALERTGEAR = STATICPOPUP_TEXTURE_ALERTGEAR
 local YES, NO, OKAY, CANCEL, ACCEPT, DECLINE = YES, NO, OKAY, CANCEL, ACCEPT, DECLINE
 -- GLOBALS: ElvUIBindPopupWindowCheckButton
 
-local DOWNLOAD_URL = "https://www.tukui.org/download.php?ui=elvui"
+local DOWNLOAD_URL = "https://github.com/ElvUI-WotLK/ElvUI/releases/latest"
 
 E.PopupDialogs = {}
 E.StaticPopup_DisplayedFrames = {}
 
 E.PopupDialogs.ELVUI_UPDATE_AVAILABLE = {
-	text = L["ElvUI is five or more revisions out of date. You can download the newest version from www.tukui.org. Get premium membership and have ElvUI automatically updated with the Tukui Client!"],
+	text = L["ElvUI is five or more revisions out of date. You can download the newest version from https://github.com/ElvUI-WotLK/ElvUI/."],
 	hasEditBox = 1,
 	OnShow = function(self)
 		self.editBox:SetAutoFocus(false)
@@ -51,7 +58,6 @@ E.PopupDialogs.ELVUI_UPDATE_AVAILABLE = {
 	end,
 	hideOnEscape = 1,
 	button1 = OKAY,
-	OnAccept = E.noop,
 	EditBoxOnEnterPressed = function(self)
 		ChatEdit_FocusActiveWindow()
 		self:GetParent():Hide()
@@ -1099,7 +1105,7 @@ function E:StaticPopup_CreateSecureButton(popup, button, text, macro)
 
 	local t = btn:CreateFontString(nil, "OVERLAY", btn)
 	t:Point("CENTER", 0, 1)
-	t:FontTemplate(nil, nil, "NONE")
+	t:FontTemplate(nil, nil, "SHADOW")
 	t:SetJustifyH("CENTER")
 	t:SetText(text)
 	btn.text = t
@@ -1167,8 +1173,8 @@ function E:Contruct_StaticPopups()
 		end
 
 		_G["ElvUI_StaticPopup"..index.."CheckButton"]:Size(24)
-		_G["ElvUI_StaticPopup"..index.."CheckButtonText"]:FontTemplate(nil, nil, "")
-		_G["ElvUI_StaticPopup"..index.."CheckButtonText"]:SetTextColor(1,0.17,0.26)
+		_G["ElvUI_StaticPopup"..index.."CheckButtonText"]:FontTemplate(nil, nil, "SHADOW")
+		_G["ElvUI_StaticPopup"..index.."CheckButtonText"]:SetTextColor(1, 0.17, 0.26)
 		_G["ElvUI_StaticPopup"..index.."CheckButtonText"]:Point("LEFT", _G["ElvUI_StaticPopup"..index.."CheckButton"], "RIGHT", 4, 1)
 		Skins:HandleCheckBox(_G["ElvUI_StaticPopup"..index.."CheckButton"])
 

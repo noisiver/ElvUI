@@ -1,5 +1,5 @@
 local E, L, V, P, G = unpack(select(2, ...))
-local B = E:GetModule("Blizzard")
+local BL = E:GetModule("Blizzard")
 
 --Lua functions
 --WoW API / Variables
@@ -9,7 +9,7 @@ local Minimap_SetPing = Minimap_SetPing
 local UnitIsUnit = UnitIsUnit
 local MINIMAPPING_FADE_TIMER = MINIMAPPING_FADE_TIMER
 
-function B:ADDON_LOADED(_, addon)
+function BL:ADDON_LOADED(_, addon)
 	if addon == "Blizzard_TradeSkillUI" then
 		TradeSkillLinkButton:SetScript("OnClick", function()
 			local ChatFrameEditBox = ChatEdit_ChooseBoxForSend()
@@ -22,9 +22,15 @@ function B:ADDON_LOADED(_, addon)
 
 		self:UnregisterEvent("ADDON_LOADED")
 	end
+
+	if addon == 'Blizzard_GuildBankUI' then
+		BL:ImproveGuildBank()
+	elseif BL.TryDisableTutorials then
+		BL:ShutdownTutorials()
+	end
 end
 
-function B:Initialize()
+function BL:Initialize()
 	self.Initialized = true
 
 	self:AlertMovers()
@@ -103,7 +109,7 @@ function B:Initialize()
 end
 
 local function InitializeCallback()
-	B:Initialize()
+	BL:Initialize()
 end
 
-E:RegisterModule(B:GetName(), InitializeCallback)
+E:RegisterModule(BL:GetName(), InitializeCallback)

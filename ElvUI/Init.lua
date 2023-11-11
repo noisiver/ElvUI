@@ -104,6 +104,7 @@ do
 	E:AddLib("Masque", "Masque", true)
 	E:AddLib("Translit", "LibTranslit-1.0")
 	E:AddLib("DualSpec", "LibDualSpec-1.0")
+	E:AddLib("LCS", "LibClassicSpecs-ElvUI")
 	E:AddLib("Compat", "LibCompat-1.0")
 
 	-- backwards compatible for plugins
@@ -204,8 +205,10 @@ function E:OnInitialize()
 		end
 	end
 
-	E.ScanTooltip = CreateFrame("GameTooltip", "ElvUI_ScanTooltip", UIParent, "GameTooltipTemplate")
-	E.EasyMenu = CreateFrame("Frame", "ElvUI_EasyMenu", UIParent, "UIDropDownMenuTemplate")
+	E.SpellBookTooltip = CreateFrame('GameTooltip', 'ElvUI_SpellBookTooltip', UIParent, 'GameTooltipTemplate')
+	E.ConfigTooltip = CreateFrame('GameTooltip', 'ElvUI_ConfigTooltip', UIParent, 'GameTooltipTemplate')
+	E.ScanTooltip = CreateFrame('GameTooltip', 'ElvUI_ScanTooltip', UIParent, 'GameTooltipTemplate')
+	E.EasyMenu = CreateFrame('Frame', 'ElvUI_EasyMenu', UIParent, 'UIDropDownMenuTemplate')
 
 	E.PixelMode = E.twoPixelsPlease or E.private.general.pixelPerfect -- keep this over `UIScale`
 	E.Border = (E.PixelMode and not E.twoPixelsPlease) and 1 or 2

@@ -48,10 +48,10 @@ local function OnEvent(self)
 end
 
 local function OnClick()
-	if _G.ContainerFrame1:IsShown() then
-		_G.CloseAllBags()
+	if not ContainerFrame1:IsShown() then
+		OpenAllBags()
 	else
-		_G.OpenAllBags()
+		CloseAllBags()
 	end
 end
 

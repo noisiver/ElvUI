@@ -1,68 +1,96 @@
-local E, _, V, P, G = unpack(select(2, ...))
-local MC = E:GetModule("ModuleCopy")
+local E, L, V, P, G = unpack(ElvUI)
+local MC = E:GetModule('ModuleCopy')
 
 local pairs, next, type = pairs, next, type
 local format, error = format, error
+-- GLOBALS: ElvDB
 
 --This table to reserve settings names in E.global.profileCopy. Used in export/imports functions
---Pligins can add own values for their internal settings for safechecks here
+--Plugins can add own values for their internal settings for safechecks here
 MC.InternalOptions = {
 	selected = true,
-	movers = true
+	movers = true,
 }
+
+local ToggleSkins -- so it can call itself
+ToggleSkins = function(tbl, key, value)
+	if key ~= 'selected' then
+		local setting = tbl[key]
+		if type(setting) == 'table' then
+			for subkey in pairs(setting) do
+				ToggleSkins(setting, subkey, value)
+			end
+		else
+			tbl[key] = value
+		end
+	end
+end
+
+local function DefaultOptions(tbl, section, pluginSection)
+	if pluginSection then
+		if not tbl[pluginSection] then
+			tbl[pluginSection] = {}
+		end
+		if not tbl[pluginSection][section] then
+			tbl[pluginSection][section] = {}
+		end
+	elseif not tbl[section] then
+		tbl[section] = {}
+	end
+end
+
+local function DefaultMovers(tbl, section, subSection)
+	if not tbl[section] then
+		tbl[section] = {}
+	end
+
+	if subSection and tbl[section][subSection] == nil then
+		tbl[section][subSection] = false
+	end
+end
 
 --Default template for a config group for a single module.
 --Contains header, general group toggle (shown only if the setting actually exists) and imports button.
---Usage as seen in ElvUI_OptionsUI\modulecopy.lua
+--Usage as seen in ElvUI_Options\modulecopy.lua
 function MC:CreateModuleConfigGroup(Name, section, pluginSection)
-	local L = E.Libs.ACL:GetLocale("ElvUI", E.global.general.locale or "enUS")
-
 	local config = {
 		order = 10,
-		type = "group",
+		type = 'group',
 		name = Name,
 		args = {
-			header = {
-				order = 0,
-				type = "header",
-				name = Name
-			},
 			general = {
 				order = 1,
-				type = "toggle",
-				name = L["General"],
-			},
-			spacer = {
-				order = -4,
-				type = "description",
-				name = ""
-			},
-			import = {
-				order = -3,
-				type = 'execute',
-				name = L["Import Now"],
-				func = function()
-					E.PopupDialogs.MODULE_COPY_CONFIRM.text = format(L["You are going to copy settings for |cffD3CF00\"%s\"|r from |cff4beb2c\"%s\"|r profile to your current |cff4beb2c\"%s\"|r profile. Are you sure?"], Name, E.global.profileCopy.selected, ElvDB.profileKeys[E.mynameRealm])
-					E.PopupDialogs.MODULE_COPY_CONFIRM.OnAccept = function()
-						MC:ImportFromProfile(section, pluginSection)
+				type = 'toggle',
+				name = function()
+					E.Options.args.profiles.args.modulecopy.args.import.func = function()
+						E.PopupDialogs.MODULE_COPY_CONFIRM.text = format(L["You are going to copy settings for |cffD3CF00\"%s\"|r from |cff4beb2c\"%s\"|r profile to your current |cff4beb2c\"%s\"|r profile. Are you sure?"], Name, E.global.profileCopy.selected, ElvDB.profileKeys[E.mynameRealm])
+						E.PopupDialogs.MODULE_COPY_CONFIRM.OnAccept = function()
+							MC:ImportFromProfile(section, pluginSection)
+						end
+						E:StaticPopup_Show('MODULE_COPY_CONFIRM')
 					end
-					E:StaticPopup_Show('MODULE_COPY_CONFIRM')
+
+					E.Options.args.profiles.args.modulecopy.args.export.func = function()
+						E.PopupDialogs.MODULE_COPY_CONFIRM.text = format(L["You are going to copy settings for |cffD3CF00\"%s\"|r from your current |cff4beb2c\"%s\"|r profile to |cff4beb2c\"%s\"|r profile. Are you sure?"], Name, ElvDB.profileKeys[E.mynameRealm], E.global.profileCopy.selected)
+						E.PopupDialogs.MODULE_COPY_CONFIRM.OnAccept = function()
+							MC:ExportToProfile(section, pluginSection)
+						end
+						E:StaticPopup_Show('MODULE_COPY_CONFIRM')
+					end
+
+					local selection = (pluginSection and E.global.profileCopy[pluginSection]) or E.global.profileCopy
+					E.Options.args.profiles.args.modulecopy.args.clear.func = function() ToggleSkins(selection, section, false) end
+					E.Options.args.profiles.args.modulecopy.args.select.func = function() ToggleSkins(selection, section, true) end
+
+					return L["General"]
 				end,
 			},
-			export = {
-				order = -2,
-				type = 'execute',
-				name = L["Export Now"],
-				func = function()
-					E.PopupDialogs.MODULE_COPY_CONFIRM.text = format(L["You are going to copy settings for |cffD3CF00\"%s\"|r from your current |cff4beb2c\"%s\"|r profile to |cff4beb2c\"%s\"|r profile. Are you sure?"], Name, ElvDB.profileKeys[E.mynameRealm], E.global.profileCopy.selected)
-					E.PopupDialogs.MODULE_COPY_CONFIRM.OnAccept = function()
-						MC:ExportToProfile(section, pluginSection)
-					end
-					E:StaticPopup_Show('MODULE_COPY_CONFIRM')
-				end,
-			},
-		}
+		},
 	}
+
+	DefaultOptions(G.profileCopy, section, pluginSection) -- defaults
+	DefaultOptions(E.global.profileCopy, section, pluginSection) -- from profile
+
 	if pluginSection then
 		config.args.general.hidden = function(info) return E.global.profileCopy[pluginSection][section][ info[#info] ] == nil end
 		config.get = function(info) return E.global.profileCopy[pluginSection][section][ info[#info] ] end
@@ -72,69 +100,64 @@ function MC:CreateModuleConfigGroup(Name, section, pluginSection)
 		config.get = function(info) return E.global.profileCopy[section][ info[#info] ] end
 		config.set = function(info, value) E.global.profileCopy[section][ info[#info] ] = value end
 	end
+
 	return config
 end
 
 function MC:CreateMoversConfigGroup()
-	local L = E.Libs.ACL:GetLocale("ElvUI", E.global.general.locale or "enUS")
-
 	local config = {
-		header = {
-			order = 0,
-			type = "header",
-			name = L["On screen positions for different elements."]
-		},
-		spacer = {
-			order = 200,
-			type = "description",
-			name = ""
-		},
-		import = {
-			order = 201,
-			type = "execute",
-			name = L["Import Now"],
-			func = function()
+		header = E.Libs.ACH:Header(function()
+			E.Options.args.profiles.args.modulecopy.args.import.func = function()
 				E.PopupDialogs.MODULE_COPY_CONFIRM.text = format(L["You are going to copy settings for |cffD3CF00\"%s\"|r from |cff4beb2c\"%s\"|r profile to your current |cff4beb2c\"%s\"|r profile. Are you sure?"], L["Movers"], E.global.profileCopy.selected, ElvDB.profileKeys[E.mynameRealm])
 				E.PopupDialogs.MODULE_COPY_CONFIRM.OnAccept = function()
-					MC:CopyMovers("import")
+					MC:CopyMovers('import')
 				end
-				E:StaticPopup_Show("MODULE_COPY_CONFIRM")
+				E:StaticPopup_Show('MODULE_COPY_CONFIRM')
 			end
-		},
-		export = {
-			order = 202,
-			type = "execute",
-			name = L["Export Now"],
-			func = function()
+
+			E.Options.args.profiles.args.modulecopy.args.export.func = function()
 				E.PopupDialogs.MODULE_COPY_CONFIRM.text = format(L["You are going to copy settings for |cffD3CF00\"%s\"|r from your current |cff4beb2c\"%s\"|r profile to |cff4beb2c\"%s\"|r profile. Are you sure?"], L["Movers"], ElvDB.profileKeys[E.mynameRealm], E.global.profileCopy.selected)
 				E.PopupDialogs.MODULE_COPY_CONFIRM.OnAccept = function()
-					MC:CopyMovers("export")
+					MC:CopyMovers('export')
 				end
-				E:StaticPopup_Show("MODULE_COPY_CONFIRM")
+				E:StaticPopup_Show('MODULE_COPY_CONFIRM')
 			end
-		}
+
+			E.Options.args.profiles.args.modulecopy.args.clear.func = function() ToggleSkins(E.global.profileCopy, 'movers', false) end
+			E.Options.args.profiles.args.modulecopy.args.select.func = function() ToggleSkins(E.global.profileCopy, 'movers', true) end
+
+			return L["On screen positions for different elements."]
+		end, 0)
 	}
+
+	DefaultMovers(G.profileCopy, 'movers')
+	DefaultMovers(E.global.profileCopy, 'movers')
+
 	for moverName, data in pairs(E.CreatedMovers) do
-		if not G.profileCopy.movers[moverName] then G.profileCopy.movers[moverName] = false end
+		DefaultMovers(G.profileCopy, 'movers', moverName)
+		DefaultMovers(E.global.profileCopy, 'movers', moverName)
+
 		config[moverName] = {
 			order = 1,
-			type = "toggle",
-			name = data.mover.textString,
-			get = function() return E.global.profileCopy.movers[moverName] end,
-			set = function(_, value) E.global.profileCopy.movers[moverName] = value end
-		}
-	end
-	for moverName, data in pairs(E.DisabledMovers) do
-		if not G.profileCopy.movers[moverName] then G.profileCopy.movers[moverName] = false end
-		config[moverName] = {
-			order = 1,
-			type = "toggle",
+			type = 'toggle',
 			name = data.mover.textString,
 			get = function() return E.global.profileCopy.movers[moverName] end,
 			set = function(_, value) E.global.profileCopy.movers[moverName] = value end
 		}
 	end
 
+	for moverName, data in pairs(E.DisabledMovers) do
+		DefaultMovers(G.profileCopy, 'movers', moverName)
+		DefaultMovers(E.global.profileCopy, 'movers', moverName)
+
+		config[moverName] = {
+			order = 1,
+			type = 'toggle',
+			name = data.mover.textString,
+			get = function() return E.global.profileCopy.movers[moverName] end,
+			set = function(_, value) E.global.profileCopy.movers[moverName] = value end
+		}
+	end
 	return config
 end
 
@@ -171,23 +194,23 @@ end
 
 --[[
 	* Valid copy templates should be as follows:
-		G.profileCopy[YourOptionGroupName] = {
+		E.global.profileCopy[YourOptionGroupName] = {
 			[SubGroupName1] = true,
 			[SubGroupName2] = true,
 			...
 		}
 	* For example:
-		G.profileCopy.auras = {
+		E.global.profileCopy.auras = {
 			general = true,
 			buffs = true,
 			debuffs = true,
 			cooldown = true,
 		}
-	* "general" key can refer to a similar named subtable or all non-table variables inside your group
-	* If you leave the table as G.profileCopy[YourOptionGroupName] = {}, this will result in no valid copy template error.
-	* If set to G.profileCopy[YourOptionGroupName] = true, then this will copy everything without selecting any particular subcategory from your settings table.
-	* Plugins can use "pluginSection" argument to determain their own table if they keep settings apart from core ElvUI settings.
-	-- Examples S&L uses "sle" table, MerathilisUI uses "mui" table, BenikUI uses "benikui" and core table
+	* 'general' key can refer to a similar named subtable or all non-table variables inside your group
+	* If you leave the table as E.global.profileCopy[YourOptionGroupName] = {}, this will result in no valid copy template error.
+	* If set to E.global.profileCopy[YourOptionGroupName] = true, then this will copy everything without selecting any particular subcategory from your settings table.
+	* Plugins can use 'pluginSection' argument to determain their own table if they keep settings apart from core ElvUI settings.
+	-- Examples S&L uses 'sle' table, MerathilisUI uses 'mui' table, BenikUI uses 'benikui' and core table
 ]]
 
 function MC:TablesExist(CopyFrom, CopyTo, CopyDefault)
@@ -265,11 +288,7 @@ function MC:CopyMovers(mode)
 end
 
 function MC:Initialize()
-	self.Initialized = true
+	MC.Initialized = true
 end
 
-local function InitializeCallback()
-	MC:Initialize()
-end
-
-E:RegisterModule(MC:GetName(), InitializeCallback)
+E:RegisterModule(MC:GetName())

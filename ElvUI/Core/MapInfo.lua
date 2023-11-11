@@ -53,7 +53,7 @@ function E:MapInfo_CoordsStop(event)
 		if not MapInfo.coordsFalling then return end -- stop if we weren't falling
 		if (GetUnitSpeed("player") or 0) > 0 then return end -- we are still moving!
 		MapInfo.coordsFalling = nil -- we were falling!
-	elseif (event == "PLAYER_STOPPED_MOVING" or event == "PLAYER_CONTROL_GAINED") and IsFalling() then
+	elseif (GetUnitSpeed("player") or 0) == 0 and IsFalling() then
 		MapInfo.coordsFalling = true
 		return
 	end
