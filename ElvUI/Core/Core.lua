@@ -1240,6 +1240,11 @@ do
 
 			E.db.convertPages = true
 		end
+
+		-- Chat
+		if E.db.chat.numAllowedCombatRepeat == 0 then
+			E.db.chat.enableCombatRepeat = false
+		end
 	end
 end
 
