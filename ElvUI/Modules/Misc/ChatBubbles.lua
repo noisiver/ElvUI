@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...))
+local E, L, V, P, G = unpack(ElvUI)
 local M = E:GetModule("Misc")
 local CH = E:GetModule("Chat")
 
@@ -6,7 +6,6 @@ local format, wipe, pairs = format, wipe, pairs
 local strmatch, strlower, gmatch, gsub = strmatch, strlower, gmatch, gsub
 
 local CreateFrame = CreateFrame
-local RemoveExtraSpaces = RemoveExtraSpaces
 local PRIEST_COLOR = RAID_CLASS_COLORS.PRIEST
 local WorldGetChildren = WorldFrame.GetChildren
 local WorldGetNumChildren = WorldFrame.GetNumChildren
@@ -63,7 +62,7 @@ function M:UpdateBubbleBorder()
 			end
 
 			if rebuiltString then
-				str:SetText(RemoveExtraSpaces(rebuiltString))
+				str:SetText(gsub(rebuiltString, "     +", "    "))
 			end
 		end
 	end
