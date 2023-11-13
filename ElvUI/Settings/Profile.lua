@@ -4617,12 +4617,8 @@ E.LayoutMoverPositions = {
 	ALL = {
 		BelowMinimapContainerMover = 'TOPRIGHT,ElvUIParent,TOPRIGHT,-4,-274',
 		BNETMover = 'TOPRIGHT,ElvUIParent,TOPRIGHT,-4,-274',
-		AlertFrameMover = "TOP,ElvUIParent,TOP,-1,-18",
-		ElvUF_PlayerMover = "BOTTOM,ElvUIParent,BOTTOM,-341,139",
 		ElvUF_PlayerCastbarMover = 'BOTTOM,ElvUIParent,BOTTOM,-1,95',
 		ElvUF_TargetCastbarMover = 'BOTTOM,ElvUIParent,BOTTOM,-1,243',
-		ElvUF_TargetMover = "BOTTOM,ElvUIParent,BOTTOM,341,139",
-		ElvUF_TargetTargetMover = "BOTTOM,ElvUIParent,BOTTOM,340,99",
 		LossControlMover = 'BOTTOM,ElvUIParent,BOTTOM,-1,507',
 		MirrorTimer1Mover = 'TOP,ElvUIParent,TOP,-1,-96',
 		WatchFrameMover = 'TOPRIGHT,ElvUIParent,TOPRIGHT,-163,-325',
@@ -4634,9 +4630,7 @@ E.LayoutMoverPositions = {
 		ShiftAB = 'BOTTOM,ElvUIParent,BOTTOM,0,58',
 		ElvUF_RaidMover = 'BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,4,269',
 		ElvUF_Raid40Mover = 'BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,4,269',
-		ElvUF_Raid1Mover = 'BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,4,269',
 		ElvUF_PartyMover = 'BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,4,269',
-		HonorBarMover = 'TOPRIGHT,ElvUIParent,TOPRIGHT,-2,-251',
 		ReputationBarMover = 'TOPRIGHT,ElvUIParent,TOPRIGHT,-2,-243',
 	},
 	dpsCaster = {
@@ -4648,5 +4642,6 @@ E.LayoutMoverPositions = {
 		ElvUF_TargetCastbarMover = "BOTTOM,ElvUIParent,BOTTOM,0,97",
 		ElvUF_RaidMover = "BOTTOMLEFT,ElvUIParent,BOTTOMLEFT,202,373",
 		LootFrameMover = "TOPLEFT,ElvUIParent,TOPLEFT,250,-104",
+		VOICECHAT = 'TOPLEFT,ElvUIParent,TOPLEFT,250,-82'
 	}
 }
