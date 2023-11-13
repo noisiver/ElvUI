@@ -70,13 +70,8 @@ Skins.args.general.values = { ace3Enable = 'Ace3', libDropdown = L["Library Drop
 Skins.args.general.sortByValue = true
 Skins.args.general.customWidth = 140
 
-Skins.args.talkingHead = ACH:Group(L["Talking Head"], nil, 2, nil, function(info) return E.db.general[info[#info]] end, nil, nil, not E.Retail)
-Skins.args.talkingHead.args.talkingHeadFrameScale = ACH:Range(L["Talking Head Scale"], nil, 1, { min = .5, max = 2, step = .01, isPercent = true }, nil, nil, function(_, value) E.db.general.talkingHeadFrameScale = value; BL:ScaleTalkingHeadFrame() end)
-Skins.args.talkingHead.args.talkingHeadFrameBackdrop = ACH:Toggle(L["Talking Head Backdrop"], nil, 2, nil, nil, nil, nil, function(_, value) E.db.general.talkingHeadFrameBackdrop = value; E.ShowPopup = true end)
-Skins.args.talkingHead.inline = true
-
-Skins.args.disableBlizzardSkins = ACH:Execute(L["Disable Blizzard Skins"], nil, 3, function() ToggleSkins(false) end)
-Skins.args.enableBlizzardSkins = ACH:Execute(L["Enable Blizzard Skins"], nil, 4, function() ToggleSkins(true) end)
+Skins.args.disableBlizzardSkins = ACH:Execute(L["Disable Blizzard Skins"], nil, 2, function() ToggleSkins(false) end)
+Skins.args.enableBlizzardSkins = ACH:Execute(L["Enable Blizzard Skins"], nil, 3, function() ToggleSkins(true) end)
 
 Skins.args.blizzard = ACH:MultiSelect(L["Blizzard"], L["TOGGLESKIN_DESC"], -1, nil, nil, nil, function(_, key) return E.private.skins.blizzard[key] end, function(_, key, value) E.private.skins.blizzard[key] = value; E.ShowPopup = true end, function() return not E.private.skins.blizzard.enable end)
 Skins.args.blizzard.sortByValue = true
