@@ -203,11 +203,5 @@ function E:UpdateBlizzardFonts()
 		E:SetFont(_G.ZoneTextString,						NORMAL, (blizz and 25) or unscale or mega, outline)
 		E:SetFont(_G.SubZoneTextFont,						NORMAL, (blizz and 26) or unscale or mega, outline)			-- WorldMap, SubZone
 		E:SetFont(_G.SystemFont_OutlineThick_WTF,			NORMAL, (blizz and 32) or unscale or enormous, outline)		-- WorldMap
-		-- big fonts
-
-		-- uncategorized
-		E:SetFont(_G.ChatFontSmall,							NORMAL, size)
-		E:SetFont(_G.QuestFontHighlight,					NORMAL, size)
-		E:SetFont(_G.QuestTitleFontBlackShadow,				NORMAL, size + 8)
 	end
 end
