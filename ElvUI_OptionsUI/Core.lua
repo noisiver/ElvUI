@@ -73,7 +73,7 @@ do
 		local SF, localized = E.global.unitframe.specialFilters[text], L[text]
 		if SF and localized and text:match("^block") then blockB, blockS, blockT = localized:match("^%[(.-)](%s?)(.+)") end
 		local filterText = (blockB and format("|cFF999999%s|r%s%s", blockB, blockS, blockT)) or localized or text
-		return (friend and format("|cFF33FF33%s|r %s", FRIEND, filterText)) or (enemy and format("|cFFFF3333%s|r %s", ENEMY, filterText)) or filterText
+		return (friend and format("|cFF33FF33%s|r %s", L["Friend"], filterText)) or (enemy and format("|cFFFF3333%s|r %s", ENEMY, filterText)) or filterText
 	end
 
 	local function filterMatch(s,v)

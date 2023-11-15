@@ -708,7 +708,7 @@ local function UpdateFilterGroup()
 						tank = {
 							order = 1,
 							type = "toggle",
-							name = L["TANK"],
+							name = L["Tank"],
 							get = function(info)
 								return E.global.nameplates.filters[selectedNameplateFilter].triggers.role.tank
 							end,
@@ -1383,7 +1383,7 @@ local function UpdateFilterGroup()
 						party = {
 							order = 2,
 							type = "toggle",
-							name = L["DUNGEONS"],
+							name = L["Dungeons"],
 							get = function(info)
 								return E.global.nameplates.filters[selectedNameplateFilter].triggers.instanceType.party
 							end,
@@ -1396,7 +1396,7 @@ local function UpdateFilterGroup()
 						raid = {
 							order = 3,
 							type = "toggle",
-							name = L["RAID"],
+							name = L["Raid"],
 							get = function(info)
 								return E.global.nameplates.filters[selectedNameplateFilter].triggers.instanceType.raid
 							end,
@@ -1409,7 +1409,7 @@ local function UpdateFilterGroup()
 						arena = {
 							order = 4,
 							type = "toggle",
-							name = L["ARENA"],
+							name = L["Arena"],
 							get = function(info)
 								return E.global.nameplates.filters[selectedNameplateFilter].triggers.instanceType.arena
 							end,
@@ -1421,7 +1421,7 @@ local function UpdateFilterGroup()
 						pvp = {
 							order = 5,
 							type = "toggle",
-							name = L["BATTLEFIELDS"],
+							name = L["Battlegrounds"],
 							get = function(info)
 								return E.global.nameplates.filters[selectedNameplateFilter].triggers.instanceType.pvp
 							end,
@@ -3914,7 +3914,7 @@ E.Options.args.nameplate = {
 		targetGroup = {
 			order = 200,
 			type = "group",
-			name = L["TARGET"],
+			name = L["Target"],
 			get = function(info)
 				return E.db.nameplates.units.TARGET[info[#info]]
 			end,

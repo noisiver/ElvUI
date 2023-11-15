@@ -1214,7 +1214,7 @@ local function GetOptionsTable_Fader(updateFunc, groupName, numUnits)
 			playertarget = {
 				order = 7,
 				type = "toggle",
-				name = (groupName == "player" and L["TARGET"]) or L["Player Target"],
+				name = (groupName == "player" and L["Target"]) or L["Player Target"],
 				disabled = function() return not E.db.unitframe.units[groupName].fader.enable or E.db.unitframe.units[groupName].fader.range end
 			},
 			focus = {
@@ -3367,7 +3367,7 @@ E.Options.args.unitframe = {
 						target = {
 							order = 3,
 							type = "toggle",
-							name = L["TARGET"],
+							name = L["Target"],
 							desc = L["Disables the target and target of target unitframes."]
 						},
 						focus = {
@@ -3379,7 +3379,7 @@ E.Options.args.unitframe = {
 						boss = {
 							order = 5,
 							type = "toggle",
-							name = L["BOSS"]
+							name = L["Boss"]
 						},
 						arena = {
 							order = 6,
@@ -3389,7 +3389,7 @@ E.Options.args.unitframe = {
 						party = {
 							order = 7,
 							type = "toggle",
-							name = L["PARTY"]
+							name = L["Party"]
 						}
 					}
 				},
@@ -4069,7 +4069,7 @@ E.Options.args.unitframe.args.player = {
 E.Options.args.unitframe.args.target = {
 	order = 400,
 	type = "group",
-	name = L["TARGET"],
+	name = L["Target"],
 	childGroups = "tab",
 	get = function(info) return E.db.unitframe.units.target[info[#info]] end,
 	set = function(info, value) E.db.unitframe.units.target[info[#info]] = value UF:CreateAndUpdateUF("target") end,
@@ -4099,7 +4099,7 @@ E.Options.args.unitframe.args.target = {
 			order = 3,
 			type = "execute",
 			name = L["Restore Defaults"],
-			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["TARGET"], nil, {unit="target", mover="Target Frame"}) end
+			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["Target"], nil, {unit="target", mover="Target Frame"}) end
 		},
 		copyFrom = {
 			order = 4,
@@ -5232,10 +5232,10 @@ E.Options.args.unitframe.args.pettarget = {
 E.Options.args.unitframe.args.boss = {
 	order = 1000,
 	type = "group",
-	name = L["BOSS"],
+	name = L["Boss"],
 	childGroups = "tab",
 	get = function(info) return E.db.unitframe.units.boss[info[#info]] end,
-	set = function(info, value) E.db.unitframe.units.boss[info[#info]] = value UF:CreateAndUpdateUFGroup("boss", MAX_BOSS_FRAMES) end,
+	set = function(info, value) E.db.unitframe.units.boss[info[#info]] = value UF:CreateAndUpdateUFGroup("boss", _G.MAX_BOSS_FRAMES) end,
 	disabled = function() return not E.UnitFrames.Initialized end,
 	args = {
 		enable = {
@@ -5254,7 +5254,7 @@ E.Options.args.unitframe.args.boss = {
 			order = 3,
 			type = "execute",
 			name = L["Restore Defaults"],
-			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["BOSS"], nil, {unit="boss", mover="Boss Frames"}) end
+			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["Boss"], nil, {unit="boss", mover="Boss Frames"}) end
 		},
 		copyFrom = {
 			order = 4,
@@ -5375,7 +5375,7 @@ E.Options.args.unitframe.args.boss = {
 E.Options.args.unitframe.args.arena = {
 	order = 1100,
 	type = "group",
-	name = L["ARENA"],
+	name = L["Arena"],
 	childGroups = "tab",
 	get = function(info) return E.db.unitframe.units.arena[info[#info]] end,
 	set = function(info, value) E.db.unitframe.units.arena[info[#info]] = value UF:CreateAndUpdateUFGroup("arena", 5) end,
@@ -5397,7 +5397,7 @@ E.Options.args.unitframe.args.arena = {
 			order = 3,
 			type = "execute",
 			name = L["Restore Defaults"],
-			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["ARENA"], nil, {unit="arena", mover="Arena Frames"}) end
+			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["Arena"], nil, {unit="arena", mover="Arena Frames"}) end
 		},
 		copyFrom = {
 			order = 4,
@@ -5568,7 +5568,7 @@ E.Options.args.unitframe.args.arena = {
 E.Options.args.unitframe.args.party = {
 	order = 1200,
 	type = "group",
-	name = L["PARTY"],
+	name = L["Party"],
 	childGroups = "tab",
 	get = function(info) return E.db.unitframe.units.party[info[#info]] end,
 	set = function(info, value) E.db.unitframe.units.party[info[#info]] = value UF:CreateAndUpdateHeaderGroup("party") end,
@@ -5591,7 +5591,7 @@ E.Options.args.unitframe.args.party = {
 			order = 3,
 			type = "execute",
 			name = L["Restore Defaults"],
-			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["PARTY"], nil, {unit="party", mover="Party Frames"}) end
+			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["Party"], nil, {unit="party", mover="Party Frames"}) end
 		},
 		copyFrom = {
 			order = 4,
@@ -5599,7 +5599,7 @@ E.Options.args.unitframe.args.party = {
 			name = L["Copy From"],
 			desc = L["Select a unit to copy settings from."],
 			values = {
-				["raid"] = L["RAID"],
+				["raid"] = L["Raid"],
 				["raid40"] = L["Raid-40"]
 			},
 			set = function(info, value) UF:MergeUnitSettings(value, "party", true) end
@@ -6160,7 +6160,7 @@ E.Options.args.unitframe.args.party = {
 E.Options.args.unitframe.args.raid = {
 	order = 1300,
 	type = "group",
-	name = L["RAID"],
+	name = L["Raid"],
 	childGroups = "tab",
 	get = function(info) return E.db.unitframe.units.raid[info[#info]] end,
 	set = function(info, value) E.db.unitframe.units.raid[info[#info]] = value UF:CreateAndUpdateHeaderGroup("raid") end,
@@ -6183,7 +6183,7 @@ E.Options.args.unitframe.args.raid = {
 			order = 3,
 			type = "execute",
 			name = L["Restore Defaults"],
-			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["RAID"], nil, {unit="raid", mover="Raid Frames"}) end
+			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["Raid"], nil, {unit="raid", mover="Raid Frames"}) end
 		},
 		copyFrom = {
 			order = 4,
@@ -6191,7 +6191,7 @@ E.Options.args.unitframe.args.raid = {
 			name = L["Copy From"],
 			desc = L["Select a unit to copy settings from."],
 			values = {
-				["party"] = L["PARTY"],
+				["party"] = L["Party"],
 				["raid40"] = L["Raid-40"]
 			},
 			set = function(info, value) UF:MergeUnitSettings(value, "raid", true) end
@@ -6610,8 +6610,8 @@ E.Options.args.unitframe.args.raid40 = {
 			name = L["Copy From"],
 			desc = L["Select a unit to copy settings from."],
 			values = {
-				["party"] = L["PARTY"],
-				["raid"] = L["RAID"]
+				["party"] = L["Party"],
+				["raid"] = L["Raid"]
 			},
 			set = function(info, value) UF:MergeUnitSettings(value, "raid40", true) end
 		},
@@ -6954,8 +6954,8 @@ E.Options.args.unitframe.args.raidpet = {
 			name = L["Copy From"],
 			desc = L["Select a unit to copy settings from."],
 			values = {
-				["party"] = L["PARTY"],
-				["raid"] = L["RAID"]
+				["party"] = L["Party"],
+				["raid"] = L["Raid"]
 			},
 			set = function(info, value) UF:MergeUnitSettings(value, "raidpet", true) end
 		},
@@ -7207,7 +7207,7 @@ E.Options.args.unitframe.args.raidpet = {
 E.Options.args.unitframe.args.tank = {
 	order = 1500,
 	type = "group",
-	name = L["TANK"],
+	name = L["Tank"],
 	childGroups = "tab",
 	get = function(info) return E.db.unitframe.units.tank[info[#info]] end,
 	set = function(info, value) E.db.unitframe.units.tank[info[#info]] = value UF:CreateAndUpdateHeaderGroup("tank") end,
@@ -7222,7 +7222,7 @@ E.Options.args.unitframe.args.tank = {
 			order = 2,
 			type = "execute",
 			name = L["Restore Defaults"],
-			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["TANK"], nil, {unit="tank"}) end
+			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["Tank"], nil, {unit="tank"}) end
 		},
 		generalGroup = {
 			order = 3,
