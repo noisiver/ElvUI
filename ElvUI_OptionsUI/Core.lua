@@ -49,7 +49,7 @@ C.Values = {
 		LEFT_UP = format(L["%s and then %s"], L["Left"], L["Up"]),
 	},
 	FontFlags = ACH.FontValues,
-	FontSize = { min = 8, max = 64, step = 1 },
+	FontSize = { min = 8, max = 24, step = 1 },
 	Roman = { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX" }, -- 1 to 20
 	AllPositions = { LEFT = 'LEFT', RIGHT = 'RIGHT', TOP = 'TOP', BOTTOM = 'BOTTOM', CENTER = 'CENTER' },
 	EdgePositions = { LEFT = 'LEFT', RIGHT = 'RIGHT', TOP = 'TOP', BOTTOM = 'BOTTOM' },
