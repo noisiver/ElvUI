@@ -44,7 +44,7 @@ local threatValues = {
 	["ICONRIGHT"] = L["Icon: RIGHT"],
 	["ICONTOP"] = L["Icon: TOP"],
 	["ICONBOTTOM"] = L["Icon: BOTTOM"],
-	["NONE"] = L["NONE"]
+	["NONE"] = L["None"]
 }
 
 local petAnchors = {
@@ -59,7 +59,7 @@ local petAnchors = {
 }
 
 local attachToValues = {
-	["Health"] = L["HEALTH"],
+	["Health"] = L["Health"],
 	["Power"] = L["Power"],
 	["InfoPanel"] = L["Information Panel"],
 	["Frame"] = L["Frame"]
@@ -231,8 +231,8 @@ local function GetOptionsTable_AuraBars(updateFunc, groupName)
 					["TIME_REMAINING_REVERSE"] = L["Time Remaining Reverse"],
 					["TIME_DURATION"] = L["Duration"],
 					["TIME_DURATION_REVERSE"] = L["Duration Reverse"],
-					["NAME"] = L["NAME"],
-					["NONE"] = L["NONE"]
+					["NAME"] = L["Name"],
+					["NONE"] = L["None"]
 				}
 			},
 			friendlyAuraType = {
@@ -483,7 +483,7 @@ local function GetOptionsTable_Auras(auraType, updateFunc, groupName, numUnits)
 				values = {
 					["TIME_REMAINING"] = L["Time Remaining"],
 					["DURATION"] = L["Duration"],
-					["NAME"] = L["NAME"],
+					["NAME"] = L["Name"],
 					["INDEX"] = L["Index"],
 					["PLAYER"] = L["PLAYER"]
 				}
@@ -576,7 +576,7 @@ local function GetOptionsTable_Auras(auraType, updateFunc, groupName, numUnits)
 			values = {
 				["FRAME"] = L["Frame"],
 				["DEBUFFS"] = L["Debuffs"],
-				["HEALTH"] = L["HEALTH"],
+				["HEALTH"] = L["Health"],
 				["POWER"] = L["Power"]
 			},
 			disabled = function()
@@ -593,7 +593,7 @@ local function GetOptionsTable_Auras(auraType, updateFunc, groupName, numUnits)
 			values = {
 				["FRAME"] = L["Frame"],
 				["BUFFS"] = L["Buffs"],
-				["HEALTH"] = L["HEALTH"],
+				["HEALTH"] = L["Health"],
 				["POWER"] = L["Power"]
 			},
 			disabled = function()
@@ -767,14 +767,14 @@ local function GetOptionsTable_Health(isGroupFrame, updateFunc, groupName, numUn
 	local config = {
 		order = 100,
 		type = "group",
-		name = L["HEALTH"],
+		name = L["Health"],
 		get = function(info) return E.db.unitframe.units[groupName].health[info[#info]] end,
 		set = function(info, value) E.db.unitframe.units[groupName].health[info[#info]] = value updateFunc(UF, groupName, numUnits) end,
 		args = {
 			header = {
 				order = 1,
 				type = "header",
-				name = L["HEALTH"]
+				name = L["Health"]
 			},
 			position = {
 				order = 2,
@@ -1052,14 +1052,14 @@ local function GetOptionsTable_Name(updateFunc, groupName, numUnits)
 	local config = {
 		order = 300,
 		type = "group",
-		name = L["NAME"],
+		name = L["Name"],
 		get = function(info) return E.db.unitframe.units[groupName].name[info[#info]] end,
 		set = function(info, value) E.db.unitframe.units[groupName].name[info[#info]] = value updateFunc(UF, groupName, numUnits) end,
 		args = {
 			header = {
 				order = 1,
 				type = "header",
-				name = L["NAME"]
+				name = L["Name"]
 			},
 			position = {
 				order = 2,
@@ -1226,7 +1226,7 @@ local function GetOptionsTable_Fader(updateFunc, groupName, numUnits)
 			health = {
 				order = 9,
 				type = "toggle",
-				name = L["HEALTH"],
+				name = L["Health"],
 				disabled = function() return not E.db.unitframe.units[groupName].fader.enable or E.db.unitframe.units[groupName].fader.range end
 			},
 			power = {
@@ -1930,7 +1930,7 @@ local function GetOptionsTable_HealPrediction(updateFunc, groupName, numGroup)
 			colors = {
 				order = 3,
 				type = "execute",
-				name = L["COLORS"],
+				name = L["Colors"],
 				func = function() ACD:SelectGroup("ElvUI", "unitframe", "generalOptionsGroup", "allColorsGroup", "healPrediction") end,
 				disabled = function() return not E.UnitFrames.Initialized end
 			}
@@ -2255,7 +2255,7 @@ local function GetOptionsTable_Cutaway(updateFunc, groupName, numGroup)
 				order = 1,
 				type = "group",
 				guiInline = true,
-				name = L["HEALTH"],
+				name = L["Health"],
 				get = function(info) return E.db.unitframe.units[groupName].cutaway.health[info[#info]] end,
 				set = function(info, value) E.db.unitframe.units[groupName].cutaway.health[info[#info]] = value; updateFunc(UF, groupName, numGroup) end,
 				args = {
@@ -2386,7 +2386,7 @@ E.Options.args.unitframe = {
 							name = L["Blacklist Modifier"],
 							desc = L["You need to hold this modifier down in order to blacklist an aura by right-clicking the icon. Set to None to disable the blacklist functionality."],
 							values = {
-								["NONE"] = L["NONE"],
+								["NONE"] = L["None"],
 								["SHIFT"] = L["SHIFT_KEY_TEXT"],
 								["ALT"] = L["ALT_KEY_TEXT"],
 								["CTRL"] = L["CTRL_KEY_TEXT"]
@@ -2632,14 +2632,14 @@ E.Options.args.unitframe = {
 					order = 3,
 					type = "group",
 					childGroups = "tree",
-					name = L["COLORS"],
+					name = L["Colors"],
 					get = function(info) return E.db.unitframe.colors[info[#info]] end,
 					set = function(info, value) E.db.unitframe.colors[info[#info]] = value UF:Update_AllFrames() end,
 					args = {
 						header = {
 							order = 1,
 							type = "header",
-							name = L["COLORS"]
+							name = L["Colors"]
 						},
 						borderColor = {
 							order = 2,
@@ -2660,7 +2660,7 @@ E.Options.args.unitframe = {
 						healthGroup = {
 							order = 3,
 							type = "group",
-							name = L["HEALTH"],
+							name = L["Health"],
 							get = function(info)
 								local t = E.db.unitframe.colors[info[#info]]
 								local d = P.unitframe.colors[info[#info]]
@@ -2675,7 +2675,7 @@ E.Options.args.unitframe = {
 								header = {
 									order = 1,
 									type = "header",
-									name = L["HEALTH"]
+									name = L["Health"]
 								},
 								colorhealthbyvalue = {
 									order = 2,
@@ -2797,7 +2797,7 @@ E.Options.args.unitframe = {
 								health = {
 									order = 18,
 									type = "color",
-									name = L["HEALTH"]
+									name = L["Health"]
 								},
 								disconnected = {
 									order = 19,
@@ -3299,7 +3299,7 @@ E.Options.args.unitframe = {
 									get = function(info) return E.db.unitframe[info[#info]] end,
 									set = function(info, value) E.db.unitframe[info[#info]] = value end,
 									values = {
-										["NONE"] = L["NONE"],
+										["NONE"] = L["None"],
 										["GLOW"] = L["Glow"],
 										["FILL"] = L["Fill"]
 									}
@@ -4924,7 +4924,7 @@ E.Options.args.unitframe.args.focustarget = {
 E.Options.args.unitframe.args.pet = {
 	order = 800,
 	type = "group",
-	name = L["PET"],
+	name = L["Pet"],
 	childGroups = "tab",
 	get = function(info) return E.db.unitframe.units.pet[info[#info]] end,
 	set = function(info, value) E.db.unitframe.units.pet[info[#info]] = value UF:CreateAndUpdateUF("pet") end,
@@ -4954,7 +4954,7 @@ E.Options.args.unitframe.args.pet = {
 			order = 3,
 			type = "execute",
 			name = L["Restore Defaults"],
-			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["PET"], nil, {unit="pet", mover="Pet Frame"}) end
+			func = function(info) E:StaticPopup_Show("RESET_UF_UNIT", L["Pet"], nil, {unit="pet", mover="Pet Frame"}) end
 		},
 		copyFrom = {
 			order = 4,
@@ -5767,7 +5767,7 @@ E.Options.args.unitframe.args.party = {
 							desc = L["Set the order that the group will sort."],
 							values = {
 								["CLASS"] = L["CLASS"],
-								["NAME"] = L["NAME"],
+								["NAME"] = L["Name"],
 								["MTMA"] = L["Main Tanks / Main Assist"],
 								["GROUP"] = L["GROUP"]
 							}
@@ -6023,7 +6023,7 @@ E.Options.args.unitframe.args.party = {
 				name = {
 					order = 8,
 					type = "group",
-					name = L["NAME"],
+					name = L["Name"],
 					guiInline = true,
 					get = function(info) return E.db.unitframe.units.party.petsGroup.name[info[#info]] end,
 					set = function(info, value) E.db.unitframe.units.party.petsGroup.name[info[#info]] = value UF:CreateAndUpdateHeaderGroup("party") end,
@@ -6359,7 +6359,7 @@ E.Options.args.unitframe.args.raid = {
 							desc = L["Set the order that the group will sort."],
 							values = {
 								["CLASS"] = L["CLASS"],
-								["NAME"] = L["NAME"],
+								["NAME"] = L["Name"],
 								["MTMA"] = L["Main Tanks / Main Assist"],
 								["GROUP"] = L["GROUP"]
 							}
@@ -6778,7 +6778,7 @@ E.Options.args.unitframe.args.raid40 = {
 							desc = L["Set the order that the group will sort."],
 							values = {
 								["CLASS"] = L["CLASS"],
-								["NAME"] = L["NAME"],
+								["NAME"] = L["Name"],
 								["MTMA"] = L["Main Tanks / Main Assist"],
 								["GROUP"] = L["GROUP"]
 							}
@@ -7386,8 +7386,8 @@ E.Options.args.unitframe.args.tank = {
 		}
 	}
 }
-E.Options.args.unitframe.args.tank.args.name.args.attachTextTo.values = {["Health"] = L["HEALTH"], ["Frame"] = L["Frame"]}
-E.Options.args.unitframe.args.tank.args.targetsGroup.args.name.args.attachTextTo.values = {["Health"] = L["HEALTH"], ["Frame"] = L["Frame"]}
+E.Options.args.unitframe.args.tank.args.name.args.attachTextTo.values = {["Health"] = L["Health"], ["Frame"] = L["Frame"]}
+E.Options.args.unitframe.args.tank.args.targetsGroup.args.name.args.attachTextTo.values = {["Health"] = L["Health"], ["Frame"] = L["Frame"]}
 E.Options.args.unitframe.args.tank.args.targetsGroup.args.name.get = function(info) return E.db.unitframe.units.tank.targetsGroup.name[info[#info]] end
 E.Options.args.unitframe.args.tank.args.targetsGroup.args.name.set = function(info, value) E.db.unitframe.units.tank.targetsGroup.name[info[#info]] = value UF.CreateAndUpdateHeaderGroup(UF, "tank") end
 
@@ -7574,8 +7574,8 @@ E.Options.args.unitframe.args.assist = {
 		}
 	}
 }
-E.Options.args.unitframe.args.assist.args.name.args.attachTextTo.values = {["Health"] = L["HEALTH"], ["Frame"] = L["Frame"]}
-E.Options.args.unitframe.args.assist.args.targetsGroup.args.name.args.attachTextTo.values = {["Health"] = L["HEALTH"], ["Frame"] = L["Frame"]}
+E.Options.args.unitframe.args.assist.args.name.args.attachTextTo.values = {["Health"] = L["Health"], ["Frame"] = L["Frame"]}
+E.Options.args.unitframe.args.assist.args.targetsGroup.args.name.args.attachTextTo.values = {["Health"] = L["Health"], ["Frame"] = L["Frame"]}
 E.Options.args.unitframe.args.assist.args.targetsGroup.args.name.get = function(info) return E.db.unitframe.units.assist.targetsGroup.name[info[#info]] end
 E.Options.args.unitframe.args.assist.args.targetsGroup.args.name.set = function(info, value) E.db.unitframe.units.assist.targetsGroup.name[info[#info]] = value UF.CreateAndUpdateHeaderGroup(UF, "assist") end
 

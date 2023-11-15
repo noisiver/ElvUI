@@ -875,7 +875,7 @@ local function UpdateFilterGroup()
 				levels = {
 					order = 11,
 					type = "group",
-					name = L["LEVEL"],
+					name = L["Level"],
 					disabled = function() return not (E.db.nameplates and E.db.nameplates.filters and E.db.nameplates.filters[selectedNameplateFilter] and E.db.nameplates.filters[selectedNameplateFilter].triggers and E.db.nameplates.filters[selectedNameplateFilter].triggers.enable) end,
 					args = {
 						enable = {
@@ -1359,7 +1359,7 @@ local function UpdateFilterGroup()
 						none = {
 							order = 1,
 							type = "toggle",
-							name = L["NONE"],
+							name = L["None"],
 							get = function(info)
 								return E.global.nameplates.filters[selectedNameplateFilter].triggers.instanceType.none
 							end,
@@ -1680,7 +1680,7 @@ local function UpdateFilterGroup()
 						health = {
 							order = 1,
 							type = "toggle",
-							name = L["HEALTH"],
+							name = L["Health"],
 							get = function(info)
 								return E.global.nameplates.filters[selectedNameplateFilter].actions.color.health
 							end,
@@ -1918,14 +1918,14 @@ local function GetUnitSettings(unit, name)
 			healthGroup = {
 				order = 1,
 				type = "group",
-				name = L["HEALTH"],
+				name = L["Health"],
 				get = function(info) return E.db.nameplates.units[unit].health[info[#info]] end,
 				set = function(info, value) E.db.nameplates.units[unit].health[info[#info]] = value NP:ConfigureAll() end,
 				args = {
 					header = {
 						order = 1,
 						type = "header",
-						name = L["HEALTH"]
+						name = L["Health"]
 					},
 					enable = {
 						order = 2,
@@ -2991,7 +2991,7 @@ local function GetUnitSettings(unit, name)
 			},
 			levelGroup = {
 				order = 5,
-				name = L["LEVEL"],
+				name = L["Level"],
 				type = "group",
 				get = function(info)
 					return E.db.nameplates.units[unit].level[info[#info]]
@@ -3004,7 +3004,7 @@ local function GetUnitSettings(unit, name)
 					header = {
 						order = 0,
 						type = "header",
-						name = L["LEVEL"]
+						name = L["Level"]
 					},
 					enable = {
 						order = 1,
@@ -3640,7 +3640,7 @@ E.Options.args.nameplate = {
 				colorsGroup = {
 					order = 2,
 					type = "group",
-					name = L["COLORS"],
+					name = L["Colors"],
 					args = {
 						general = {
 							order = 1,
@@ -3974,7 +3974,7 @@ E.Options.args.nameplate = {
 					name = L["Target/Low Health Indicator"],
 					customWidth = 225,
 					values = {
-						["none"] = L["NONE"],
+						["none"] = L["None"],
 						["style1"] = L["Border Glow"],
 						["style2"] = L["Background Glow"],
 						["style3"] = L["Top Arrow"],
