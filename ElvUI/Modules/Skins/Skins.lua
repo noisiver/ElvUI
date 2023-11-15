@@ -733,7 +733,7 @@ function S:HandleBlizzardRegions(frame, name, kill, zero)
 	end
 end
 
-function S:HandleEditBox(frame, template)
+function S:HandleEditBox(frame, template, search)
 	assert(frame, "doesn't exist!")
 
 	if frame.backdrop then return end
@@ -746,6 +746,10 @@ function S:HandleEditBox(frame, template)
 	local EditBoxName = frame:GetName()
 	if EditBoxName and (strfind(EditBoxName, "Silver") or strfind(EditBoxName, "Copper")) then
 		frame.backdrop:Point("BOTTOMRIGHT", -12, -2)
+	end
+
+	if search then
+		S:HandleSearchBox(frame)
 	end
 end
 

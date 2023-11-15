@@ -1405,8 +1405,7 @@ function B:ConstructContainerFrame(name, isBank)
 
 	--Search
 	f.editBox = CreateFrame('EditBox', name..'EditBox', f)
-	S:HandleEditBox(f.editBox)
-	S:HandleSearchBox(f.editBox)
+	S:HandleEditBox(f.editBox, nil, true)
 	f.editBox:FontTemplate()
 	f.editBox:Height(16)
 	f.editBox:SetAutoFocus(false)
