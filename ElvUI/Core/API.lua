@@ -37,7 +37,7 @@ local UnitInRaid = UnitInRaid
 local UnitIsUnit = UnitIsUnit
 
 local GetSpecialization = LCS.GetSpecialization
-local GetSpecializationRole = LCS.GetSpecializationRole
+local GetSpecializationInfo = LCS.GetSpecializationInfo
 
 local MAX_TALENT_TABS = MAX_TALENT_TABS
 local NONE = NONE
@@ -253,11 +253,16 @@ end
 
 function E:GetPlayerRole()
 	local role = UnitGroupRolesAssigned("player") or "NONE"
-	return (role == "NONE" and E.myspec and GetSpecializationRole(E.myspec)) or role
+	return (role ~= 'NONE' and role) or E.myspecRole or 'NONE'
 end
 
 function E:CheckRole()
 	E.myspec = GetSpecialization()
+
+	if E.myspec then
+		E.myspecID, E.myspecName, E.myspecDesc, E.myspecIcon, E.myspecBackground, E.myspecRole = GetSpecializationInfo(E.myspec)
+	end
+
 	E.myrole = E:GetPlayerRole()
 end
 
