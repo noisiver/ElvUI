@@ -10,7 +10,6 @@ local pairs = pairs
 local ipairs = ipairs
 local tinsert = tinsert
 
-local SetCVar = SetCVar
 local ReloadUI = ReloadUI
 local PlaySound = PlaySound
 local CreateFrame = CreateFrame
@@ -116,7 +115,7 @@ function E:SetupChat(noDisplayMsg)
 	end
 
 	if ELV_TOONS[PLAYER_NAME] then
-		SetCVar("scriptErrors", 1)
+		E:SetCVar("scriptErrors", 1)
 	end
 
 	if InstallStepComplete and not noDisplayMsg then
@@ -126,27 +125,27 @@ function E:SetupChat(noDisplayMsg)
 end
 
 function E:SetupCVars(noDisplayMsg)
-	SetCVar("mapQuestDifficulty", 1)
-	SetCVar("ShowClassColorInNameplate", 1)
-	SetCVar("screenshotQuality", 10)
-	SetCVar("chatMouseScroll", 1)
-	SetCVar("chatStyle", "classic")
-	SetCVar("wholeChatWindowClickable", 0)
-	SetCVar("ConversationMode", "inline")
-	SetCVar("showTutorials", 0)
-	SetCVar("showNewbieTips", 0)
-	SetCVar("showLootSpam", 1)
-	SetCVar("UberTooltips", 1)
-	SetCVar("threatWarning", 3)
-	SetCVar("alwaysShowActionBars", 1)
-	SetCVar("lockActionBars", 1)
-	SetCVar("spamFilter", 0)
-	SetCVar("showItemLevel", 1)
+	E:SetCVar("mapQuestDifficulty", 1)
+	E:SetCVar("ShowClassColorInNameplate", 1)
+	E:SetCVar("screenshotQuality", 10)
+	E:SetCVar("chatMouseScroll", 1)
+	E:SetCVar("chatStyle", "classic")
+	E:SetCVar("wholeChatWindowClickable", 0)
+	E:SetCVar("ConversationMode", "inline")
+	E:SetCVar("showTutorials", 0)
+	E:SetCVar("showNewbieTips", 0)
+	E:SetCVar("showLootSpam", 1)
+	E:SetCVar("UberTooltips", 1)
+	E:SetCVar("threatWarning", 3)
+	E:SetCVar("alwaysShowActionBars", 1)
+	E:SetCVar("lockActionBars", 1)
+	E:SetCVar("spamFilter", 0)
+	E:SetCVar("showItemLevel", 1)
 
 	if E.private.chat.enable then
-		SetCVar("chatMouseScroll", 1)
-		SetCVar("chatStyle", "classic")
-		SetCVar("wholeChatWindowClickable", 0)
+		E:SetCVar("chatMouseScroll", 1)
+		E:SetCVar("chatStyle", "classic")
+		E:SetCVar("wholeChatWindowClickable", 0)
 	end
 
 	if InstallStepComplete and not noDisplayMsg then

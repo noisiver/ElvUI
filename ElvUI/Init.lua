@@ -4,8 +4,9 @@
 		local E, L, V, P, G = unpack(ElvUI)
 ]]
 
-local next, strfind = next, strfind
-local gsub, type = gsub, type
+local _G = _G
+local gsub, tinsert, next = gsub, tinsert, next
+local tostring, strfind, type = tostring, strfind, type
 
 local GetBuildInfo = GetBuildInfo
 local GetLocale = GetLocale
@@ -14,6 +15,8 @@ local CreateFrame = CreateFrame
 local DisableAddOn = DisableAddOn
 local IsAddOnLoaded = IsAddOnLoaded
 local ReloadUI = ReloadUI
+local GetCVar = GetCVar
+local SetCVar = SetCVar
 
 local UIDropDownMenu_SetAnchor = UIDropDownMenu_SetAnchor
 
@@ -140,6 +143,13 @@ do
 
 	for _, addon in next, alwaysDisable do
 		DisableAddOn(addon)
+	end
+end
+
+function E:SetCVar(cvar, value, ...)
+	local valstr = ((type(value) == 'boolean') and (value and '1' or '0')) or tostring(value)
+	if GetCVar(cvar) ~= valstr then
+		SetCVar(cvar, valstr, ...)
 	end
 end
 

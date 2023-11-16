@@ -20,7 +20,6 @@ local GetNumPartyMembers, GetNumRaidMembers = GetNumPartyMembers, GetNumRaidMemb
 local GetPlayerInfoByGUID = GetPlayerInfoByGUID
 local InCombatLockdown = InCombatLockdown
 local IsInInstance = IsInInstance
-local SetCVar = SetCVar
 local UnitClass = UnitClass
 local UnitExists = UnitExists
 local UnitFactionGroup = UnitFactionGroup
@@ -924,9 +923,9 @@ function NP:SearchForFrame(guid, raidIcon, name)
 end
 
 function NP:UpdateCVars()
-	SetCVar("ShowClassColorInNameplate", "1")
-	SetCVar("showVKeyCastbar", "0")
-	SetCVar("nameplateAllowOverlap", self.db.motionType == "STACKED" and "0" or "1")
+	E:SetCVar("ShowClassColorInNameplate", "1")
+	E:SetCVar("showVKeyCastbar", "0")
+	E:SetCVar("nameplateAllowOverlap", self.db.motionType == "STACKED" and "0" or "1")
 end
 
 local function CopySettings(from, to)
@@ -1027,15 +1026,15 @@ end
 
 function NP:PLAYER_REGEN_DISABLED()
 	if self.db.showFriendlyCombat == "TOGGLE_ON" then
-		SetCVar("nameplateShowFriends", 1)
+		E:SetCVar("nameplateShowFriends", 1)
 	elseif self.db.showFriendlyCombat == "TOGGLE_OFF" then
-		SetCVar("nameplateShowFriends", 0)
+		E:SetCVar("nameplateShowFriends", 0)
 	end
 
 	if self.db.showEnemyCombat == "TOGGLE_ON" then
-		SetCVar("nameplateShowEnemies", 1)
+		E:SetCVar("nameplateShowEnemies", 1)
 	elseif self.db.showEnemyCombat == "TOGGLE_OFF" then
-		SetCVar("nameplateShowEnemies", 0)
+		E:SetCVar("nameplateShowEnemies", 0)
 	end
 
 	NP:ForEachVisiblePlate("StyleFilterUpdate", "PLAYER_REGEN_DISABLED")
@@ -1049,15 +1048,15 @@ function NP:PLAYER_REGEN_ENABLED()
 	end
 
 	if self.db.showFriendlyCombat == "TOGGLE_ON" then
-		SetCVar("nameplateShowFriends", 0)
+		E:SetCVar("nameplateShowFriends", 0)
 	elseif self.db.showFriendlyCombat == "TOGGLE_OFF" then
-		SetCVar("nameplateShowFriends", 1)
+		E:SetCVar("nameplateShowFriends", 1)
 	end
 
 	if self.db.showEnemyCombat == "TOGGLE_ON" then
-		SetCVar("nameplateShowEnemies", 0)
+		E:SetCVar("nameplateShowEnemies", 0)
 	elseif self.db.showEnemyCombat == "TOGGLE_OFF" then
-		SetCVar("nameplateShowEnemies", 1)
+		E:SetCVar("nameplateShowEnemies", 1)
 	end
 
 	NP:ForEachVisiblePlate("StyleFilterUpdate", "PLAYER_REGEN_ENABLED")

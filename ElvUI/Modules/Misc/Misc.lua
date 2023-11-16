@@ -251,7 +251,7 @@ end
 
 function M:ForceCVars(event)
 	if not GetCVarBool("lockActionBars") then
-		SetCVar("lockActionBars", 1)
+		E:SetCVar("lockActionBars", 1)
 	end
 
 	if event == "PLAYER_ENTERING_WORLD" then

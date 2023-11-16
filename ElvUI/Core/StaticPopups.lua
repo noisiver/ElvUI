@@ -21,7 +21,7 @@ local DeleteCursorItem = DeleteCursorItem
 local MoneyFrame_Update = MoneyFrame_Update
 local UnitIsDeadOrGhost, InCinematic = UnitIsDeadOrGhost, InCinematic
 local PurchaseSlot, GetBankSlotCost = PurchaseSlot, GetBankSlotCost
-local SetCVar, EnableAddOn, DisableAddOn = SetCVar, EnableAddOn, DisableAddOn
+local EnableAddOn, DisableAddOn = EnableAddOn, DisableAddOn
 local ReloadUI, PlaySound, StopMusic = ReloadUI, PlaySound, StopMusic
 local StaticPopup_Resize = StaticPopup_Resize
 local GetBindingFromClick = GetBindingFromClick
@@ -386,7 +386,7 @@ E.PopupDialogs.SCRIPT_PROFILE = {
 	button1 = L["Disable"],
 	button2 = L["Continue"],
 	OnAccept = function()
-		SetCVar("scriptProfile", 0)
+		E:SetCVar("scriptProfile", 0)
 		ReloadUI()
 	end,
 	OnCancel = E.noop,

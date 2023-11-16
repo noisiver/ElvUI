@@ -7,7 +7,6 @@ local _G = _G
 local pairs = pairs
 local ipairs = ipairs
 local format = format
-local SetCVar = SetCVar
 local CopyTable = CopyTable
 local GameTooltip = GameTooltip
 local GetCVarBool = GetCVarBool
@@ -122,7 +121,7 @@ general.args.customGlowShortcut = ACH:Execute(L["Custom Glow"], nil, 4, function
 general.args.generalGroup = ACH:Group(L["General"], nil, 20, nil, function(info) return E.db.actionbar[info[#info]] end, function(info, value) E.db.actionbar[info[#info]] = value; AB:UpdateButtonSettings() end)
 general.args.generalGroup.inline = true
 general.args.generalGroup.args.keyDown = ACH:Toggle(L["Key Down"], L["OPTION_TOOLTIP_ACTION_BUTTON_USE_KEY_DOWN"], 1, nil, nil, nil, function() return AB.db.keyDown end, function(_, value) AB.db.keyDown = value AB:UpdateButtonSettings() end)
-general.args.generalGroup.args.lockActionBars = ACH:Toggle(L["LOCK_ACTIONBAR_TEXT"], L["If you unlock actionbars then trying to move a spell might instantly cast it if you cast spells on key press instead of key release."], 2, nil, nil, nil, nil, function(info, value) E.db.actionbar[info[#info]] = value SetCVar('lockActionBars', (value == true and 1 or 0)) LOCK_ACTIONBAR = (value == true and '1' or '0') AB:UpdateButtonSettings() end)
+general.args.generalGroup.args.lockActionBars = ACH:Toggle(L["LOCK_ACTIONBAR_TEXT"], L["If you unlock actionbars then trying to move a spell might instantly cast it if you cast spells on key press instead of key release."], 2, nil, nil, nil, nil, function(info, value) E.db.actionbar[info[#info]] = value E:SetCVar('lockActionBars', (value == true and 1 or 0)) LOCK_ACTIONBAR = (value == true and '1' or '0') AB:UpdateButtonSettings() end)
 general.args.generalGroup.args.hideCooldownBling = ACH:Toggle(L["Hide Cooldown Bling"], L["Hides the bling animation on buttons at the end of the global cooldown."], 3, nil, nil, nil, nil, function(info, value) E.db.actionbar[info[#info]] = value AB:UpdateButtonSettings() AB:UpdatePetCooldownSettings() end)
 general.args.generalGroup.args.useDrawSwipeOnCharges = ACH:Toggle(L["Charge Draw Swipe"], L["Shows a swipe animation when a spell is recharging but still has charges left."], 9)
 general.args.generalGroup.args.chargeCooldown = ACH:Toggle(L["Charge Cooldown Text"], nil, 10, nil, nil, nil, nil, function(info, value) E.db.actionbar[info[#info]] = value AB:ToggleCooldownOptions() end)
@@ -140,7 +139,7 @@ general.args.castGroup.args.checkFocusCast = ACH:Toggle(L["Check Focus Cast"], n
 general.args.castGroup.args.spacer2 = ACH:Spacer(12, 'full')
 general.args.castGroup.args.selfCastKey = ACH:Select(L["Self Cast Key"], nil, 20, castKeyValues, nil, nil, function() return GetModifiedClick('SELFCAST') end, function(_, value) SetModifiedClick('SELFCAST', value); SaveBindings(GetCurrentBindingSet()) end)
 general.args.castGroup.args.checkSelfCast = ACH:Toggle(L["Check Self Cast"], nil, 21)
-general.args.castGroup.args.autoSelfCast = ACH:Toggle(L["Auto Self Cast"], nil, 22, nil, nil, nil, function() return GetCVarBool('autoSelfCast') end, function(_, value) SetCVar('autoSelfCast', value and 1 or 0) end)
+general.args.castGroup.args.autoSelfCast = ACH:Toggle(L["Auto Self Cast"], nil, 22, nil, nil, nil, function() return GetCVarBool('autoSelfCast') end, function(_, value) E:SetCVar('autoSelfCast', value and 1 or 0) end)
 general.args.castGroup.args.rightClickSelfCast = ACH:Toggle(L["Right Click Self Cast"], nil, 23, nil, nil, nil, function(info) return E.db.actionbar[info[#info]] end, function(info, value) E.db.actionbar[info[#info]] = value; AB:UpdateButtonSettings() end)
 
 general.args.colorGroup = ACH:Group(L["Colors"], nil, 30, nil, function(info) local t = E.db.actionbar[info[#info]] local d = P.actionbar[info[#info]] return t.r, t.g, t.b, t.a, d.r, d.g, d.b, d.a end, function(info, r, g, b, a) local t = E.db.actionbar[info[#info]] t.r, t.g, t.b, t.a = r, g, b, a AB:UpdateButtonSettings() end, function() return (E.Masque and E.private.actionbar.masque.actionbars) end)

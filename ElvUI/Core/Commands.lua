@@ -8,7 +8,6 @@ local format, lower, split = string.format, string.lower, string.split
 local wipe, next, print = wipe, next, print
 --WoW API / Variables
 local EnableAddOn, DisableAddOn = EnableAddOn, DisableAddOn
-local SetCVar = SetCVar
 local ReloadUI = ReloadUI
 local debugprofilestop = debugprofilestop
 local UpdateAddOnCPUUsage, GetAddOnCPUUsage = UpdateAddOnCPUUsage, GetAddOnCPUUsage
@@ -47,12 +46,12 @@ function E:LuaError(msg)
 			end
 		end
 
-		SetCVar("scriptErrors", 1)
+		E:SetCVar("scriptErrors", 1)
 		ReloadUI()
 	elseif switch == "off" or switch == "0" then
 		if switch == "off" then
-			SetCVar("scriptProfile", 0)
-			SetCVar("scriptErrors", 0)
+			E:SetCVar("scriptProfile", 0)
+			E:SetCVar("scriptErrors", 0)
 			E:Print("Lua errors off.")
 
 			if E:IsAddOnEnabled("ElvUI_CPU") then

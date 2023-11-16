@@ -18,7 +18,6 @@ local IsControlKeyDown = IsControlKeyDown
 local IsShiftKeyDown = IsShiftKeyDown
 local ReloadUI = ReloadUI
 local ResetCPUUsage = ResetCPUUsage
-local SetCVar = SetCVar
 local UpdateAddOnCPUUsage = UpdateAddOnCPUUsage
 local UpdateAddOnMemoryUsage = UpdateAddOnMemoryUsage
 
@@ -74,7 +73,7 @@ end
 local function OnClick()
 	local shiftDown, ctrlDown = IsShiftKeyDown(), IsControlKeyDown()
 	if shiftDown and ctrlDown then
-		SetCVar("scriptProfile", GetCVar("scriptProfile"))
+		E:SetCVar("scriptProfile", GetCVar("scriptProfile"))
 		ReloadUI()
 	elseif shiftDown and not ctrlDown then
 		collectgarbage("collect")

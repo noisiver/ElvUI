@@ -12,7 +12,6 @@ local hooksecurefunc = hooksecurefunc
 local InCombatLockdown = InCombatLockdown
 local PetDismiss = PetDismiss
 local RegisterStateDriver = RegisterStateDriver
-local SetCVar = SetCVar
 local SetModifiedClick = SetModifiedClick
 local SetOverrideBindingClick = SetOverrideBindingClick
 local UnitAffectingCombat = UnitAffectingCombat
@@ -1323,7 +1322,7 @@ function AB:Initialize()
 	AB:ReassignBindings()
 
 	-- We handle actionbar lock for regular bars, but the lock on PetBar needs to be handled by WoW so make some necessary updates
-	SetCVar("lockActionBars", (AB.db.lockActionBars == true and 1 or 0))
+	E:SetCVar("lockActionBars", (AB.db.lockActionBars == true and 1 or 0))
 	LOCK_ACTIONBAR = (AB.db.lockActionBars == true and "1" or "0") -- Keep an eye on this, in case it taints
 
 	AB:ToggleDesaturation()
