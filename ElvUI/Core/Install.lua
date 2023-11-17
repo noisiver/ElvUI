@@ -1,13 +1,13 @@
-local E, L, V, P, G = unpack(select(2, ...))
+local E, L, V, P, G = unpack(ElvUI)
 local UF = E:GetModule("UnitFrames")
 local CH = E:GetModule("Chat")
 local S = E:GetModule("Skins")
 
 local _G = _G
+local next = next
 local unpack = unpack
 local format = format
-local pairs = pairs
-local ipairs = ipairs
+local strsub = strsub
 local tinsert = tinsert
 
 local ReloadUI = ReloadUI
@@ -22,11 +22,11 @@ local FCF_OpenNewWindow = FCF_OpenNewWindow
 local FCF_ResetChatWindows = FCF_ResetChatWindows
 local FCF_SetChatWindowFontSize = FCF_SetChatWindowFontSize
 local FCF_SavePositionAndDimensions = FCF_SavePositionAndDimensions
+local SetChatColorNameByClass = SetChatColorNameByClass
 local ChatFrame_AddChannel = ChatFrame_AddChannel
 local ChatFrame_RemoveChannel = ChatFrame_RemoveChannel
 local ChatFrame_AddMessageGroup = ChatFrame_AddMessageGroup
 local ChatFrame_RemoveAllMessageGroups = ChatFrame_RemoveAllMessageGroups
-local ToggleChatColorNamesByClassGroup = ToggleChatColorNamesByClassGroup
 -- GLOBALS: ElvUIInstallFrame
 
 local CLASS, CONTINUE, PREVIOUS = CLASS, CONTINUE, PREVIOUS
@@ -41,13 +41,24 @@ local ELV_TOONS = {
 	-- ["CharacterName-Server"] = true, -- Example
 }
 
+local function ToggleChatColorNamesByClassGroup(checked, group)
+	local info = _G.ChatTypeGroup[group]
+	if info then
+		for _, value in next, info do
+			SetChatColorNameByClass(strsub(value, 10), checked)
+		end
+	else
+		SetChatColorNameByClass(group, checked)
+	end
+end
+
 function E:SetupChat(noDisplayMsg)
 	FCF_ResetChatWindows()
 
 	local rightChatFrame = FCF_OpenNewWindow(LOOT)
 	FCF_UnDockFrame(rightChatFrame)
 
-	for _, name in ipairs(CHAT_FRAMES) do
+	for _, name in next, _G.CHAT_FRAMES do
 		local frame = _G[name]
 		local id = frame:GetID()
 
@@ -57,12 +68,12 @@ function E:SetupChat(noDisplayMsg)
 
 		if id == 1 then
 			frame:ClearAllPoints()
-			frame:Point("BOTTOMLEFT", LeftChatToggleButton, "TOPLEFT", 1, 3)
+			frame:Point("BOTTOMLEFT", _G.LeftChatToggleButton, "TOPLEFT", 1, 3)
 		elseif id == 2 then
 			FCF_SetWindowName(frame, GUILD_EVENT_LOG)
 		elseif id == 3 then
 			frame:ClearAllPoints()
-			frame:Point("BOTTOMLEFT", RightChatDataPanel, "TOPLEFT", 1, 3)
+			frame:Point("BOTTOMLEFT", _G.RightChatDataPanel, "TOPLEFT", 1, 3)
 			FCF_SetWindowName(frame, LOOT.." / "..TRADE)
 		end
 
@@ -72,28 +83,28 @@ function E:SetupChat(noDisplayMsg)
 	end
 
 	local chatGroup = { "SYSTEM", "CHANNEL", "SAY", "EMOTE", "YELL", "WHISPER", "PARTY", "PARTY_LEADER", "RAID", "RAID_LEADER", "RAID_WARNING", "BATTLEGROUND", "BATTLEGROUND_LEADER", "GUILD", "OFFICER", "MONSTER_SAY", "MONSTER_YELL", "MONSTER_EMOTE", "MONSTER_WHISPER", "MONSTER_BOSS_EMOTE", "MONSTER_BOSS_WHISPER", "ERRORS", "AFK", "DND", "IGNORED", "BG_HORDE", "BG_ALLIANCE", "BG_NEUTRAL", "ACHIEVEMENT", "GUILD_ACHIEVEMENT", "BN_WHISPER", "BN_CONVERSATION", "BN_INLINE_TOAST_ALERT" }
-	ChatFrame_RemoveAllMessageGroups(ChatFrame1)
-	for _, v in ipairs(chatGroup) do
-		ChatFrame_AddMessageGroup(ChatFrame1, v)
+	ChatFrame_RemoveAllMessageGroups(_G.ChatFrame1)
+	for _, v in next, chatGroup do
+		ChatFrame_AddMessageGroup(_G.ChatFrame1, v)
 	end
 
 	-- keys taken from `ChatTypeGroup` which weren't added above to ChatFrame1
 	chatGroup = { "COMBAT_XP_GAIN", "COMBAT_HONOR_GAIN", "COMBAT_FACTION_CHANGE", "COMBAT_GUILD_XP_GAIN", "SKILL", "LOOT", "CURRENCY", "MONEY" }
 	ChatFrame_RemoveAllMessageGroups(rightChatFrame)
-	for _, v in ipairs(chatGroup) do
+	for _, v in next, chatGroup do
 		ChatFrame_AddMessageGroup(rightChatFrame, v)
 	end
 
-	ChatFrame_AddChannel(ChatFrame1, GENERAL)
-	ChatFrame_RemoveChannel(ChatFrame1, TRADE)
+	ChatFrame_AddChannel(_G.ChatFrame1, GENERAL)
+	ChatFrame_RemoveChannel(_G.ChatFrame1, TRADE)
 	ChatFrame_AddChannel(rightChatFrame, TRADE)
 
 	-- set the chat groups names in class color to enabled for all chat groups which players names appear
 	chatGroup = {"SAY", "EMOTE", "YELL", "WHISPER", "PARTY", "PARTY_LEADER", "RAID", "RAID_LEADER", "RAID_WARNING", "BATTLEGROUND", "BATTLEGROUND_LEADER", "GUILD", "OFFICER", "ACHIEVEMENT", "GUILD_ACHIEVEMENT"}
-	for i = 1, MAX_WOW_CHAT_CHANNELS do
+	for i = 1, _G.MAX_WOW_CHAT_CHANNELS do
 		tinsert(chatGroup, "CHANNEL"..i)
 	end
-	for _, v in ipairs(chatGroup) do
+	for _, v in next, chatGroup do
 		ToggleChatColorNamesByClassGroup(true, v)
 	end
 
@@ -107,20 +118,20 @@ function E:SetupChat(noDisplayMsg)
 	end
 
 	if E.db.RightChatPanelFaded then
-		RightChatToggleButton:Click()
+		_G.RightChatToggleButton:Click()
 	end
 
 	if E.db.LeftChatPanelFaded then
-		LeftChatToggleButton:Click()
+		_G.LeftChatToggleButton:Click()
 	end
 
 	if ELV_TOONS[PLAYER_NAME] then
 		E:SetCVar("scriptErrors", 1)
 	end
 
-	if InstallStepComplete and not noDisplayMsg then
-		InstallStepComplete.message = L["Chat Set"]
-		InstallStepComplete:Show()
+	if _G.InstallStepComplete and not noDisplayMsg then
+		_G.InstallStepComplete.message = L["Chat Set"]
+		_G.InstallStepComplete:Show()
 	end
 end
 
@@ -148,9 +159,9 @@ function E:SetupCVars(noDisplayMsg)
 		E:SetCVar("wholeChatWindowClickable", 0)
 	end
 
-	if InstallStepComplete and not noDisplayMsg then
-		InstallStepComplete.message = L["CVars Set"]
-		InstallStepComplete:Show()
+	if _G.InstallStepComplete and not noDisplayMsg then
+		_G.InstallStepComplete.message = L["CVars Set"]
+		_G.InstallStepComplete:Show()
 	end
 end
 
@@ -208,9 +219,9 @@ function E:SetupTheme(theme, noDisplayMsg)
 
 	E:UpdateStart(true, true)
 
-	if InstallStepComplete and not noDisplayMsg then
-		InstallStepComplete.message = L["Theme Set"]
-		InstallStepComplete:Show()
+	if _G.InstallStepComplete and not noDisplayMsg then
+		_G.InstallStepComplete.message = L["Theme Set"]
+		_G.InstallStepComplete:Show()
 	end
 end
 
@@ -234,247 +245,217 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 		end
 
 		--ActionBars
-			E.db.actionbar.bar1.buttons = 8
-			E.db.actionbar.bar1.buttonSize = 50
-			E.db.actionbar.bar1.buttonSpacing = 1
-			E.db.actionbar.bar2.buttons = 9
-			E.db.actionbar.bar2.buttonSize = 38
-			E.db.actionbar.bar2.buttonSpacing = 1
-			E.db.actionbar.bar2.enabled = true
-			E.db.actionbar.bar2.visibility = "[vehicleui] hide; show"
-			E.db.actionbar.bar3.buttons = 8
-			E.db.actionbar.bar3.buttonSize = 50
-			E.db.actionbar.bar3.buttonSpacing = 1
-			E.db.actionbar.bar3.buttonsPerRow = 10
-			E.db.actionbar.bar3.visibility = "[vehicleui] hide; show"
-			E.db.actionbar.bar4.enabled = false
-			E.db.actionbar.bar4.visibility = "[vehicleui] hide; show"
-			E.db.actionbar.bar5.enabled = false
-			E.db.actionbar.bar5.visibility = "[vehicleui] hide; show"
-			E.db.actionbar.bar6.visibility = "[vehicleui] hide; show"
+		E.db.actionbar.bar1.buttons = 8
+		E.db.actionbar.bar1.buttonSize = 50
+		E.db.actionbar.bar1.buttonSpacing = 1
+		E.db.actionbar.bar2.buttons = 9
+		E.db.actionbar.bar2.buttonSize = 38
+		E.db.actionbar.bar2.buttonSpacing = 1
+		E.db.actionbar.bar2.enabled = true
+		E.db.actionbar.bar2.visibility = "[vehicleui] hide; show"
+		E.db.actionbar.bar3.buttons = 8
+		E.db.actionbar.bar3.buttonSize = 50
+		E.db.actionbar.bar3.buttonSpacing = 1
+		E.db.actionbar.bar3.buttonsPerRow = 10
+		E.db.actionbar.bar3.visibility = "[vehicleui] hide; show"
+		E.db.actionbar.bar4.enabled = false
+		E.db.actionbar.bar4.visibility = "[vehicleui] hide; show"
+		E.db.actionbar.bar5.enabled = false
+		E.db.actionbar.bar5.visibility = "[vehicleui] hide; show"
+		E.db.actionbar.bar6.visibility = "[vehicleui] hide; show"
 		--Auras
-			E.db.auras.buffs.countFontSize = 10
-			E.db.auras.buffs.size = 40
-			E.db.auras.debuffs.countFontSize = 10
-			E.db.auras.debuffs.size = 40
+		E.db.auras.buffs.countFontSize = 10
+		E.db.auras.buffs.size = 40
+		E.db.auras.debuffs.countFontSize = 10
+		E.db.auras.debuffs.size = 40
 		--Bags
-			E.db.bags.bagSize = 42
-			E.db.bags.bagWidth = 474
-			E.db.bags.bankSize = 42
-			E.db.bags.bankWidth = 474
-			E.db.bags.itemLevelCustomColorEnable = true
-			E.db.bags.split.bag1 = true
-			E.db.bags.split.bag2 = true
-			E.db.bags.split.bag3 = true
-			E.db.bags.split.bag4 = true
-			E.db.bags.split.bagSpacing = 7
-			E.db.bags.split.player = true
+		E.db.bags.bagSize = 42
+		E.db.bags.bagWidth = 474
+		E.db.bags.bankSize = 42
+		E.db.bags.bankWidth = 474
+		E.db.bags.itemLevelCustomColorEnable = true
+		E.db.bags.split.bag1 = true
+		E.db.bags.split.bag2 = true
+		E.db.bags.split.bag3 = true
+		E.db.bags.split.bag4 = true
+		E.db.bags.split.bagSpacing = 7
+		E.db.bags.split.player = true
 		--Chat
-			E.db.chat.fontSize = 10
-			E.db.chat.separateSizes = false
-			E.db.chat.panelHeight = 236
-			E.db.chat.panelWidth = 472
-			E.db.chat.tabFontSize = 12
-			E.db.chat.copyChatLines = true
+		E.db.chat.fontSize = 10
+		E.db.chat.separateSizes = false
+		E.db.chat.panelHeight = 236
+		E.db.chat.panelWidth = 472
+		E.db.chat.tabFontSize = 12
+		E.db.chat.copyChatLines = true
 		--DataTexts
-			E.db.datatexts.panels.LeftChatDataPanel[3] = "QuickJoin"
+		E.db.datatexts.panels.LeftChatDataPanel[3] = "QuickJoin"
 		--DataBars
-			E.db.databars.threat.height = 24
-			E.db.databars.threat.width = 472
-			E.db.databars.reputation.enable = true
-			-- temp
-			E.db.databars.experience.height = 10
-			E.db.databars.experience.orientation = "HORIZONTAL"
-			E.db.databars.experience.textSize = 12
-			E.db.databars.experience.width = 350
-			E.db.databars.reputation.height = 10
-			E.db.databars.reputation.orientation = "HORIZONTAL"
-			E.db.databars.reputation.width = 222
+		E.db.databars.threat.height = 24
+		E.db.databars.threat.width = 472
 		--General
-			E.db.general.bonusObjectivePosition = "AUTO"
-			E.db.general.minimap.size = 220
-			E.db.general.objectiveFrameHeight = 400
-			E.db.general.totems.growthDirection = "HORIZONTAL"
-			E.db.general.totems.size = 50
-			E.db.general.totems.spacing = 8
-			E.db.general.autoTrackReputation = true
+		E.db.general.bonusObjectivePosition = "AUTO"
+		E.db.general.minimap.size = 220
+		E.db.general.objectiveFrameHeight = 400
+		E.db.general.totems.growthDirection = "HORIZONTAL"
+		E.db.general.totems.size = 50
+		E.db.general.totems.spacing = 8
+		E.db.general.autoTrackReputation = true
 			--temp
 			E.db.general.watchFrameHeight = 400
 		--Movers
-			for mover, position in pairs(E.LayoutMoverPositions.ALL) do
-				E.db.movers[mover] = position
-				E:SaveMoverDefaultPosition(mover)
-			end
+		for mover, position in next, E.LayoutMoverPositions.ALL do
+			E.db.movers[mover] = position
+			E:SaveMoverDefaultPosition(mover)
+		end
 		--Tooltip
-			E.db.tooltip.healthBar.height = 12
-			E.db.movers.TooltipMover = nil --ensure that this mover gets completely reset.. yes E:ResetMover call above doesn't work.
-			E.db.tooltip.healthBar.font = "PT Sans Narrow"
-			E.db.tooltip.healthBar.fontOutline = "NONE"
-			E.db.tooltip.healthBar.fontSize = 12
+		E.db.tooltip.healthBar.height = 12
+		E.db.movers.TooltipMover = nil --ensure that this mover gets completely reset.. yes E:ResetMover call above doesn't work.
+		E.db.tooltip.healthBar.font = "PT Sans Narrow"
+		E.db.tooltip.healthBar.fontOutline = "NONE"
+		E.db.tooltip.healthBar.fontSize = 12
 			-- temp
 			E.db.tooltip.textFontSize = 12
 		--Nameplates
-			-- E.db.nameplates.colors.castNoInterruptColor = {r = 0.78, g=0.25, b=0.25}
-			-- E.db.nameplates.colors.reactions.good = {r = 0.30, g=0.67, b=0.29}
-			-- E.db.nameplates.colors.reactions.neutral = {r = 0.85, g=0.76, b=0.36}
-			-- E.db.nameplates.colors.selection[0] = {r = 0.78, g=0.25, b=0.25}
-			-- E.db.nameplates.colors.selection[2] = {r = 0.85, g=0.76, b=0.36}
-			-- E.db.nameplates.colors.selection[3] = {r = 0.29, g=0.67, b=0.30}
-			-- E.db.nameplates.colors.threat.badColor = {r = 0.78, g=0.25, b=0.25}
-			-- E.db.nameplates.colors.threat.goodColor = {r = 0.29, g=0.67, b=0.30}
-			-- E.db.nameplates.colors.threat.goodTransition = {r = 0.85, g=0.76, b=0.36}
-			-- E.db.nameplates.units.ENEMY_NPC.health.text.format = ""
-			-- E.db.nameplates.units.ENEMY_PLAYER.health.text.format = ""
-			-- E.db.nameplates.units.ENEMY_PLAYER.portrait.classicon = false
-			-- E.db.nameplates.units.ENEMY_PLAYER.portrait.enable = true
-			-- E.db.nameplates.units.ENEMY_PLAYER.portrait.position = "LEFT"
-			-- E.db.nameplates.units.ENEMY_PLAYER.portrait.xOffset = 0
-			-- E.db.nameplates.units.ENEMY_PLAYER.portrait.yOffset = 0
+		E.db.nameplates.colors.castNoInterruptColor = {r = 0.78, g=0.25, b=0.25}
+		E.db.nameplates.colors.reactions.good = {r = 0.30, g=0.67, b=0.29}
+		E.db.nameplates.colors.reactions.neutral = {r = 0.85, g=0.76, b=0.36}
+		-- E.db.nameplates.colors.selection[0] = {r = 0.78, g=0.25, b=0.25}
+		-- E.db.nameplates.colors.selection[2] = {r = 0.85, g=0.76, b=0.36}
+		-- E.db.nameplates.colors.selection[3] = {r = 0.29, g=0.67, b=0.30}
+		E.db.nameplates.colors.threat.badColor = {r = 0.78, g=0.25, b=0.25}
+		E.db.nameplates.colors.threat.goodColor = {r = 0.29, g=0.67, b=0.30}
+		E.db.nameplates.colors.threat.goodTransition = {r = 0.85, g=0.76, b=0.36}
+		E.db.nameplates.units.ENEMY_NPC.health.text.format = ""
+		E.db.nameplates.units.ENEMY_PLAYER.health.text.format = ""
+		-- E.db.nameplates.units.ENEMY_PLAYER.portrait.classicon = false
+		-- E.db.nameplates.units.ENEMY_PLAYER.portrait.enable = true
+		-- E.db.nameplates.units.ENEMY_PLAYER.portrait.position = "LEFT"
+		-- E.db.nameplates.units.ENEMY_PLAYER.portrait.xOffset = 0
+		-- E.db.nameplates.units.ENEMY_PLAYER.portrait.yOffset = 0
 		--UnitFrames
-			E.db.unitframe.smoothbars = true
-			E.db.unitframe.thinBorders = true
-			--Player
-				E.db.unitframe.units.player.aurabar.height = 26
-				E.db.unitframe.units.player.buffs.perrow = 7
-				E.db.unitframe.units.player.castbar.height = 40
-				E.db.unitframe.units.player.castbar.insideInfoPanel = false
-				E.db.unitframe.units.player.castbar.width = 405
-				E.db.unitframe.units.player.classbar.height = 14
-				E.db.unitframe.units.player.debuffs.perrow = 7
-				E.db.unitframe.units.player.disableMouseoverGlow = true
-				E.db.unitframe.units.player.health.attachTextTo = "InfoPanel"
-				E.db.unitframe.units.player.height = 82
-				E.db.unitframe.units.player.infoPanel.enable = true
-				E.db.unitframe.units.player.power.attachTextTo = "InfoPanel"
-				E.db.unitframe.units.player.power.height = 22
-			--Target
-				E.db.unitframe.units.target.aurabar.height = 26
-				E.db.unitframe.units.target.buffs.anchorPoint = "TOPLEFT"
-				E.db.unitframe.units.target.buffs.growthX = "RIGHT"
-				E.db.unitframe.units.target.buffs.perrow = 7
-				E.db.unitframe.units.target.castbar.height = 40
-				E.db.unitframe.units.target.castbar.insideInfoPanel = false
-				E.db.unitframe.units.target.castbar.width = 405
-				E.db.unitframe.units.target.debuffs.anchorPoint = "TOPLEFT"
-				E.db.unitframe.units.target.debuffs.attachTo = "FRAME"
-				E.db.unitframe.units.target.debuffs.enable = false
-				E.db.unitframe.units.target.debuffs.maxDuration = 0
-				E.db.unitframe.units.target.debuffs.perrow = 7
-				E.db.unitframe.units.target.disableMouseoverGlow = true
-				E.db.unitframe.units.target.healPrediction.showOverAbsorbs = false
-				E.db.unitframe.units.target.health.attachTextTo = "InfoPanel"
-				E.db.unitframe.units.target.height = 82
-				E.db.unitframe.units.target.infoPanel.enable = true
-				E.db.unitframe.units.target.name.attachTextTo = "InfoPanel"
-				E.db.unitframe.units.target.orientation = "LEFT"
-				E.db.unitframe.units.target.power.attachTextTo = "InfoPanel"
-				E.db.unitframe.units.target.power.height = 22
-				--old
-				E.db.unitframe.units.target.name.text_format = "[namecolor][name]"
-			--TargetTarget
-				E.db.unitframe.units.targettarget.debuffs.enable = false
-				E.db.unitframe.units.targettarget.disableMouseoverGlow = true
-				E.db.unitframe.units.targettarget.power.enable = false
-				E.db.unitframe.units.targettarget.raidicon.attachTo = "LEFT"
-				E.db.unitframe.units.targettarget.raidicon.enable = false
-				E.db.unitframe.units.targettarget.raidicon.xOffset = 2
-				E.db.unitframe.units.targettarget.raidicon.yOffset = 0
-				E.db.unitframe.units.targettarget.threatStyle = "GLOW"
-				E.db.unitframe.units.targettarget.width = 270
-				--old
-				E.db.unitframe.units.targettarget.debuffs.anchorPoint = "TOPRIGHT"
-			--Focus
-				E.db.unitframe.units.focus.debuffs.anchorPoint = "BOTTOMLEFT"
-				E.db.unitframe.units.focus.debuffs.growthX = "RIGHT"
-				E.db.unitframe.units.focus.castbar.width = 270
-				E.db.unitframe.units.focus.width = 270
-			--Pet
-				E.db.unitframe.units.pet.castbar.iconSize = 32
-				E.db.unitframe.units.pet.castbar.width = 270
-				E.db.unitframe.units.pet.debuffs.enable = true
-				E.db.unitframe.units.pet.disableTargetGlow = false
-				E.db.unitframe.units.pet.infoPanel.height = 14
-				E.db.unitframe.units.pet.portrait.camDistanceScale = 2
-				E.db.unitframe.units.pet.width = 270
-				--old
-				E.db.unitframe.units.pet.debuffs.anchorPoint = "TOPRIGHT"
-			--Boss
-				E.db.unitframe.units.boss.buffs.maxDuration = 300
-				E.db.unitframe.units.boss.buffs.sizeOverride = 27
-				E.db.unitframe.units.boss.buffs.yOffset = 16
-				E.db.unitframe.units.boss.castbar.width = 246
-				E.db.unitframe.units.boss.debuffs.maxDuration = 300
-				E.db.unitframe.units.boss.debuffs.numrows = 1
-				E.db.unitframe.units.boss.debuffs.sizeOverride = 27
-				E.db.unitframe.units.boss.debuffs.yOffset = -16
-				E.db.unitframe.units.boss.height = 60
-				E.db.unitframe.units.boss.infoPanel.height = 17
-				E.db.unitframe.units.boss.portrait.camDistanceScale = 2
-				E.db.unitframe.units.boss.portrait.width = 45
-				E.db.unitframe.units.boss.width = 246
-			--Party
-				E.db.unitframe.units.party.height = 74
-				E.db.unitframe.units.party.power.height = 13
-				E.db.unitframe.units.party.width = 231
-				--old
-				E.db.unitframe.units.party.rdebuffs.font = "PT Sans Narrow"
-			--Raid
-				-- E.db.unitframe.units.raid1.growthDirection = "RIGHT_UP"
-				-- E.db.unitframe.units.raid1.infoPanel.enable = true
-				-- E.db.unitframe.units.raid1.name.attachTextTo = "InfoPanel"
-				-- E.db.unitframe.units.raid1.name.position = "BOTTOMLEFT"
-				-- E.db.unitframe.units.raid1.name.xOffset = 2
-				-- E.db.unitframe.units.raid1.numGroups = 8
-				-- E.db.unitframe.units.raid1.rdebuffs.size = 30
-				-- E.db.unitframe.units.raid1.rdebuffs.xOffset = 30
-				-- E.db.unitframe.units.raid1.rdebuffs.yOffset = 25
-				-- E.db.unitframe.units.raid1.resurrectIcon.attachTo = "BOTTOMRIGHT"
-				-- E.db.unitframe.units.raid1.roleIcon.attachTo = "InfoPanel"
-				-- E.db.unitframe.units.raid1.roleIcon.position = "BOTTOMRIGHT"
-				-- E.db.unitframe.units.raid1.roleIcon.size = 12
-				-- E.db.unitframe.units.raid1.roleIcon.xOffset = 0
-				-- E.db.unitframe.units.raid1.width = 92
-				--old
-				E.db.unitframe.units.raid.growthDirection = "RIGHT_UP"
-				E.db.unitframe.units.raid.health.frequentUpdates = true
-				E.db.unitframe.units.raid.infoPanel.enable = true
-				E.db.unitframe.units.raid.name.attachTextTo = "InfoPanel"
-				E.db.unitframe.units.raid.name.position = "BOTTOMLEFT"
-				E.db.unitframe.units.raid.name.xOffset = 2
-				E.db.unitframe.units.raid.numGroups = 8
-				E.db.unitframe.units.raid.rdebuffs.font = "PT Sans Narrow"
-				E.db.unitframe.units.raid.rdebuffs.size = 30
-				E.db.unitframe.units.raid.rdebuffs.xOffset = 30
-				E.db.unitframe.units.raid.rdebuffs.yOffset = 25
-				E.db.unitframe.units.raid.resurrectIcon.attachTo = "BOTTOMRIGHT"
-				E.db.unitframe.units.raid.visibility = "[@raid6,noexists] hide;show"
-				E.db.unitframe.units.raid.width = 92
-			--Raid40
-				E.db.unitframe.units.raid40.enable = false
-				E.db.unitframe.units.raid40.rdebuffs.font = "PT Sans Narrow"
+		E.db.unitframe.smoothbars = true
+		E.db.unitframe.thinBorders = true
+		--Player
+		E.db.unitframe.units.player.aurabar.height = 26
+		E.db.unitframe.units.player.buffs.perrow = 7
+		E.db.unitframe.units.player.castbar.height = 40
+		E.db.unitframe.units.player.castbar.insideInfoPanel = false
+		E.db.unitframe.units.player.castbar.width = 405
+		E.db.unitframe.units.player.classbar.height = 14
+		E.db.unitframe.units.player.debuffs.perrow = 7
+		E.db.unitframe.units.player.disableMouseoverGlow = true
+		E.db.unitframe.units.player.health.attachTextTo = "InfoPanel"
+		E.db.unitframe.units.player.height = 82
+		E.db.unitframe.units.player.infoPanel.enable = true
+		E.db.unitframe.units.player.power.attachTextTo = "InfoPanel"
+		E.db.unitframe.units.player.power.height = 22
+		--Target
+		E.db.unitframe.units.target.aurabar.height = 26
+		E.db.unitframe.units.target.buffs.anchorPoint = "TOPLEFT"
+		E.db.unitframe.units.target.buffs.growthX = "RIGHT"
+		E.db.unitframe.units.target.buffs.perrow = 7
+		E.db.unitframe.units.target.castbar.height = 40
+		E.db.unitframe.units.target.castbar.insideInfoPanel = false
+		E.db.unitframe.units.target.castbar.width = 405
+		E.db.unitframe.units.target.debuffs.anchorPoint = "TOPLEFT"
+		E.db.unitframe.units.target.debuffs.attachTo = "FRAME"
+		E.db.unitframe.units.target.debuffs.enable = false
+		E.db.unitframe.units.target.debuffs.maxDuration = 0
+		E.db.unitframe.units.target.debuffs.perrow = 7
+		E.db.unitframe.units.target.disableMouseoverGlow = true
+		E.db.unitframe.units.target.healPrediction.showOverAbsorbs = false
+		E.db.unitframe.units.target.health.attachTextTo = "InfoPanel"
+		E.db.unitframe.units.target.height = 82
+		E.db.unitframe.units.target.infoPanel.enable = true
+		E.db.unitframe.units.target.name.attachTextTo = "InfoPanel"
+		E.db.unitframe.units.target.orientation = "LEFT"
+		E.db.unitframe.units.target.power.attachTextTo = "InfoPanel"
+		E.db.unitframe.units.target.power.height = 22
+			--old
+			E.db.unitframe.units.target.name.text_format = "[namecolor][name]"
+		--TargetTarget
+		E.db.unitframe.units.targettarget.debuffs.enable = false
+		E.db.unitframe.units.targettarget.disableMouseoverGlow = true
+		E.db.unitframe.units.targettarget.power.enable = false
+		E.db.unitframe.units.targettarget.raidicon.attachTo = "LEFT"
+		E.db.unitframe.units.targettarget.raidicon.enable = false
+		E.db.unitframe.units.targettarget.raidicon.xOffset = 2
+		E.db.unitframe.units.targettarget.raidicon.yOffset = 0
+		E.db.unitframe.units.targettarget.threatStyle = "GLOW"
+		E.db.unitframe.units.targettarget.width = 270
+			--old
+			E.db.unitframe.units.targettarget.debuffs.anchorPoint = "TOPRIGHT"
+		--Focus
+		E.db.unitframe.units.focus.debuffs.anchorPoint = "BOTTOMLEFT"
+		E.db.unitframe.units.focus.debuffs.growthX = "RIGHT"
+		E.db.unitframe.units.focus.castbar.width = 270
+		E.db.unitframe.units.focus.width = 270
+		--Pet
+		E.db.unitframe.units.pet.castbar.iconSize = 32
+		E.db.unitframe.units.pet.castbar.width = 270
+		E.db.unitframe.units.pet.debuffs.enable = true
+		E.db.unitframe.units.pet.disableTargetGlow = false
+		E.db.unitframe.units.pet.infoPanel.height = 14
+		E.db.unitframe.units.pet.portrait.camDistanceScale = 2
+		E.db.unitframe.units.pet.width = 270
+			--old
+			E.db.unitframe.units.pet.debuffs.anchorPoint = "TOPRIGHT"
+		--Boss
+		E.db.unitframe.units.boss.buffs.maxDuration = 300
+		E.db.unitframe.units.boss.buffs.sizeOverride = 27
+		E.db.unitframe.units.boss.buffs.yOffset = 16
+		E.db.unitframe.units.boss.castbar.width = 246
+		E.db.unitframe.units.boss.debuffs.maxDuration = 300
+		E.db.unitframe.units.boss.debuffs.numrows = 1
+		E.db.unitframe.units.boss.debuffs.sizeOverride = 27
+		E.db.unitframe.units.boss.debuffs.yOffset = -16
+		E.db.unitframe.units.boss.height = 60
+		E.db.unitframe.units.boss.infoPanel.height = 17
+		E.db.unitframe.units.boss.portrait.camDistanceScale = 2
+		E.db.unitframe.units.boss.portrait.width = 45
+		E.db.unitframe.units.boss.width = 246
+		--Party
+		E.db.unitframe.units.party.height = 74
+		E.db.unitframe.units.party.power.height = 13
+		E.db.unitframe.units.party.width = 231
+			--old
+			E.db.unitframe.units.party.rdebuffs.font = "PT Sans Narrow"
+		--Raid
+		E.db.unitframe.units.raid.growthDirection = "RIGHT_UP"
+		E.db.unitframe.units.raid.health.frequentUpdates = true
+		E.db.unitframe.units.raid.infoPanel.enable = true
+		E.db.unitframe.units.raid.name.attachTextTo = "InfoPanel"
+		E.db.unitframe.units.raid.name.position = "BOTTOMLEFT"
+		E.db.unitframe.units.raid.name.xOffset = 2
+		E.db.unitframe.units.raid.numGroups = 8
+		E.db.unitframe.units.raid.rdebuffs.font = "PT Sans Narrow"
+		E.db.unitframe.units.raid.rdebuffs.size = 30
+		E.db.unitframe.units.raid.rdebuffs.xOffset = 30
+		E.db.unitframe.units.raid.rdebuffs.yOffset = 25
+		E.db.unitframe.units.raid.resurrectIcon.attachTo = "BOTTOMRIGHT"
+		E.db.unitframe.units.raid.visibility = "[@raid6,noexists] hide;show"
+		E.db.unitframe.units.raid.width = 92
+		--Raid40
+		E.db.unitframe.units.raid40.enable = false
+		E.db.unitframe.units.raid40.rdebuffs.font = "PT Sans Narrow"
 
 		--[[
 			Layout Tweaks will be handled below,
 			These are changes that deviate from the shared base layout.
 		]]
 		if E.LayoutMoverPositions[layout] then
-			for mover, position in pairs(E.LayoutMoverPositions[layout]) do
+			for mover, position in next, E.LayoutMoverPositions[layout] do
 				E.db.movers[mover] = position
 				E:SaveMoverDefaultPosition(mover)
 			end
-		end
-
-		if layout == "healer" then
-			E.db.unitframe.units.party.enable = false
-			E.db.unitframe.units.raid.visibility = "[nogroup] hide;show"
 		end
 	end
 
 	E:StaggeredUpdateAll()
 
-	if InstallStepComplete and not noDisplayMsg then
-		InstallStepComplete.message = L["Layout Set"]
-		InstallStepComplete:Show()
+	if _G.InstallStepComplete and not noDisplayMsg then
+		_G.InstallStepComplete.message = L["Layout Set"]
+		_G.InstallStepComplete:Show()
 	end
 end
 
@@ -524,9 +505,9 @@ function E:SetupAuras(style, noDisplayMsg)
 		end
 	end
 
-	if InstallStepComplete and not noDisplayMsg then
-		InstallStepComplete.message = L["Auras Set"]
-		InstallStepComplete:Show()
+	if _G.InstallStepComplete and not noDisplayMsg then
+		_G.InstallStepComplete.message = L["Auras Set"]
+		_G.InstallStepComplete:Show()
 	end
 end
 
@@ -539,26 +520,26 @@ function E:SetupComplete(reload)
 end
 
 function E:SetupReset()
-	InstallNextButton:Disable()
-	InstallPrevButton:Disable()
-	InstallOption1Button:Hide()
-	InstallOption1Button:SetScript("OnClick", nil)
-	InstallOption1Button:SetText("")
-	InstallOption2Button:Hide()
-	InstallOption2Button:SetScript("OnClick", nil)
-	InstallOption2Button:SetText("")
-	InstallOption3Button:Hide()
-	InstallOption3Button:SetScript("OnClick", nil)
-	InstallOption3Button:SetText("")
-	InstallOption4Button:Hide()
-	InstallOption4Button:SetScript("OnClick", nil)
-	InstallOption4Button:SetText("")
-	InstallSlider:Hide()
-	InstallSlider.Min:SetText("")
-	InstallSlider.Max:SetText("")
-	InstallSlider.Cur:SetText("")
-	InstallSlider:SetScript("OnValueChanged", nil)
-	InstallSlider:SetScript("OnMouseUp", nil)
+	_G.InstallNextButton:Disable()
+	_G.InstallPrevButton:Disable()
+	_G.InstallOption1Button:Hide()
+	_G.InstallOption1Button:SetScript("OnClick", nil)
+	_G.InstallOption1Button:SetText("")
+	_G.InstallOption2Button:Hide()
+	_G.InstallOption2Button:SetScript("OnClick", nil)
+	_G.InstallOption2Button:SetText("")
+	_G.InstallOption3Button:Hide()
+	_G.InstallOption3Button:SetScript("OnClick", nil)
+	_G.InstallOption3Button:SetText("")
+	_G.InstallOption4Button:Hide()
+	_G.InstallOption4Button:SetScript("OnClick", nil)
+	_G.InstallOption4Button:SetText("")
+	_G.InstallSlider:Hide()
+	_G.InstallSlider.Min:SetText("")
+	_G.InstallSlider.Max:SetText("")
+	_G.InstallSlider.Cur:SetText("")
+	_G.InstallSlider:SetScript("OnValueChanged", nil)
+	_G.InstallSlider:SetScript("OnMouseUp", nil)
 
 	E.InstallFrame.SubTitle:SetText("")
 	E.InstallFrame.Desc1:SetText("")
@@ -571,19 +552,19 @@ function E:SetPage(PageNum)
 	CURRENT_PAGE = PageNum
 	E:SetupReset()
 
-	InstallStatus.anim.progress:SetChange(PageNum)
-	InstallStatus.anim.progress:Play()
-	InstallStatus.text:SetText(CURRENT_PAGE.." / "..MAX_PAGE)
+	_G.InstallStatus.anim.progress:SetChange(PageNum)
+	_G.InstallStatus.anim.progress:Play()
+	_G.InstallStatus.text:SetText(CURRENT_PAGE.." / "..MAX_PAGE)
 
-	InstallNextButton:SetEnabled(PageNum ~= MAX_PAGE)
-	InstallPrevButton:SetEnabled(PageNum ~= 1)
+	_G.InstallNextButton:SetEnabled(PageNum ~= MAX_PAGE)
+	_G.InstallPrevButton:SetEnabled(PageNum ~= 1)
 
 	local f = E.InstallFrame
-	local InstallOption1Button = InstallOption1Button
-	local InstallOption2Button = InstallOption2Button
-	local InstallOption3Button = InstallOption3Button
-	local InstallOption4Button = InstallOption4Button
-	local InstallSlider = InstallSlider
+	local InstallOption1Button = _G.InstallOption1Button
+	local InstallOption2Button = _G.InstallOption2Button
+	local InstallOption3Button = _G.InstallOption3Button
+	local InstallOption4Button = _G.InstallOption4Button
+	local InstallSlider = _G.InstallSlider
 
 	local r, g, b = E:ColorGradient(CURRENT_PAGE / MAX_PAGE, 1, 0, 0, 1, 1, 0, 0, 1, 0)
 	f.Status:SetStatusBarColor(r, g, b)
@@ -721,13 +702,13 @@ function E:SetPage(PageNum)
 
 		InstallOption1Button:Show()
 		InstallOption1Button:SetScript("OnClick", function() E.db.layoutSet = nil; E:SetupLayout("tank") end)
-		InstallOption1Button:SetText(MELEE)
+		InstallOption1Button:SetText(_G.MELEE)
 		InstallOption2Button:Show()
 		InstallOption2Button:SetScript("OnClick", function() E.db.layoutSet = nil; E:SetupLayout("healer") end)
-		InstallOption2Button:SetText(HEALER)
+		InstallOption2Button:SetText(_G.HEALER)
 		InstallOption3Button:Show()
 		InstallOption3Button:SetScript("OnClick", function() E.db.layoutSet = nil; E:SetupLayout("dpsCaster") end)
-		InstallOption3Button:SetText(RANGED)
+		InstallOption3Button:SetText(_G.RANGED)
 	elseif PageNum == 8 then
 		f.SubTitle:SetText(L["Auras"])
 		f.Desc1:SetText(L["Select the type of aura system you want to use with ElvUI's unitframes. Set to Aura Bars to use both aura bars and icons, set to Icons Only to only see icons."])
@@ -771,7 +752,7 @@ end
 
 --Install UI
 function E:Install()
-	if not InstallStepComplete then
+	if not _G.InstallStepComplete then
 		local imsg = CreateFrame("Frame", "InstallStepComplete", E.UIParent)
 		imsg:Size(418, 72)
 		imsg:Point("TOP", 0, -190)
@@ -865,7 +846,7 @@ function E:Install()
 		f.Status:Point("BOTTOMRIGHT", f.Next, "BOTTOMLEFT", -6, 2)
 
 		-- Setup StatusBar Animation
-		f.Status.anim = CreateAnimationGroup(f.Status)
+		f.Status.anim = _G.CreateAnimationGroup(f.Status)
 		f.Status.anim.progress = f.Status.anim:CreateAnimation("Progress")
 		f.Status.anim.progress:SetEasing("Out")
 		f.Status.anim.progress:SetDuration(.3)
