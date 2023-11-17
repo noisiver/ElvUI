@@ -161,7 +161,6 @@ local DEVELOPERS = {
 	E:TextureString(E.Media.ChatLogos.Clover, ':21:21:0:0:64:64:5:59:5:59')..' |cff4beb2cLuckyone|r',
 	E:TextGradient('Simpy but my name needs to be longer.', 0.18,1.00,0.49, 0.32,0.85,1.00, 0.55,0.38,0.85, 1.00,0.55,0.71, 1.00,0.68,0.32)
 }
-print(E.Media.ChatLogos.Beer)
 
 local TESTERS = {
 	'Affinity',
