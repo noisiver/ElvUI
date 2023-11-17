@@ -10,7 +10,6 @@ local CreateFrame = CreateFrame
 local IsShiftKeyDown = IsShiftKeyDown
 local InCombatLockdown = InCombatLockdown
 local IsControlKeyDown = IsControlKeyDown
-local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
 local hooksecurefunc = hooksecurefunc
 
 E.CreatedMovers = {}
@@ -50,7 +49,7 @@ local function UpdateCoords(self)
 	local mover = self.child
 	local x, y, _, nudgePoint, nudgeInversePoint = E:CalculateMoverPoints(mover)
 	local coordX, coordY = E:GetXYOffset(nudgeInversePoint, 1)
-	local nudgeFrame = ElvUIMoverNudgeWindow
+	local nudgeFrame = _G.ElvUIMoverNudgeWindow
 
 	nudgeFrame:ClearAllPoints()
 	nudgeFrame:SetPoint(nudgePoint, mover, nudgeInversePoint, coordX, coordY)
@@ -94,10 +93,10 @@ local function HandlePostDrag(self, event)
 end
 
 local function OnDragStart(self)
-	if InCombatLockdown() then E:Print(ERR_NOT_IN_COMBAT) return end
+	if E:AlertCombat() then return end
 
-	if ElvUIGrid then
-		E:UIFrameFadeIn(ElvUIGrid, 0.75, ElvUIGrid:GetAlpha(), 1)
+	if _G.ElvUIGrid then
+		E:UIFrameFadeIn(_G.ElvUIGrid, 0.75, _G.ElvUIGrid:GetAlpha(), 1)
 	end
 
 	Sticky:StartMoving(self, E.db.general.stickyFrames and E.snapBars, self.snapOffset, self.snapOffset, self.snapOffset, self.snapOffset)
@@ -108,10 +107,10 @@ local function OnDragStart(self)
 end
 
 local function OnDragStop(self)
-	if InCombatLockdown() then E:Print(ERR_NOT_IN_COMBAT) return end
+	if E:AlertCombat() then return end
 
-	if ElvUIGrid and E.ConfigurationMode then
-		E:UIFrameFadeOut(ElvUIGrid, 0.75, ElvUIGrid:GetAlpha(), 0.4)
+	if _G.ElvUIGrid and E.ConfigurationMode then
+		E:UIFrameFadeOut(_G.ElvUIGrid, 0.75, _G.ElvUIGrid:GetAlpha(), 0.4)
 	end
 
 	Sticky:StopMoving(self)
@@ -164,7 +163,7 @@ end
 
 local function OnMouseUp(_, button)
 	if button == "LeftButton" and not isDragging then
-		ElvUIMoverNudgeWindow:SetShown(not _G.ElvUIMoverNudgeWindow:IsShown())
+		_G.ElvUIMoverNudgeWindow:SetShown(not _G.ElvUIMoverNudgeWindow:IsShown())
 	end
 end
 

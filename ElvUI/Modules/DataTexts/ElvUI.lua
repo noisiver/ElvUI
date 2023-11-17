@@ -1,17 +1,12 @@
 local E, L, V, P, G = unpack(ElvUI)
-local DT = E:GetModule("DataTexts")
+local DT = E:GetModule('DataTexts')
 
-local _G = _G
 local pairs, strjoin = pairs, strjoin
 local IsShiftKeyDown = IsShiftKeyDown
-local InCombatLockdown = InCombatLockdown
 local ReloadUI = ReloadUI
-local UIErrorsFrame = UIErrorsFrame
 
-local ERR_NOT_IN_COMBAT = ERR_NOT_IN_COMBAT
-
-local displayString, db = ""
-local configText = "ElvUI"
+local displayString, db = ''
+local configText = 'ElvUI'
 
 local function OnEvent(self)
 	self.text:SetFormattedText(displayString, db.Label ~= "" and db.Label or configText)
@@ -23,8 +18,8 @@ local function OnEnter()
 	DT.tooltip:AddDoubleLine(L["Hold Shift + Right Click:"], L["Reload UI"], 1, 1, 1)
 
 	if E.Libs.EP.registeredPrefix then
-		DT.tooltip:AddLine(" ")
-		DT.tooltip:AddDoubleLine("Plugins:", "Version:")
+		DT.tooltip:AddLine(' ')
+		DT.tooltip:AddDoubleLine('Plugins:', 'Version:')
 
 		for _, plugin in pairs(E.Libs.EP.plugins) do
 			if not plugin.isLib then
@@ -38,11 +33,11 @@ local function OnEnter()
 end
 
 local function OnClick(_, button)
-	if InCombatLockdown() then UIErrorsFrame:AddMessage(E.InfoColor..ERR_NOT_IN_COMBAT) return end
+	if E:AlertCombat() then return end
 
-	if button == "LeftButton" then
+	if button == 'LeftButton' then
 		E:ToggleOptionsUI()
-	elseif button == "RightButton" and IsShiftKeyDown() then
+	elseif button == 'RightButton' and IsShiftKeyDown() then
 		ReloadUI()
 	end
 end
@@ -52,7 +47,7 @@ local function ApplySettings(self, hex)
 		db = E.global.datatexts.settings[self.name]
 	end
 
-	displayString = strjoin("", hex, "%s|r")
+	displayString = strjoin('', hex, '%s|r')
 end
 
-DT:RegisterDatatext("ElvUI", nil, nil, OnEvent, nil, OnClick, OnEnter, nil, configText, nil, ApplySettings)
+DT:RegisterDatatext('ElvUI', nil, nil, OnEvent, nil, OnClick, OnEnter, nil, configText, nil, ApplySettings)
