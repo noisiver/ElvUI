@@ -1977,7 +1977,7 @@ end
 function CH:ChatEdit_OnEnterPressed(editBox)
 	local chatType = editBox:GetAttribute("chatType")
 	local chatFrame = chatType and editBox:GetParent()
-	if chatFrame and (not chatFrame.isTemporary) and (ChatTypeInfo[chatType].sticky == 1) then
+	if chatFrame and (not chatFrame.isTemporary) and (_G.ChatTypeInfo[chatType].sticky == 1) then
 		if not CH.db.sticky then chatType = "SAY" end
 		editBox:SetAttribute("chatType", chatType)
 	end
@@ -2145,12 +2145,12 @@ function CH:SaveChatHistory(event, ...)
 end
 
 function CH:GetCombatLog()
-	local LOG = COMBATLOG -- ChatFrame2
+	local LOG = _G.COMBATLOG -- ChatFrame2
 	if LOG then return LOG, CH:GetTab(LOG) end
 end
 
 function CH:FCFDock_ScrollToSelectedTab(dock)
-	if dock ~= GeneralDockManager then return end
+	if dock ~= _G.GeneralDockManager then return end
 
 	local logchat, logchattab = CH:GetCombatLog()
 	dock.scrollFrame:ClearAllPoints()
@@ -2439,7 +2439,7 @@ end
 
 function CH:BuildCopyChatFrame()
 	local frame = CreateFrame("Frame", "CopyChatFrame", E.UIParent)
-	tinsert(UISpecialFrames, "CopyChatFrame")
+	tinsert(_G.UISpecialFrames, "CopyChatFrame")
 	frame:SetTemplate("Transparent")
 	frame:Size(700, 200)
 	frame:Point("BOTTOM", E.UIParent, "BOTTOM", 0, 3)

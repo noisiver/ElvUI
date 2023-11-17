@@ -16,12 +16,10 @@ local tremove, tContains, tinsert, wipe = tremove, tContains, tinsert, wipe
 local format, error, ipairs, ceil = format, error, ipairs, ceil
 
 local CreateFrame = CreateFrame
-local IsAddOnLoaded = IsAddOnLoaded
 local DeleteCursorItem = DeleteCursorItem
 local MoneyFrame_Update = MoneyFrame_Update
 local UnitIsDeadOrGhost, InCinematic = UnitIsDeadOrGhost, InCinematic
 local PurchaseSlot, GetBankSlotCost = PurchaseSlot, GetBankSlotCost
-local EnableAddOn, DisableAddOn = EnableAddOn, DisableAddOn
 local ReloadUI, PlaySound, StopMusic = ReloadUI, PlaySound, StopMusic
 local StaticPopup_Resize = StaticPopup_Resize
 local GetBindingFromClick = GetBindingFromClick
@@ -29,6 +27,9 @@ local GetBindingFromClick = GetBindingFromClick
 local AutoCompleteEditBox_OnEnterPressed = AutoCompleteEditBox_OnEnterPressed
 local AutoCompleteEditBox_OnTextChanged = AutoCompleteEditBox_OnTextChanged
 local ChatEdit_FocusActiveWindow = ChatEdit_FocusActiveWindow
+
+local DisableAddOn = DisableAddOn
+local IsAddOnLoaded = IsAddOnLoaded
 local PickupContainerItem = PickupContainerItem
 
 local STATICPOPUP_TEXTURE_ALERT = STATICPOPUP_TEXTURE_ALERT
@@ -49,7 +50,6 @@ E.PopupDialogs.ELVUI_UPDATE_AVAILABLE = {
 		self.editBox.width = self.editBox:GetWidth()
 		self.editBox:Width(220)
 		self.editBox:SetText(DOWNLOAD_URL)
-		self.editBox:HighlightText()
 		ChatEdit_FocusActiveWindow()
 	end,
 	OnHide = function(self)
@@ -72,7 +72,7 @@ E.PopupDialogs.ELVUI_UPDATE_AVAILABLE = {
 		end
 
 		self:HighlightText()
-		self:ClearFocus()
+
 		ChatEdit_FocusActiveWindow()
 	end,
 	OnEditFocusGained = function(self)
@@ -92,7 +92,6 @@ E.PopupDialogs.ELVUI_EDITBOX = {
 		self.editBox:AddHistoryLine("text")
 		self.editBox.temptxt = data
 		self.editBox:SetText(data)
-		self.editBox:HighlightText()
 		self.editBox:SetJustifyH("CENTER")
 	end,
 	OnHide = function(self)
@@ -110,8 +109,8 @@ E.PopupDialogs.ELVUI_EDITBOX = {
 		if self:GetText() ~= self.temptxt then
 			self:SetText(self.temptxt)
 		end
+
 		self:HighlightText()
-		self:ClearFocus()
 	end,
 	OnAccept = E.noop,
 	whileDead = 1,

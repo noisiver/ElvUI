@@ -12,18 +12,20 @@ local pairs, tinsert, tContains = pairs, tinsert, tContains
 local strmatch, strtrim, strlower = strmatch, strtrim, strlower
 
 local CreateFrame = CreateFrame
-local EnableAddOn = EnableAddOn
-local GetAddOnInfo = GetAddOnInfo
 local InCombatLockdown = InCombatLockdown
-local IsAddOnLoaded = IsAddOnLoaded
 local IsAltKeyDown = IsAltKeyDown
 local IsControlKeyDown = IsControlKeyDown
 local GetMouseFocus = GetMouseFocus
-local LoadAddOn = LoadAddOn
 local UIParent = UIParent
 
 local EditBox_HighlightText = EditBox_HighlightText
 local EditBox_ClearFocus = EditBox_ClearFocus
+
+local EnableAddOn = EnableAddOn
+local GetAddOnInfo = GetAddOnInfo
+local IsAddOnLoaded = IsAddOnLoaded
+local LoadAddOn = LoadAddOn
+
 -- GLOBALS: ElvUIMoverPopupWindow, ElvUIMoverNudgeWindow, ElvUIMoverPopupWindowDropDown
 
 local grid
@@ -190,7 +192,7 @@ function E:Grid_Create()
 	end
 end
 
-function E:ConfigMode_OnClick(self)
+function E:ConfigMode_OnClick()
 	E:ToggleMoveMode(self.value)
 end
 
@@ -380,7 +382,7 @@ function E:CreateMoverPopup()
 	dropDown.text:FontTemplate(nil, 12, "SHADOW")
 	f.dropDown = dropDown
 
-	UIDropDownMenu_Initialize(dropDown, ConfigMode_Initialize)
+	_G.UIDropDownMenu_Initialize(dropDown, ConfigMode_Initialize)
 
 	local nudgeFrame = CreateFrame("Frame", "ElvUIMoverNudgeWindow", E.UIParent)
 	nudgeFrame:SetFrameStrata("DIALOG")
