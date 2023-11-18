@@ -68,8 +68,8 @@ end
 
 function E:ToggleMoveMode(which)
 	if InCombatLockdown() then return end
-	local mode = not E.ConfigurationMode
 
+	local mode = not E.ConfigurationMode
 	if not which or which == "" then
 		E.ConfigurationMode = mode
 		which = "all"
@@ -88,7 +88,7 @@ function E:ToggleMoveMode(which)
 			E:CreateMoverPopup()
 		end
 
-		_G.ElvUIMoverPopupWindow:Show()
+		ElvUIMoverPopupWindow:Show()
 		_G.UIDropDownMenu_SetSelectedValue(ElvUIMoverPopupWindowDropDown, strupper(which))
 
 		if IsAddOnLoaded("ElvUI_OptionsUI") then
@@ -196,7 +196,7 @@ function E:ConfigMode_OnClick()
 	E:ToggleMoveMode(self.value)
 end
 
-local function ConfigMode_Initialize()
+function E:ConfigMode_Initialize()
 	local info = _G.UIDropDownMenu_CreateInfo()
 	info.func = E.ConfigMode_OnClick
 
@@ -382,7 +382,7 @@ function E:CreateMoverPopup()
 	dropDown.text:FontTemplate(nil, 12, "SHADOW")
 	f.dropDown = dropDown
 
-	_G.UIDropDownMenu_Initialize(dropDown, ConfigMode_Initialize)
+	_G.UIDropDownMenu_Initialize(dropDown, E.ConfigMode_Initialize)
 
 	local nudgeFrame = CreateFrame("Frame", "ElvUIMoverNudgeWindow", E.UIParent)
 	nudgeFrame:SetFrameStrata("DIALOG")
@@ -621,7 +621,7 @@ end
 function E:Config_ButtonOnEnter()
 	if not self.desc then return end
 
-	E.ConfigTooltip:SetOwner(self, 'ANCHOR_TOPRIGHT', 0, 2)
+	E.ConfigTooltip:SetOwner(self, "ANCHOR_TOPRIGHT", 0, 2)
 	E.ConfigTooltip:AddLine(self.desc, 1, 1, 1, true)
 	E.ConfigTooltip:Show()
 end
@@ -808,16 +808,18 @@ function E:Config_CreateFrame(info, frame, unskinned, frameType, ...)
 		end
 	elseif frameType == "EditBox" then
 		if not unskinned then
-			E.Skins:HandleEditBox(element)
+			E.Skins:HandleEditBox(element, nil, true)
+		else
+			E.Skins:HandleSearchBox(element, unskinned)
 		end
-
-		S:HandleSearchBox(element, unskinned)
 
 		element:HookScript("OnTextChanged", info.update)
 		element:SetScript("OnEscapePressed", info.clear)
 		element:SetScript("OnEditFocusLost", info.focusLost)
 		element:SetScript("OnEditFocusGained", info.focusGained)
 		element.clearButton:HookScript("OnClick", info.clear)
+
+		element:SetAutoFocus(false)
 
 		element:Size(220, 22)
 	end
@@ -838,8 +840,7 @@ function E:Config_UpdateLeftButtons()
 	local frame = E:Config_GetWindow()
 	if not (frame and frame.leftHolder) then return end
 
-	local status = frame.obj.status
-	local selected = status and status.groups.selected
+	local _, selected = E:Config_GetStatus(frame)
 	for _, btn in next, frame.leftHolder.buttons do
 		if type(btn) == "table" and btn.IsObjectType and btn:IsObjectType("Button") then
 			local enabled = btn.info.key == selected
@@ -1185,6 +1186,8 @@ function E:Config_CreateBottomButtons(frame, unskinned)
 		if not search and (info.var == "Search") then
 			search = element
 
+			search:RegisterEvent("CURSOR_UPDATE")
+			search:SetScript("OnEvent", info.event)
 			search:SetScript("OnMouseDown", info.event)
 		end
 
@@ -1275,15 +1278,14 @@ function E:ToggleOptionsUI(msg)
 			EnableAddOn("ElvUI_OptionsUI")
 			LoadAddOn("ElvUI_OptionsUI")
 
-			E:Delay(0.05, function() -- not sure why we need this, but it works for now
-				-- version check if it"s actually enabled
-				local config = E.Config and E.Config[1]
-				if not config or (E.version ~= config.version) then
-					E.updateRequestTriggered = true
-					E:StaticPopup_Show("UPDATE_REQUEST")
-					return
-				end
-			end)
+
+			-- version check if it"s actually enabled
+			local config = E.Config and E.Config[1]
+			if not config or (E.version ~= config.version) then
+				E.updateRequestTriggered = true
+				E:StaticPopup_Show("UPDATE_REQUEST")
+				return
+			end
 		end
 	end
 
@@ -1318,7 +1320,7 @@ function E:ToggleOptionsUI(msg)
 
 			for _, child in next, { frame:GetChildren() } do
 				local button = child:IsObjectType("Button")
-				if button and child:GetText() == CLOSE then
+				if button and child:GetText() == _G.CLOSE then
 					frame.originalClose = child
 					child:Hide()
 				elseif button or child:IsObjectType("Frame") then
