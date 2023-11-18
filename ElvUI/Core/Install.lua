@@ -308,13 +308,7 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 			E:SaveMoverDefaultPosition(mover)
 		end
 		--Tooltip
-		E.db.tooltip.healthBar.height = 12
 		E.db.movers.TooltipMover = nil --ensure that this mover gets completely reset.. yes E:ResetMover call above doesn't work.
-		E.db.tooltip.healthBar.font = "PT Sans Narrow"
-		E.db.tooltip.healthBar.fontOutline = "NONE"
-		E.db.tooltip.healthBar.fontSize = 12
-			-- temp
-			E.db.tooltip.textFontSize = 12
 		--Nameplates
 		E.db.nameplates.colors.castNoInterruptColor = {r = 0.78, g=0.25, b=0.25}
 		E.db.nameplates.colors.reactions.good = {r = 0.30, g=0.67, b=0.29}
