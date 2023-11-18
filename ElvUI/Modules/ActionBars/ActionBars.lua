@@ -958,7 +958,6 @@ function AB:UpdateButtonConfig(barName, buttonName)
 	bar.buttonConfig.colors.usable = E:SetColorTable(bar.buttonConfig.colors.usable, AB.db.usableColor)
 	bar.buttonConfig.colors.notUsable = E:SetColorTable(bar.buttonConfig.colors.notUsable, AB.db.notUsableColor)
 	bar.buttonConfig.useDrawBling = not AB.db.hideCooldownBling
-	bar.buttonConfig.useDrawSwipeOnCharges = AB.db.useDrawSwipeOnCharges
 	bar.buttonConfig.handleOverlay = AB.db.handleOverlay
 	SetModifiedClick("PICKUPACTION", AB.db.movementModifier)
 

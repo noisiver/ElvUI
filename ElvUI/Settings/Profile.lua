@@ -4392,7 +4392,6 @@ P.actionbar = {
 	rightClickSelfCast = false,
 	transparent = false,
 	usableColor = { r = 1, g = 1, b = 1 },
-	useDrawSwipeOnCharges = false,
 	useRangeColorText = false,
 	barPet = {
 		enabled = true,
