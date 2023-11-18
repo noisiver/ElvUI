@@ -810,6 +810,8 @@ function E:Config_CreateFrame(info, frame, unskinned, frameType, ...)
 			element:Size(element:GetTextWidth() + 40, 22)
 		end
 	elseif frameType == "EditBox" then
+		element:FontTemplate() -- Define Font properties for the Editbox text field to show written characters
+
 		if not unskinned then
 			E.Skins:HandleEditBox(element, nil, true)
 		else
@@ -1119,7 +1121,7 @@ function E:Config_CreateBottomButtons(frame, unskinned)
 			end
 		},
 		{
-			editBox = "",
+			editBox = "InputBoxTemplate",
 			clear = E.Config_SearchClear,
 			update = E.Config_SearchUpdate,
 			focusLost = E.Config_SearchFocusLost,
