@@ -17,5 +17,5 @@ local function ApplySettings(_, hex)
 	displayString = strjoin("", "%s: ", hex, "%.f|r")
 end
 
-DT:RegisterDatatext("Parry", L["Defence"], { "UNIT_STATS", "UNIT_AURA", "SKILL_LINES_CHANGED" }, OnEvent, nil, nil, nil, nil, PARRY, nil, ApplySettings)
+DT:RegisterDatatext("Parry", L["Defense"], { "UNIT_STATS", "UNIT_AURA", "SKILL_LINES_CHANGED" }, OnEvent, nil, nil, nil, nil, PARRY, nil, ApplySettings)
 
