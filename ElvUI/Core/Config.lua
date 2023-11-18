@@ -811,6 +811,7 @@ function E:Config_CreateFrame(info, frame, unskinned, frameType, ...)
 		end
 	elseif frameType == "EditBox" then
 		element:FontTemplate() -- Define Font properties for the Editbox text field to show written characters
+		element:SetAutoFocus(false)
 
 		if not unskinned then
 			E.Skins:HandleEditBox(element, nil, true)
@@ -823,8 +824,6 @@ function E:Config_CreateFrame(info, frame, unskinned, frameType, ...)
 		element:SetScript("OnEditFocusLost", info.focusLost)
 		element:SetScript("OnEditFocusGained", info.focusGained)
 		element.clearButton:HookScript("OnClick", info.clear)
-
-		element:SetAutoFocus(false)
 
 		element:Size(220, 22)
 	end
