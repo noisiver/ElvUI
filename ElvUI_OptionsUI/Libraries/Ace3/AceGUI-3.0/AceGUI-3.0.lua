@@ -25,7 +25,8 @@
 -- @class file
 -- @name AceGUI-3.0
 -- @release $Id$
-local ACEGUI_MAJOR, ACEGUI_MINOR = "AceGUI-3.0", 41
+local forceMin = 10 -- Temp override version of ACE for conflicting addons until better fixed
+local ACEGUI_MAJOR, ACEGUI_MINOR = "AceGUI-3.0", 41 + forceMin
 local AceGUI, oldminor = LibStub:NewLibrary(ACEGUI_MAJOR, ACEGUI_MINOR)
 
 if not AceGUI then return end -- No upgrade needed
