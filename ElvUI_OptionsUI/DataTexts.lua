@@ -217,6 +217,7 @@ local function CreateDTOptions(name, data)
 			end
 		elseif name == 'Item Level' then
 			optionTable.args.rarityColor = ACH:Toggle(L["Rarity Color"], nil, 1)
+			optionTable.args.onlyEquipped = ACH:Toggle(L["Only Equipped"], nil, 2)
 		elseif name == 'Location' then
 			optionTable.args.showContinent = ACH:Toggle(L["Show Continent"], nil, 1)
 			optionTable.args.showZone = ACH:Toggle(L["Show Zone"], nil, 2)

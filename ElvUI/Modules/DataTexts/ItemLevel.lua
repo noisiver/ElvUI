@@ -26,7 +26,7 @@ local function OnEvent(self)
 
 	local hex = db.rarityColor and E:RGBToHex(r, g, b) or "|cFFFFFFFF"
 
-	self.text:SetFormattedText(avg == avgEquipped and sameString or bothString, L["iLvl"], hex, avgEquipped or 0, hex, avg or 0)
+	self.text:SetFormattedText((db.onlyEquipped or avg == avgEquipped) and sameString or bothString, L["iLvl"], hex, avgEquipped or 0, hex, avg or 0)
 end
 
 local function OnEnter()
