@@ -304,20 +304,17 @@ S:AddCallback("Skin_Quest", function()
 		end
 	end)
 
-	hooksecurefunc("QuestInfoItem_OnClick", function(self)
-		if self.type == "choice" then
-			self:SetBackdropBorderColor(1, 0.80, 0.10)
-			self.backdrop:SetBackdropBorderColor(1, 0.80, 0.10)
-			_G[self:GetName().."Name"]:SetTextColor(1, 0.80, 0.10)
-
-			local item, name, link
+	hooksecurefunc("QuestInfoItem_OnClick", function(frame)
+		if frame.type == "choice" then
+			frame:SetBackdropBorderColor(1, 0.80, 0.10)
+			_G[frame:GetName()..'Name']:SetTextColor(1, 0.80, 0.10)
 
 			for i = 1, MAX_NUM_ITEMS do
-				item = _G["QuestInfoItem"..i]
+				local item = _G["QuestInfoItem"..i]
 
-				if item ~= self then
-					name = _G["QuestInfoItem"..i.."Name"]
-					link = item.type and (QuestInfoFrame.questLog and GetQuestLogItemLink or GetQuestItemLink)(item.type, item:GetID())
+				if item ~= frame then
+					local name = _G["QuestInfoItem"..i.."Name"]
+					local link = item.type and (_G.QuestInfoFrame.questLog and GetQuestLogItemLink or GetQuestItemLink)(item.type, item:GetID())
 
 					questQualityColors(item, name, link)
 				end

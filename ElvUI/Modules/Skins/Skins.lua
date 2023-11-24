@@ -1,8 +1,9 @@
-local E, L, V, P, G = unpack(select(2, ...))
+local E, L, V, P, G = unpack(ElvUI)
 local S = E:GetModule("Skins")
-local LibStub = LibStub
+local LibStub = _G.LibStub
 
 local _G = _G
+local hooksecurefunc = hooksecurefunc
 local tinsert, xpcall, next, ipairs, pairs = tinsert, xpcall, next, ipairs, pairs
 local unpack, assert, type, strfind = unpack, assert, type, strfind
 

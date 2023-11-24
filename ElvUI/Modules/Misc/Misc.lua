@@ -272,51 +272,36 @@ function M:ADDON_LOADED(_, addon)
 	end
 end
 
-local function SelectQuestReward(id)
-	local btn = _G["QuestInfoItem"..id]
-
-	if btn.type == "choice" then
-		if E.private.skins.blizzard.enable and E.private.skins.blizzard.quest then
-			_G[btn:GetName()]:SetBackdropBorderColor(1, 0.80, 0.10)
-			_G[btn:GetName()].backdrop:SetBackdropBorderColor(1, 0.80, 0.10)
-			_G[btn:GetName().."Name"]:SetTextColor(1, 0.80, 0.10)
-
-			M.QuestRewardGoldIconFrame:ClearAllPoints()
-			M.QuestRewardGoldIconFrame:Point('TOPRIGHT', btn, 'TOPRIGHT', -2, -2)
-			M.QuestRewardGoldIconFrame:Show()
-		else
-			QuestInfoItemHighlight:ClearAllPoints()
-			QuestInfoItemHighlight:SetAllPoints(btn)
-			QuestInfoItemHighlight:Show()
-		end
-
-		QuestInfoFrame.itemChoice = btn:GetID()
-	end
-end
-
 function M:QUEST_COMPLETE()
 	if not E.db.general.questRewardMostValueIcon then return end
 
-	local numItems = GetNumQuestChoices()
-	if numItems <= 0 then return end
+	local firstItem = _G.QuestInfoItem1
+	if not firstItem then return end
 
-	local link, sellPrice
-	local choiceID, maxPrice = 1, 0
+	local numQuests = GetNumQuestChoices()
+	if numQuests < 2 then return end
 
-	for i = 1, numItems do
-		link = GetQuestItemLink("choice", i)
+	local bestValue, bestItem = 0
+	for i = 1, numQuests do
+		local questLink = GetQuestItemLink('choice', i)
+		local _, _, amount = GetQuestItemInfo('choice', i)
+		local itemSellPrice = questLink and select(11, GetItemInfo(questLink))
 
-		if link then
-			sellPrice = select(11, GetItemInfo(link))
-
-			if sellPrice and sellPrice > maxPrice then
-				maxPrice = sellPrice
-				choiceID = i
-			end
+		local totalValue = (itemSellPrice and itemSellPrice * amount) or 0
+		if totalValue > bestValue then
+			bestValue = totalValue
+			bestItem = i
 		end
 	end
 
-	SelectQuestReward(choiceID)
+	if bestItem then
+		local btn = _G['QuestInfoItem'..bestItem]
+		if btn and btn.type == 'choice' then
+			M.QuestRewardGoldIconFrame:ClearAllPoints()
+			M.QuestRewardGoldIconFrame:Point('TOPRIGHT', btn, 'TOPRIGHT', -2, -2)
+			M.QuestRewardGoldIconFrame:Show()
+		end
+	end
 end
 
 function M:Initialize()
