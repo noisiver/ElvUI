@@ -397,28 +397,28 @@ local function FontTemplate(fs, font, size, style, skip)
 end
 
 local function StyleButton(button, noHover, noPushed, noChecked)
-	if button.SetHighlightTexture and not button.hover and not noHover then
+	if button.SetHighlightTexture and button.CreateTexture and not button.hover and not noHover then
 		local hover = button:CreateTexture()
 		hover:SetInside()
-		hover:SetBlendMode("ADD")
+		hover:SetBlendMode('ADD')
 		hover:SetTexture(1, 1, 1, 0.3)
 		button:SetHighlightTexture(hover)
 		button.hover = hover
 	end
 
-	if button.SetPushedTexture and not button.pushed and not noPushed then
+	if button.SetPushedTexture and button.CreateTexture and not button.pushed and not noPushed then
 		local pushed = button:CreateTexture()
 		pushed:SetInside()
-		pushed:SetBlendMode("ADD")
+		pushed:SetBlendMode('ADD')
 		pushed:SetTexture(0.9, 0.8, 0.1, 0.3)
 		button:SetPushedTexture(pushed)
 		button.pushed = pushed
 	end
 
-	if button.SetCheckedTexture and not button.checked and not noChecked then
+	if button.SetCheckedTexture and button.CreateTexture and not button.checked and not noChecked then
 		local checked = button:CreateTexture()
 		checked:SetInside()
-		checked:SetBlendMode("ADD")
+		checked:SetBlendMode('ADD')
 		checked:SetTexture(1, 1, 1, 0.3)
 		button:SetCheckedTexture(checked)
 		button.checked = checked
@@ -494,6 +494,7 @@ local function addapi(object)
 		if mk.CreateTexture then hooksecurefunc(mk, "CreateTexture", DisablePixelSnap) end
 		if mk.SetTexCoord then hooksecurefunc(mk, "SetTexCoord", DisablePixelSnap) end
 		if mk.SetTexture then hooksecurefunc(mk, "SetTexture", DisablePixelSnap) end
+
 		mk.DisabledPixelSnap = true
 	end
 end
@@ -515,4 +516,4 @@ while object do
 	object = EnumerateFrames(object)
 end
 
-addapi(GameFontNormal) --Add API to `CreateFont` objects without actually creating one
+addapi(_G.GameFontNormal) --Add API to `CreateFont` objects without actually creating one

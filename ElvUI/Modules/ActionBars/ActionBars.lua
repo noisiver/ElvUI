@@ -22,6 +22,8 @@ local UnitHealth = UnitHealth
 local UnitHealthMax = UnitHealthMax
 local UnregisterStateDriver = UnregisterStateDriver
 local VehicleExit = VehicleExit
+local UIParent = UIParent
+local SecureHandlerSetFrameRef = SecureHandlerSetFrameRef
 
 local NUM_ACTIONBAR_BUTTONS = NUM_ACTIONBAR_BUTTONS
 local LEAVE_VEHICLE = LEAVE_VEHICLE
@@ -45,19 +47,19 @@ AB.RegisterCooldown = E.RegisterCooldown
 AB.handledBars = {} --List of all bars
 AB.handledbuttons = {} --List of all buttons that have been modified.
 AB.barDefaults = {
-	bar1 = { page = 1, bindButtons = "ACTIONBUTTON", position = "BOTTOM,ElvUIParent,BOTTOM,-1,191" },
-	bar2 = { page = 2, bindButtons = "ELVUIBAR2BUTTON", position = "BOTTOM,ElvUIParent,BOTTOM,0,4" },
-	bar3 = { page = 3, bindButtons = "MULTIACTIONBAR3BUTTON", position = "BOTTOM,ElvUIParent,BOTTOM,-1,139" },
-	bar4 = { page = 4, bindButtons = "MULTIACTIONBAR4BUTTON", position = "RIGHT,ElvUIParent,RIGHT,-4,0" },
-	bar5 = { page = 5, bindButtons = "MULTIACTIONBAR2BUTTON", position = "BOTTOM,ElvUIParent,BOTTOM,-279,4" },
-	bar6 = { page = 6, bindButtons = "MULTIACTIONBAR1BUTTON", position = "BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,264" },
-	bar7 = { page = 7, bindButtons = "ELVUIBAR7BUTTON", position = "BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,298" },
-	bar8 = { page = 8, bindButtons = "ELVUIBAR8BUTTON", position = "BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,332" },
-	bar9 = { page = 9, bindButtons = "ELVUIBAR9BUTTON", position = "BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,366" },
-	bar10 = { page = 10, bindButtons = "ELVUIBAR10BUTTON", position = "BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,400" },
-	bar13 = { page = 13, bindButtons = "MULTIACTIONBAR5BUTTON", position = "BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,400" },
-	bar14 = { page = 14, bindButtons = "MULTIACTIONBAR6BUTTON", position = "BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,400" },
-	bar15 = { page = 15, bindButtons = "MULTIACTIONBAR7BUTTON", position = "BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,400" }
+	bar1 = { page = 1, bindButtons = 'ACTIONBUTTON', position = 'BOTTOM,ElvUIParent,BOTTOM,-1,191' },
+	bar2 = { page = 2, bindButtons = 'ELVUIBAR2BUTTON', position = 'BOTTOM,ElvUIParent,BOTTOM,0,4' },
+	bar3 = { page = 3, bindButtons = 'MULTIACTIONBAR3BUTTON', position = 'BOTTOM,ElvUIParent,BOTTOM,-1,139' },
+	bar4 = { page = 4, bindButtons = 'MULTIACTIONBAR4BUTTON', position = 'RIGHT,ElvUIParent,RIGHT,-4,0' },
+	bar5 = { page = 5, bindButtons = 'MULTIACTIONBAR2BUTTON', position = 'BOTTOM,ElvUIParent,BOTTOM,-279,4' },
+	bar6 = { page = 6, bindButtons = 'MULTIACTIONBAR1BUTTON', position = 'BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,264' },
+	bar7 = { page = 7, bindButtons = 'ELVUIBAR7BUTTON', position = 'BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,298' },
+	bar8 = { page = 8, bindButtons = 'ELVUIBAR8BUTTON', position = 'BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,332' },
+	bar9 = { page = 9, bindButtons = 'ELVUIBAR9BUTTON', position = 'BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,366' },
+	bar10 = { page = 10, bindButtons = 'ELVUIBAR10BUTTON', position = 'BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,400' },
+	bar13 = { page = 13, bindButtons = 'MULTIACTIONBAR5BUTTON', position = 'BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,400' },
+	bar14 = { page = 14, bindButtons = 'MULTIACTIONBAR6BUTTON', position = 'BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,400' },
+	bar15 = { page = 15, bindButtons = 'MULTIACTIONBAR7BUTTON', position = 'BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,400' }
 }
 
 function AB:UpdateBar1Paging()
@@ -171,50 +173,63 @@ function AB:HandleButton(bar, button, index, lastButton, lastColumnButton)
 end
 
 function AB:TrimIcon(button, masque)
-	if not button.icon then return end
+	local name = button:GetName()
+	local icon = button.icon or _G[name.."Icon"]
+	if not icon then return end
 
-	local left, right, top, bottom = unpack(button.db and button.db.customCoords or E.TexCoords)
-	local changeRatio = button.db and not button.db.keepSizeRatio
-
-	if changeRatio then
-		local width, height = button:GetSize()
-		local ratio = width / height
-
-		if ratio > 1 then
-			local trimAmount = (1 - (1 / ratio)) / 2
-			top = top + trimAmount
-			bottom = bottom - trimAmount
-		else
-			local trimAmount = (1 - ratio) / 2
-			left = left + trimAmount
-			right = right - trimAmount
-		end
-	end
-
-	-- always when masque is off, otherwise only when keepSizeRatio is off
-	if not masque or changeRatio then
-		button.icon:SetTexCoord(left, right, top, bottom)
+	if button.db and not button.db.keepSizeRatio then
+		icon:SetTexCoord(E:CropRatio(button, button.db.customCoords))
+	elseif not masque then
+		icon:SetTexCoord(unpack(E.TexCoords))
 	end
 end
 
 function AB:GetGrowth(point)
-	local vertical = (point == "TOPLEFT" or point == "TOPRIGHT") and "DOWN" or "UP"
-	local horizontal = (point == "BOTTOMLEFT" or point == "TOPLEFT") and "RIGHT" or "LEFT"
-	local anchorUp, anchorLeft = vertical == "UP", horizontal == "LEFT"
+	local vertical = (point == 'TOPLEFT' or point == 'TOPRIGHT') and 'DOWN' or 'UP'
+	local horizontal = (point == 'BOTTOMLEFT' or point == 'TOPLEFT') and 'RIGHT' or 'LEFT'
+	local anchorUp, anchorLeft = vertical == 'UP', horizontal == 'LEFT'
 
 	return vertical, horizontal, anchorUp, anchorLeft
 end
 
-function AB:MoverMagic(bar)
+function AB:MoverMagic(bar) -- ~Simpy
 	local _, _, anchorUp, anchorLeft = AB:GetGrowth(bar.db.point)
 
 	bar:ClearAllPoints()
 	if not bar.backdrop:IsShown() then
-		bar:SetPoint("BOTTOMLEFT", bar.mover)
+		bar:SetPoint('BOTTOMLEFT', bar.mover)
 	elseif anchorUp then
-		bar:SetPoint("BOTTOMLEFT", bar.mover, "BOTTOMLEFT", anchorLeft and E.Border or -E.Border, -E.Border)
+		bar:SetPoint('BOTTOMLEFT', bar.mover, 'BOTTOMLEFT', anchorLeft and E.Border or -E.Border, -E.Border)
 	else
-		bar:SetPoint("TOPLEFT", bar.mover, "TOPLEFT", anchorLeft and E.Border or -E.Border, E.Border)
+		bar:SetPoint('TOPLEFT', bar.mover, 'TOPLEFT', anchorLeft and E.Border or -E.Border, E.Border)
+	end
+end
+
+function AB:ActivePages(page)
+	local pages = {}
+	local clean = gsub(page, '%[.-]', '')
+
+	for _, index in next, { strsplit(';', clean) } do
+		local num = tonumber(index)
+		if num then
+			pages[num] = true
+		end
+	end
+
+	return pages
+end
+
+function AB:HandleButtonState(button, index, vehicleIndex, pages)
+	for k = 1, 18 do
+		if pages and pages[k] then
+			button:SetState(k, 'action', (k - 1) * 12 + index)
+		else
+			button:SetState(k, 'empty')
+		end
+	end
+
+	if pages and vehicleIndex and index == 12 then
+		button:SetState(vehicleIndex, 'custom', AB.customExitButton)
 	end
 end
 
@@ -222,6 +237,7 @@ function AB:PositionAndSizeBar(barName)
 	local db = AB.db[barName]
 	local bar = AB.handledBars[barName]
 
+	local enabled = db.enabled
 	local buttonSpacing = db.buttonSpacing
 	local backdropSpacing = db.backdropSpacing
 	local buttonsPerRow = db.buttonsPerRow
@@ -251,6 +267,13 @@ function AB:PositionAndSizeBar(barName)
 	local _, horizontal, anchorUp, anchorLeft = AB:GetGrowth(point)
 	local button, lastButton, lastColumnButton, anchorRowButton, lastShownButton
 
+	-- paging needs to be updated even if the bar is disabled
+	local defaults = AB.barDefaults[barName]
+	local page = AB:GetPage(barName, defaults.page, defaults.conditions)
+	RegisterStateDriver(bar, 'page', page)
+	bar:SetAttribute('page', page)
+
+	local pages = enabled and AB:ActivePages(page) or nil
 	for i = 1, NUM_ACTIONBAR_BUTTONS do
 		lastButton = bar.buttons[i-1]
 		lastColumnButton = bar.buttons[i-buttonsPerRow]
@@ -270,6 +293,7 @@ function AB:PositionAndSizeBar(barName)
 			lastShownButton = button
 		end
 
+		AB:HandleButtonState(button, i, 12, pages)
 		AB:HandleButton(bar, button, i, lastButton, lastColumnButton)
 		AB:StyleButton(button, nil, MasqueGroup and E.private.actionbar.masque.actionbars)
 	end
@@ -311,7 +335,9 @@ end
 function AB:CreateBar(id)
 	local bar = CreateFrame("Frame", "ElvUI_Bar"..id, E.UIParent, "SecureHandlerStateTemplate")
 
-	SecureHandlerSetFrameRef(bar, "MainMenuBarArtFrame", MainMenuBarArtFrame)
+	SecureHandlerSetFrameRef(bar, "MainMenuBarArtFrame", _G.MainMenuBarArtFrame)
+
+	bar.MasqueGroup = Masque and Masque:Group('ElvUI', format('ActionBar %d', id))
 
 	AB.handledBars["bar"..id] = bar
 
@@ -408,7 +434,7 @@ function AB:CreateVehicleLeave()
 	local db = E.db.actionbar.vehicleExitButton
 	if not db.enable then return end
 
-	local button = MainMenuBarVehicleLeaveButton
+	local button = _G.MainMenuBarVehicleLeaveButton
 	local holder = CreateFrame("Frame", "VehicleLeaveButtonHolder", E.UIParent)
 	holder:Point("BOTTOM", E.UIParent, 0, 300)
 	holder:Size(button:GetSize())
@@ -450,10 +476,10 @@ end
 
 function AB:UpdateVehicleLeave()
 	local db = E.db.actionbar.vehicleExitButton
-	MainMenuBarVehicleLeaveButton:Size(db.size)
-	MainMenuBarVehicleLeaveButton:SetFrameStrata(db.strata)
-	MainMenuBarVehicleLeaveButton:SetFrameLevel(db.level)
-	VehicleLeaveButtonHolder:Size(db.size)
+	_G.MainMenuBarVehicleLeaveButton:Size(db.size)
+	_G.MainMenuBarVehicleLeaveButton:SetFrameStrata(db.strata)
+	_G.MainMenuBarVehicleLeaveButton:SetFrameLevel(db.level)
+	_G.VehicleLeaveButtonHolder:Size(db.size)
 end
 
 function AB:ReassignBindings(event)
@@ -608,16 +634,21 @@ function AB:StyleButton(button, noBackdrop, useMasque, ignoreNormal)
 
 	if flash then
 		if AB.db.flashAnimation then
+			local flashOffset = E.PixelMode and 2 or 4
+
 			flash:SetTexture(1.0, 0.2, 0.2, 0.45)
 			flash:ClearAllPoints()
-			flash:SetOutside(icon, 2, 2)
+			flash:SetOutside(icon, flashOffset, flashOffset)
 			flash:SetDrawLayer("BACKGROUND", -1)
 		else
 			flash:SetTexture()
 		end
 	end
 
-	if not useMasque then
+	if useMasque then -- note: trim handled after masque messes with it
+		button:StyleButton(true, true, true)
+	else
+		button:StyleButton()
 		AB:TrimIcon(button)
 		icon:SetInside()
 	end
@@ -636,17 +667,19 @@ function AB:StyleButton(button, noBackdrop, useMasque, ignoreNormal)
 	end
 
 	AB:FixKeybindText(button)
+end
 
-	if not button.useMasque then
-		button:StyleButton()
-	else
-		button:StyleButton(true, true, true)
-	end
+function AB:ColorSwipeTexture(cooldown)
+	if not cooldown then return end
+
+	local color = AB.db.colorSwipeNormal
+	print(cooldown)
+	-- cooldown:SetNormalTexture(color.r, color.g, color.b, color.a)
 end
 
 function AB:FadeBlingTexture(cooldown, alpha)
 	if not cooldown then return end
-	E:RegisterCooldown(cooldown)
+	-- cooldown:SetAlpha(alpha > 0.5 and [[interface\cooldown\star4.blp]] or E.Media.Textures.Invisible)
 end
 
 function AB:FadeBlings(alpha)
@@ -1239,9 +1272,7 @@ function AB:PLAYER_ENTERING_WORLD(event)
 	AB:AdjustMaxStanceButtons(event)
 
 	if E.myclass == "SHAMAN" and AB.db.totemBar.enable then
-		if not AB:IsHooked("ShowMultiCastActionBar") then
-			AB:SecureHook("ShowMultiCastActionBar", "PositionAndSizeTotemBar")
-		end
+		AB:SecureHook("ShowMultiCastActionBar", "PositionAndSizeTotemBar")
 		AB:PositionAndSizeTotemBar()
 	end
 end

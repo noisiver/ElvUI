@@ -632,6 +632,40 @@ function E:GetUnitSpecInfo(unit)
 	end
 end
 
+function E:GetClassCoords(classFile, crop, get)
+	local t = _G.CLASS_ICON_TCOORDS[classFile]
+	if not t then return 0, 1, 0, 1 end
+
+	if get then
+		return t
+	elseif type(crop) == 'number' then
+		return t[1] + crop, t[2] - crop, t[3] + crop, t[4] - crop
+	elseif crop then
+		return t[1] + 0.022, t[2] - 0.025, t[3] + 0.022, t[4] - 0.025
+	else
+		return t[1], t[2], t[3], t[4]
+	end
+end
+
+function E:CropRatio(frame, coords, mult)
+	local left, right, top, bottom = unpack(coords or E.TexCoords)
+	if not mult then mult = 0.5 end
+
+	local width, height = frame:GetSize()
+	local ratio = width / height
+	if ratio > 1 then
+		local trimAmount = (1 - (1 / ratio)) * mult
+		top = top + trimAmount
+		bottom = bottom - trimAmount
+	else
+		local trimAmount = (1 - ratio) * mult
+		left = left + trimAmount
+		right = right - trimAmount
+	end
+
+	return left, right, top, bottom
+end
+
 function E:ScanTooltip_UnitInfo(unit)
 	E.ScanTooltip:SetOwner(UIParent, 'ANCHOR_NONE')
 	E.ScanTooltip:SetUnit(unit)
