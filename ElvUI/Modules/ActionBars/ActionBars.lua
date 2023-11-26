@@ -1,5 +1,5 @@
-local E, L, V, P, G = unpack(select(2, ...))
 local AB = E:GetModule("ActionBars")
+local E, L, V, P, G = unpack(ElvUI)
 
 local _G = _G
 local ipairs, pairs, next, unpack = ipairs, pairs, next, unpack

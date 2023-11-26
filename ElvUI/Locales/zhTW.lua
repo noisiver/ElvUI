@@ -1,5 +1,5 @@
 -- Traditional Chinese localization file for zhTW.
-local E = unpack(select(2, ...))
+local E = unpack(ElvUI)
 local L = E.Libs.ACL:NewLocale("ElvUI", "zhTW")
 
 L[" |cff00ff00bound to |r"] = " |cff00ff00綁定到 |r"

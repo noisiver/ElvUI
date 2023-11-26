@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...))
+local E, L, V, P, G = unpack(ElvUI)
 local B = E:GetModule("Bags")
 
 local strmatch, gmatch, strfind = strmatch, gmatch, strfind

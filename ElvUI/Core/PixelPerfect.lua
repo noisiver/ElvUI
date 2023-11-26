@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...))
+local E, L, V, P, G = unpack(ElvUI)
 local LC = E.Libs.Compat
 
 local min, match, max, format = min, string.match, max, format

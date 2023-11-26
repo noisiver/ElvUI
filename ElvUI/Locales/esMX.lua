@@ -1,5 +1,5 @@
 -- Spanish localization file for esES and esMX.
-local E = unpack(select(2, ...))
+local E = unpack(ElvUI)
 local L = E.Libs.ACL:NewLocale("ElvUI", "esMX")
 
 L[" |cff00ff00bound to |r"] = " |cff00ff00ligado(a) a |r"

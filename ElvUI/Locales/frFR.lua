@@ -1,5 +1,5 @@
 -- French localization file for frFR.
-local E = unpack(select(2, ...))
+local E = unpack(ElvUI)
 local L = E.Libs.ACL:NewLocale("ElvUI", "frFR")
 
 L[" |cff00ff00bound to |r"] = "|cff00ff00assigné à |r"

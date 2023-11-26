@@ -1,4 +1,4 @@
-local E, L, V, P, G = unpack(select(2, ...)); --Import: Engine, Locales
+local E, L, V, P, G = unpack(ElvUI)
 local B = E:GetModule("Blizzard")
 
 --Lua functions

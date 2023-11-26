@@ -1,5 +1,5 @@
 -- Russian localization file for ruRU.
-local E = unpack(select(2, ...))
+local E = unpack(ElvUI)
 local L = E.Libs.ACL:NewLocale("ElvUI", "ruRU")
 
 L[" |cff00ff00bound to |r"] = " |cff00ff00назначено для |r"

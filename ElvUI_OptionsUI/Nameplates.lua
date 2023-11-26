@@ -1,5 +1,5 @@
 local E, _, V, P, G = unpack(ElvUI)
-local C, L = unpack(select(2, ...))
+local C, L = unpack(ElvUI)
 local NP = E:GetModule("NamePlates")
 local ACD = E.Libs.AceConfigDialog
 

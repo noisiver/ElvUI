@@ -1,5 +1,5 @@
 -- Korean localization file for koKR.
-local E = unpack(select(2, ...))
+local E = unpack(ElvUI)
 local L = E.Libs.ACL:NewLocale("ElvUI", "koKR")
 
 L[" |cff00ff00bound to |r"] = " 키로 다음의 행동을 실행합니다: |cff2eb7e4"

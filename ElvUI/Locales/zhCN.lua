@@ -1,5 +1,5 @@
 -- Simplified Chinese localization file for zhCN.
-local E = unpack(select(2, ...))
+local E = unpack(ElvUI)
 local L = E.Libs.ACL:NewLocale("ElvUI", "zhCN")
 
 L[" |cff00ff00bound to |r"] = " |cff00ff00绑定到 |r"
