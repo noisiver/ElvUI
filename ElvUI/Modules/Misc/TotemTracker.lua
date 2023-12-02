@@ -12,9 +12,9 @@ local priority = E.myclass == 'SHAMAN' and { [1]=1, [2]=2, [3]=4, [4]=3 } or TOT
 
 
 function TM:UpdateButton(button, totem)
-	if not (button and totem and totem.slot > 0) then return end
+	if not (button and totem) then return end
 
-	local haveTotem, _, startTime, duration, icon = GetTotemInfo(totem.slot)
+	local haveTotem, _, startTime, duration, icon = GetTotemInfo(totem:GetID() or totem.slot)
 	button:SetShown(haveTotem and duration > 0)
 
 	if haveTotem then
@@ -30,12 +30,7 @@ function TM:UpdateButton(button, totem)
 end
 
 function TM:Update()
-	for _, button in ipairs(TM.bar) do
-		if button:IsShown() then
-			button:SetShown(false)
-		end
-	end
-	for i = 1, _G.TotemFrame.activeTotems do
+	for i = 1, MAX_TOTEMS do
 		TM:UpdateButton(TM.bar[priority[i]], _G['TotemFrameTotem'..i])
 	end
 end
