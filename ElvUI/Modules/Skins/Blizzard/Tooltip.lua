@@ -1,6 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI)
-local S = E:GetModule("Skins")
-local TT = E:GetModule("Tooltip")
+local S = E:GetModule('Skins')
+local TT = E:GetModule('Tooltip')
 
 local _G = _G
 local next = next
@@ -29,7 +29,7 @@ function S:StyleTooltips()
 		E.ConfigTooltip,
 		E.SpellBookTooltip,
 	} do
-		TT:SecureHookScript(tt, "OnShow", "SetStyle")
+		TT:SecureHookScript(tt, 'OnShow', 'SetStyle')
 	end
 end
 
@@ -48,7 +48,10 @@ function S:TooltipFrames()
 	E:RegisterStatusBar(_G.GameTooltipStatusBar)
 
 	-- Tooltip Styling
-	TT:SecureHook("GameTooltip_ShowStatusBar")
+	TT:SecureHook('GameTooltip_ShowStatusBar')
+
+	TT:SecureHookScript(_G.GameTooltip, 'OnSizeChanged', 'CheckBackdropColor')
+	TT:SecureHookScript(_G.GameTooltip, 'OnUpdate', 'CheckBackdropColor')
 end
 
 S:AddCallback('TooltipFrames')
