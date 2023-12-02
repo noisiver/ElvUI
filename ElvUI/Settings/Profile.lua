@@ -4323,50 +4323,54 @@ P.unitframe = {
 
 --Cooldown
 P.cooldown = {
-	enable = true,
 	threshold = 3,
-	expiringColor = {r = 1, g = 0, b = 0},
-	secondsColor = {r = 1, g = 1, b = 0},
-	minutesColor = {r = 1, g = 1, b = 1},
-	hoursColor = {r = 0.4, g = 1, b = 1},
-	daysColor = {r = 0.4, g = 0.4, b = 1},
-	expireIndicator = {r = 1, g = 1, b = 1},
-	secondsIndicator = {r = 1, g = 1, b = 1},
-	minutesIndicator = {r = 1, g = 1, b = 1},
-	hoursIndicator = {r = 1, g = 1, b = 1},
-	daysIndicator = {r = 1, g = 1, b = 1},
-	hhmmColorIndicator = {r = 1, g = 1, b = 1},
-	mmssColorIndicator = {r = 1, g = 1, b = 1},
+	roundTime = true,
+	targetAura = true,
+	hideBlizzard = false,
+	useIndicatorColor = false,
+	showModRate = false,
+
+	expiringColor = { r = 1, g = 0.2, b = 0.2 },
+	secondsColor = { r = 1, g = 1, b = 0.2 },
+	minutesColor = { r = 1, g = 1, b = 1 },
+	hoursColor = { r = 0.4, g = 1, b = 1 },
+	daysColor = { r = 0.4, g = 0.4, b = 1 },
+
+	expireIndicator = { r = 0.8, g = 0.8, b = 0.8 },
+	secondsIndicator = { r = 0.8, g = 0.8, b = 0.8 },
+	minutesIndicator = { r = 0.8, g = 0.8, b = 0.8 },
+	hoursIndicator = { r = 0.8, g = 0.8, b = 0.8 },
+	daysIndicator = { r = 0.8, g = 0.8, b = 0.8 },
+	hhmmColorIndicator = { r = 1, g = 1, b = 1 },
+	mmssColorIndicator = { r = 1, g = 1, b = 1 },
 
 	checkSeconds = false,
 	targetAuraDuration = 3600,
 	modRateColor = { r = 0.6, g = 1, b = 0.4 },
-	hhmmColor = {r = 0.43, g = 0.43, b = 0.43},
-	mmssColor = {r = 0.56, g = 0.56, b = 0.56},
+	hhmmColor = { r = 0.43, g = 0.43, b = 0.43 },
+	mmssColor = { r = 0.56, g = 0.56, b = 0.56 },
 	hhmmThreshold = -1,
 	mmssThreshold = -1,
 
 	fonts = {
 		enable = false,
-		font = "PT Sans Narrow",
-		fontOutline = "OUTLINE",
-		fontSize = 18
-	}
+		font = 'PT Sans Narrow',
+		fontOutline = 'OUTLINE',
+		fontSize = 18,
+	},
 }
 
-
 --Actionbar
-local ACTION_SLOTS = NUM_PET_ACTION_SLOTS or 10
-local STANCE_SLOTS = NUM_SHAPESHIFT_SLOTS or 10
+local ACTION_SLOTS = _G.NUM_PET_ACTION_SLOTS or 10
+local STANCE_SLOTS = _G.NUM_STANCE_SLOTS or 10
 
 P.actionbar = {
-	addNewSpells = false,
 	chargeCooldown = false,
 	colorSwipeLOC = { r = 0.25, g = 0, b = 0, a = 0.8 },
 	colorSwipeNormal = { r = 0, g = 0, b = 0, a = 0.8 },
-	hotkeyTextPosition = "TOPRIGHT",
-	macroTextPosition = "TOPRIGHT",
-	countTextPosition = "BOTTOMRIGHT",
+	hotkeyTextPosition = 'TOPRIGHT',
+	macroTextPosition = 'TOPRIGHT',
+	countTextPosition = 'BOTTOMRIGHT',
 	countTextXOffset = 0,
 	countTextYOffset = 2,
 	desaturateOnCooldown = false,
@@ -4374,16 +4378,15 @@ P.actionbar = {
 	equippedItemColor = { r = 0.4, g = 1.0, b = 0.4 },
 	flashAnimation = false,
 	flyoutSize = 32, -- match buttonsize default, blizz default is 28
-	font = "Homespun",
+	font = 'Homespun',
 	fontColor = { r = 1, g = 1, b = 1 },
-	fontOutline = "MONOCHROMEOUTLINE",
+	fontOutline = 'MONOCHROMEOUTLINE',
 	fontSize = 10,
 	globalFadeAlpha = 0,
 	handleOverlay = true,
 	hideCooldownBling = false,
 	lockActionBars = true,
-	keyDown = true,
-	movementModifier = "SHIFT",
+	movementModifier = 'SHIFT',
 	noPowerColor = { r = 0.5, g = 0.5, b = 1 },
 	noRangeColor = { r = 0.8, g = 0.1, b = 0.1 },
 	notUsableColor = { r = 0.4, g = 0.4, b = 0.4 },
@@ -4399,7 +4402,7 @@ P.actionbar = {
 		clickThrough = false,
 		buttons = ACTION_SLOTS,
 		buttonsPerRow = 1,
-		point = "TOPRIGHT",
+		point = 'TOPRIGHT',
 		backdrop = true,
 		heightMult = 1,
 		widthMult = 1,
@@ -4414,12 +4417,12 @@ P.actionbar = {
 	},
 	stanceBar = {
 		enabled = true,
-		style = "darkenInactive",
+		style = 'darkenInactive',
 		mouseover = false,
 		clickThrough = false,
 		buttonsPerRow = STANCE_SLOTS,
 		buttons = STANCE_SLOTS,
-		point = "TOPLEFT",
+		point = 'TOPLEFT',
 		backdrop = false,
 		heightMult = 1,
 		widthMult = 1,
@@ -4452,10 +4455,11 @@ P.actionbar = {
 	microbar = {
 		enabled = false,
 		mouseover = false,
+		useIcons = false,
 		buttonsPerRow = 11,
 		buttonSize = 20,
 		keepSizeRatio = false,
-		point = "TOPLEFT",
+		point = 'TOPLEFT',
 		buttonHeight = 28,
 		buttonSpacing = 2,
 		alpha = 1,
@@ -4464,14 +4468,14 @@ P.actionbar = {
 		backdropSpacing = 2,
 		heightMult = 1,
 		widthMult = 1,
-		frameStrata = "LOW",
+		frameStrata = 'LOW',
 		frameLevel = 1,
 	},
 	vehicleExitButton = {
 		enable = true,
 		size = 32,
 		level = 1,
-		strata = "MEDIUM",
+		strata = 'MEDIUM',
 	}
 }
 
