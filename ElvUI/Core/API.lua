@@ -1,4 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI)
+local TT = E:GetModule('Tooltip')
+local LC = E.Libs.Compat
 local LCS = E.Libs.LCS
 
 local _G = _G
@@ -8,17 +10,11 @@ local strmatch, strfind, strlen, strsub, tonumber, tostring = strmatch, strfind,
 local tinsert, tremove = table.insert, table.remove
 
 local CreateFrame = CreateFrame
-local CalendarGetDate = CalendarGetDate
 local GetBattlefieldArenaFaction = GetBattlefieldArenaFaction
 local GetExpansionLevel = GetExpansionLevel
-local GetInventorySlotInfo = GetInventorySlotInfo
-local GetItemQualityColor = GetItemQualityColor
-local GetInventoryItemTexture = GetInventoryItemTexture
-local GetInventoryItemLink = GetInventoryItemLink
 local GetInstanceInfo = GetInstanceInfo
 local GetNumPartyMembers = GetNumPartyMembers
 local GetNumRaidMembers = GetNumRaidMembers
-local GetTalentInfo = GetTalentInfo
 local HideUIPanel = HideUIPanel
 local InCombatLockdown = InCombatLockdown
 local GetActiveTalentGroup = GetActiveTalentGroup
@@ -38,6 +34,9 @@ local UnitIsUnit = UnitIsUnit
 
 local GetSpecialization = LCS.GetSpecialization
 local GetSpecializationInfo = LCS.GetSpecializationInfo
+local GetSpecializationInfoForClassID = LCS.GetSpecializationInfoForClassID
+
+local GetClassInfo = LC.GetClassInfo
 
 local MAX_TALENT_TABS = MAX_TALENT_TABS
 local NONE = NONE
@@ -167,23 +166,24 @@ do -- other non-english locales require this
 end
 
 do
-	function E:ScanTooltipTextures(clean, grabTextures)
-		local textures
+	function E:ScanTooltipTextures()
+		local tt = E.ScanTooltip
+
+		if not tt.gems then
+			tt.gems = {}
+		else
+			wipe(tt.gems)
+		end
+
 		for i = 1, 10 do
-			local tex = _G["ElvUI_ScanTooltipTexture"..i]
-			local texture = tex and tex:GetTexture()
+			local tex = _G['ElvUI_ScanTooltipTexture'..i]
+			local texture = tex and tex:IsShown() and tex:GetTexture()
 			if texture then
-				if grabTextures then
-					if not textures then textures = {} end
-					textures[i] = texture
-				end
-				if clean then
-					tex:SetTexture()
-				end
+				tt.gems[i] = texture
 			end
 		end
 
-		return textures
+		return tt.gems
 	end
 end
 
@@ -252,7 +252,7 @@ function E:GetTalentSpecInfo(isInspect)
 end
 
 function E:GetPlayerRole()
-	local role = UnitGroupRolesAssigned("player") or "NONE"
+	local role = UnitGroupRolesAssigned('player') or 'NONE'
 	return (role ~= 'NONE' and role) or E.myspecRole or 'NONE'
 end
 
@@ -276,11 +276,11 @@ do
 	local Masque = E.Libs.Masque
 	local MasqueGroupState = {}
 	local MasqueGroupToTableElement = {
-		["ActionBars"] = {"actionbar", "actionbars"},
-		["Pet Bar"] = {"actionbar", "petBar"},
-		["Stance Bar"] = {"actionbar", "stanceBar"},
-		["Buffs"] = {"auras", "buffs"},
-		["Debuffs"] = {"auras", "debuffs"},
+		['ActionBars'] = {'actionbar', 'actionbars'},
+		['Pet Bar'] = {'actionbar', 'petBar'},
+		['Stance Bar'] = {'actionbar', 'stanceBar'},
+		['Buffs'] = {'auras', 'buffs'},
+		['Debuffs'] = {'auras', 'debuffs'},
 	}
 
 	function E:MasqueCallback(Group, _, _, _, _, Disabled)
@@ -288,19 +288,19 @@ do
 		local element = MasqueGroupToTableElement[Group]
 		if element then
 			if Disabled then
-				if E.private[element[1]].masque[element[2]] and MasqueGroupState[Group] == "enabled" then
+				if E.private[element[1]].masque[element[2]] and MasqueGroupState[Group] == 'enabled' then
 					E.private[element[1]].masque[element[2]] = false
-					E:StaticPopup_Show("CONFIG_RL")
+					E:StaticPopup_Show('CONFIG_RL')
 				end
-				MasqueGroupState[Group] = "disabled"
+				MasqueGroupState[Group] = 'disabled'
 			else
-				MasqueGroupState[Group] = "enabled"
+				MasqueGroupState[Group] = 'enabled'
 			end
 		end
 	end
 
 	if Masque then
-		Masque:Register("ElvUI", E.MasqueCallback)
+		Masque:Register('ElvUI', E.MasqueCallback)
 	end
 end
 
@@ -311,9 +311,9 @@ do
 		local greatestDiff, lastModule, mod, usage, calls, diff = 0
 
 		for name, oldUsage in pairs(CPU_USAGE) do
-			newName, newFunc = strmatch(name, "^([^:]+):(.+)$")
+			newName, newFunc = strmatch(name, '^([^:]+):(.+)$')
 			if not newFunc then
-				E:Print("CPU_USAGE:", name, newFunc)
+				E:Print('CPU_USAGE:', name, newFunc)
 			else
 				if newName ~= lastModule then
 					mod = E:GetModule(newName, true) or E
@@ -322,7 +322,7 @@ do
 				usage, calls = GetFunctionCPUUsage(mod[newFunc], true)
 				diff = usage - oldUsage
 				if showall and (calls > minCalls) then
-					E:Print("Name("..name..") Calls("..calls..") Diff("..(diff > 0 and format("%.3f", diff) or 0)..")")
+					E:Print('Name('..name..') Calls('..calls..') Diff('..(diff > 0 and format('%.3f', diff) or 0)..')')
 				end
 				if (diff > greatestDiff) and calls > minCalls then
 					greatestName, greatestUsage, greatestCalls, greatestDiff = name, usage, calls, diff
@@ -331,33 +331,33 @@ do
 		end
 
 		if greatestName then
-			E:Print(greatestName.." had the CPU usage of: "..(greatestUsage > 0 and format("%.3f", greatestUsage) or 0).."ms. And has been called "..greatestCalls.." times.")
+			E:Print(greatestName..' had the CPU usage of: '..(greatestUsage > 0 and format('%.3f', greatestUsage) or 0)..'ms. And has been called '..greatestCalls..' times.')
 		else
-			E:Print("CPU Usage: No CPU Usage differences found.")
+			E:Print('CPU Usage: No CPU Usage differences found.')
 		end
 
 		wipe(CPU_USAGE)
 	end
 
 	function E:GetTopCPUFunc(msg)
-		if not GetCVarBool("scriptProfile") then
-			E:Print("For `/cpuusage` to work, you need to enable script profiling via: `/console scriptProfile 1` then reload. Disable after testing by setting it back to 0.")
+		if not GetCVarBool('scriptProfile') then
+			E:Print('For `/cpuusage` to work, you need to enable script profiling via: `/console scriptProfile 1` then reload. Disable after testing by setting it back to 0.')
 			return
 		end
 
-		local module, showall, delay, minCalls = strmatch(msg, "^(%S+)%s*(%S*)%s*(%S*)%s*(.*)$")
-		local checkCore, mod = (not module or module == "") and "E"
+		local module, showall, delay, minCalls = strmatch(msg, '^(%S+)%s*(%S*)%s*(%S*)%s*(.*)$')
+		local checkCore, mod = (not module or module == '') and 'E'
 
-		showall = (showall == "true" and true) or false
-		delay = (delay == "nil" and nil) or tonumber(delay) or 5
-		minCalls = (minCalls == "nil" and nil) or tonumber(minCalls) or 15
+		showall = (showall == 'true' and true) or false
+		delay = (delay == 'nil' and nil) or tonumber(delay) or 5
+		minCalls = (minCalls == 'nil' and nil) or tonumber(minCalls) or 15
 
 		wipe(CPU_USAGE)
-		if module == "all" then
+		if module == 'all' then
 			for moduName, modu in pairs(self.modules) do
 				for funcName, func in pairs(modu) do
-					if (funcName ~= "GetModule") and (type(func) == "function") then
-						CPU_USAGE[moduName..":"..funcName] = GetFunctionCPUUsage(func, true)
+					if (funcName ~= 'GetModule') and (type(func) == 'function') then
+						CPU_USAGE[moduName..':'..funcName] = GetFunctionCPUUsage(func, true)
 					end
 				end
 			end
@@ -365,27 +365,27 @@ do
 			if not checkCore then
 				mod = self:GetModule(module, true)
 				if not mod then
-					self:Print(module.." not found, falling back to checking core.")
-					mod, checkCore = self, "E"
+					self:Print(module..' not found, falling back to checking core.')
+					mod, checkCore = self, 'E'
 				end
 			else
 				mod = self
 			end
 			for name, func in pairs(mod) do
-				if (name ~= "GetModule") and type(func) == "function" then
-					CPU_USAGE[(checkCore or module)..":"..name] = GetFunctionCPUUsage(func, true)
+				if (name ~= 'GetModule') and type(func) == 'function' then
+					CPU_USAGE[(checkCore or module)..':'..name] = GetFunctionCPUUsage(func, true)
 				end
 			end
 		end
 
 		self:Delay(delay, CompareCPUDiff, showall, minCalls)
-		self:Print("Calculating CPU Usage differences (module: "..(checkCore or module)..", showall: "..tostring(showall)..", minCalls: "..tostring(minCalls)..", delay: "..tostring(delay)..")")
+		self:Print('Calculating CPU Usage differences (module: '..(checkCore or module)..', showall: '..tostring(showall)..', minCalls: '..tostring(minCalls)..', delay: '..tostring(delay)..')')
 	end
 end
 
 function E:RegisterObjectForVehicleLock(object, originalParent)
 	if not object or not originalParent then
-		E:Print("Error. Usage: RegisterObjectForVehicleLock(object, originalParent)")
+		E:Print('Error. Usage: RegisterObjectForVehicleLock(object, originalParent)')
 		return
 	end
 
@@ -393,12 +393,12 @@ function E:RegisterObjectForVehicleLock(object, originalParent)
 	--Entering/Exiting vehicles will often happen in combat.
 	--For this reason we cannot allow protected objects.
 	if object.IsProtected and object:IsProtected() then
-		E:Print("Error. Object is protected and cannot be changed in combat.")
+		E:Print('Error. Object is protected and cannot be changed in combat.')
 		return
 	end
 
 	--Check if we are already in a vehicles
-	if UnitHasVehicleUI("player") then
+	if UnitHasVehicleUI('player') then
 		object:SetParent(E.HiddenFrame)
 	end
 
@@ -408,7 +408,7 @@ end
 
 function E:UnregisterObjectForVehicleLock(object)
 	if not object then
-		E:Print("Error. Usage: UnregisterObjectForVehicleLock(object)")
+		E:Print('Error. Usage: UnregisterObjectForVehicleLock(object)')
 		return
 	end
 
@@ -427,7 +427,7 @@ function E:UnregisterObjectForVehicleLock(object)
 end
 
 function E:EnterVehicleHideFrames(_, unit)
-	if unit ~= "player" then return end
+	if unit ~= 'player' then return end
 
 	for object in pairs(E.VehicleLocks) do
 		object:SetParent(E.HiddenFrame)
@@ -435,7 +435,7 @@ function E:EnterVehicleHideFrames(_, unit)
 end
 
 function E:ExitVehicleShowFrames(_, unit)
-	if unit ~= "player" then return end
+	if unit ~= 'player' then return end
 
 	for object, originalParent in pairs(E.VehicleLocks) do
 		object:SetParent(originalParent)
@@ -462,12 +462,12 @@ function E:PLAYER_ENTERING_WORLD()
 
 	-- Blizzard will set this value to int(60/CVar cameraDistanceMax)+1 at logout if it is manually set higher than that
 	if E.db.general.lockCameraDistanceMax then
-		SetCVar("cameraDistanceMax", E.db.general.cameraDistanceMax)
+		SetCVar('cameraDistanceMax', E.db.general.cameraDistanceMax)
 	end
 
 	local _, instanceType = GetInstanceInfo()
-	if instanceType == "pvp" then
-		E.BGTimer = E:ScheduleRepeatingTimer("RequestBGInfo", 5)
+	if instanceType == 'pvp' then
+		E.BGTimer = E:ScheduleRepeatingTimer('RequestBGInfo', 5)
 		E:RequestBGInfo()
 	elseif E.BGTimer then
 		E:CancelTimer(E.BGTimer)
@@ -530,8 +530,8 @@ function E:XPIsLevelMax()
 end
 
 function E:GetGroupUnit(unit)
-	if UnitIsUnit(unit, "player") then return end
-	if strfind(unit, "party") or strfind(unit, "raid") then
+	if UnitIsUnit(unit, 'player') then return end
+	if strfind(unit, 'party') or strfind(unit, 'raid') then
 		return unit
 	end
 
@@ -539,7 +539,7 @@ function E:GetGroupUnit(unit)
 	if UnitInParty(unit) or UnitInRaid(unit) then
 		local isInRaid = (GetNumRaidMembers() > 1)
 		for i = 1, GetNumPartyMembers() do
-			local groupUnit = (isInRaid and "raid" or "party")..i
+			local groupUnit = (isInRaid and 'raid' or 'party')..i
 			if UnitIsUnit(unit, groupUnit) then
 				return groupUnit
 			end
@@ -551,9 +551,9 @@ function E:GetUnitBattlefieldFaction(unit)
 	local englishFaction, localizedFaction = UnitFactionGroup(unit)
 
 	-- this might be a rated BG or wargame and if so the player's faction might be altered
-	if unit == "player" then
+	if unit == 'player' then
 		englishFaction = PLAYER_FACTION_GROUP[GetBattlefieldArenaFaction()]
-		localizedFaction = (englishFaction == "Alliance" and FACTION_ALLIANCE) or FACTION_HORDE
+		localizedFaction = (englishFaction == 'Alliance' and FACTION_ALLIANCE) or FACTION_HORDE
 	end
 
 	return englishFaction, localizedFaction
@@ -563,14 +563,14 @@ function E:PositionGameMenuButton()
 	GameMenuFrame:Height(GameMenuFrame:GetHeight() + GameMenuButtonLogout:GetHeight() - 4)
 
 	local button = GameMenuFrame.ElvUI
-	button:SetFormattedText("%s%s|r", E.media.hexvaluecolor, "ElvUI")
+	button:SetFormattedText('%s%s|r', E.media.hexvaluecolor, 'ElvUI')
 
 	local _, relTo, _, _, offY = GameMenuButtonLogout:GetPoint()
 	if relTo ~= button then
 		button:ClearAllPoints()
-		button:Point("TOPLEFT", relTo, "BOTTOMLEFT", 0, -1)
+		button:Point('TOPLEFT', relTo, 'BOTTOMLEFT', 0, -1)
 		GameMenuButtonLogout:ClearAllPoints()
-		GameMenuButtonLogout:Point("TOPLEFT", button, "BOTTOMLEFT", 0, offY)
+		GameMenuButtonLogout:Point('TOPLEFT', button, 'BOTTOMLEFT', 0, offY)
 	end
 end
 
@@ -587,8 +587,8 @@ function E:ClickGameMenu()
 end
 
 function E:SetupGameMenu()
-	local button = CreateFrame("Button", nil, GameMenuFrame, "GameMenuButtonTemplate")
-	button:SetScript("OnClick", E.ClickGameMenu)
+	local button = CreateFrame('Button', nil, GameMenuFrame, 'GameMenuButtonTemplate')
+	button:SetScript('OnClick', E.ClickGameMenu)
 	GameMenuFrame.ElvUI = button
 
 	E.PositionGameMenuButton()
@@ -706,13 +706,64 @@ function E:GetClassCoords(classFile, crop, get)
 end
 
 function E:LoadAPI()
-	E:RegisterEvent("PLAYER_LEVEL_UP")
-	E:RegisterEvent("PLAYER_ENTERING_WORLD")
-	E:RegisterEvent("PLAYER_REGEN_ENABLED")
-	E:RegisterEvent("PLAYER_REGEN_DISABLED")
-	E:RegisterEvent("UI_SCALE_CHANGED", "PixelScaleChanged")
+	E:RegisterEvent('PLAYER_LEVEL_UP')
+	E:RegisterEvent('PLAYER_ENTERING_WORLD')
+	E:RegisterEvent('PLAYER_REGEN_ENABLED')
+	E:RegisterEvent('PLAYER_REGEN_DISABLED')
+	E:RegisterEvent('UI_SCALE_CHANGED', 'PixelScaleChanged')
 
 	E:SetupGameMenu()
+
+	do -- fill the spec info tables
+		local MALE = _G.LOCALIZED_CLASS_NAMES_MALE
+		local FEMALE = _G.LOCALIZED_CLASS_NAMES_FEMALE
+
+		local i = 1
+		local className, classFile, classID = GetClassInfo(i)
+		local male, female = MALE[classFile], FEMALE[classFile]
+		while classID do
+			for index, id in next, E.SpecByClass[classFile] do
+				local info = {
+					id = id,
+					index = index,
+					classFile = classFile,
+					className = className,
+					englishName = E.SpecName[id]
+				}
+
+				E.SpecInfoBySpecID[id] = info
+
+				for x = 3, 1, -1 do
+					local _, name, desc, icon, role = GetSpecializationInfoForClassID(id, x)
+					name = name or ''
+
+					if x == 1 then -- SpecInfoBySpecID
+						info.name = name
+						info.desc = desc
+						info.icon = icon
+						info.role = role
+
+						E.SpecInfoBySpecClass[name..' '..className] = info
+					else
+						local copy = E:CopyTable({}, info)
+						copy.name = name
+						copy.desc = desc
+						copy.icon = icon
+						copy.role = role
+
+						local localized = (x == 3 and female) or male
+						copy.className = localized
+
+						E.SpecInfoBySpecClass[name..' '..localized] = copy
+					end
+				end
+			end
+
+			i = i + 1
+			className, classFile, classID = GetClassInfo(i)
+			male, female = MALE[classFile], FEMALE[classFile]
+		end
+	end
 
 	E:CompatibleTooltip(E.ScanTooltip)
 	E:CompatibleTooltip(E.ConfigTooltip)
@@ -723,15 +774,15 @@ function E:LoadAPI()
 	E.ScanTooltip.GetHyperlinkInfo = E.ScanTooltip_HyperlinkInfo
 	E.ScanTooltip.GetInventoryInfo = E.ScanTooltip_InventoryInfo
 
-	E:RegisterEvent("SPELL_UPDATE_USABLE", "CheckRole")
-	E:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED", "CheckRole")
-	E:RegisterEvent("PLAYER_TALENT_UPDATE", "CheckRole")
-	E:RegisterEvent("CHARACTER_POINTS_CHANGED", "CheckRole")
-	E:RegisterEvent("UNIT_INVENTORY_CHANGED", "CheckRole")
-	E:RegisterEvent("UPDATE_BONUS_ACTIONBAR", "CheckRole")
+	E:RegisterEvent('SPELL_UPDATE_USABLE', 'CheckRole')
+	E:RegisterEvent('ACTIVE_TALENT_GROUP_CHANGED', 'CheckRole')
+	E:RegisterEvent('PLAYER_TALENT_UPDATE', 'CheckRole')
+	E:RegisterEvent('CHARACTER_POINTS_CHANGED', 'CheckRole')
+	E:RegisterEvent('UNIT_INVENTORY_CHANGED', 'CheckRole')
+	E:RegisterEvent('UPDATE_BONUS_ACTIONBAR', 'CheckRole')
 
-	E:RegisterEvent("UNIT_ENTERED_VEHICLE", "EnterVehicleHideFrames")
-	E:RegisterEvent("UNIT_EXITED_VEHICLE", "ExitVehicleShowFrames")
+	E:RegisterEvent('UNIT_ENTERED_VEHICLE', 'EnterVehicleHideFrames')
+	E:RegisterEvent('UNIT_EXITED_VEHICLE', 'ExitVehicleShowFrames')
 
 	do -- setup cropIcon texCoords
 		local opt = E.db.general.cropIcon

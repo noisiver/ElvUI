@@ -3,20 +3,24 @@ local LC = E.Libs.Compat
 
 local _G = _G
 local pi = math.pi
+local utf8sub = string.utf8sub
+local tonumber, format = tonumber, format
 local tinsert, strmatch = tinsert, strmatch
-local select, tonumber, format = select, tonumber, format
-local next, max, wipe = next, max, wipe
+local next, max, wipe, gsub = next, max, wipe, gsub
 
-local UnitIsUnit = UnitIsUnit
 local GetCVarBool = GetCVarBool
 local GetItemInfo = GetItemInfo
 local GetInventoryItemLink = GetInventoryItemLink
 local GetInventoryItemTexture = GetInventoryItemTexture
+local UnitIsUnit = UnitIsUnit
+
 local GetInspectSpecialization = LC.GetInspectSpecialization
 local GetAverageItemLevel = LC.GetAverageItemLevel
+
 local RETRIEVING_ITEM_INFO = RETRIEVING_ITEM_INFO
 
-local MATCH_ITEM_LEVEL = ITEM_LEVEL:gsub("%%d", "(%%d+)")
+local MATCH_ITEM_LEVEL = ITEM_LEVEL:gsub('%%d', '(%%d+)')
+local MATCH_SOCKET = ITEM_SOCKET_BONUS:gsub('%%s', '(.+)')
 local X2_INVTYPES, X2_EXCEPTIONS, ARMOR_SLOTS = {
 	INVTYPE_2HWEAPON = true,
 	INVTYPE_RANGEDRIGHT = true,
@@ -25,58 +29,73 @@ local X2_INVTYPES, X2_EXCEPTIONS, ARMOR_SLOTS = {
 	[2] = 19, -- wands, use INVTYPE_RANGEDRIGHT, but are 1H
 }, {1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 
-function E:InspectGearSlot(_, lineText, slotInfo)
+function E:InspectGearSlot(line, lineText, slotInfo)
+	local socket = strmatch(lineText, MATCH_SOCKET)
+	if socket then
+		local color1, color2 = strmatch(socket, '(|cn.-:).-(|r)')
+		local text = gsub(gsub(socket, '%s?|A.-|a', ''), '|cn.-:(.-)|r', '%1')
+		slotInfo.socketText = format('%s%s%s', color1 or '', text, color2 or '')
+		slotInfo.socketTextShort = format('%s%s%s', color1 or '', utf8sub(text, 1, 18), color2 or '')
+		slotInfo.socketTextReal = socket -- unchanged, contains Atlas and color
+
+		local r, g, b = line:GetTextColor()
+		slotInfo.socketColors[1] = r
+		slotInfo.socketColors[2] = g
+		slotInfo.socketColors[3] = b
+	end
+
 	local itemLevel = lineText and strmatch(lineText, MATCH_ITEM_LEVEL)
 	if itemLevel then
 		slotInfo.iLvl = tonumber(itemLevel)
 
-		local tr, tg, tb = ElvUI_ScanTooltipTextLeft1:GetTextColor()
-		slotInfo.itemLevelColors[1] = tr
-		slotInfo.itemLevelColors[2] = tg
-		slotInfo.itemLevelColors[3] = tb
+		local r, g, b = _G.ElvUI_ScanTooltipTextLeft1:GetTextColor()
+		slotInfo.itemLevelColors[1] = r
+		slotInfo.itemLevelColors[2] = g
+		slotInfo.itemLevelColors[3] = b
 	end
 end
 
 function E:GetGearSlotInfo(unit, slot, deepScan)
 	local tt = E.ScanTooltip
-	tt:SetOwner(UIParent, "ANCHOR_NONE")
-	tt:SetInventoryItem(unit, slot)
+	tt:SetOwner(UIParent, 'ANCHOR_NONE')
+	local hasItem = tt:SetInventoryItem(unit, slot)
 	tt:Show()
 
+	local info = hasItem and tt:GetTooltipData()
 	if not tt.slotInfo then tt.slotInfo = {} else wipe(tt.slotInfo) end
 	local slotInfo = tt.slotInfo
 
 	if deepScan then
-		slotInfo.gems, slotInfo.essences = E:ScanTooltipTextures()
+		slotInfo.gems = E:ScanTooltipTextures()
 
-		if not tt.enchantColors then tt.enchantColors = {} else wipe(tt.enchantColors) end
+		if not tt.socketColors then tt.socketColors = {} else wipe(tt.socketColors) end
 		if not tt.itemLevelColors then tt.itemLevelColors = {} else wipe(tt.itemLevelColors) end
-		slotInfo.enchantColors = tt.enchantColors
+		slotInfo.socketColors = tt.socketColors
 		slotInfo.itemLevelColors = tt.itemLevelColors
 
-		for x = 1, tt:NumLines() do
-			local line = _G["ElvUI_ScanTooltipTextLeft"..x]
-			if line then
-				local lineText = line:GetText()
-				if x == 1 and lineText == RETRIEVING_ITEM_INFO then
-					return "tooSoon"
+		if info then
+			for i, line in next, info.lines do
+				local text = line and line.leftText
+				if i == 1 and text == RETRIEVING_ITEM_INFO then
+					return 'tooSoon'
 				else
-					E:InspectGearSlot(line, lineText, slotInfo)
+					E:InspectGearSlot(_G['ElvUI_ScanTooltipTextLeft'..i], text, slotInfo)
 				end
 			end
 		end
-	else
-		local firstLine = ElvUI_ScanTooltipTextLeft1:GetText()
-		if firstLine == RETRIEVING_ITEM_INFO then
-			return "tooSoon"
+	elseif info then
+		local firstLine = info.lines[1]
+		local firstText = firstLine and firstLine.leftText
+		if firstText == RETRIEVING_ITEM_INFO then
+			return 'tooSoon'
 		end
 
-		local colorblind = GetCVarBool("colorblindmode") and 4 or 3
+		local colorblind = GetCVarBool('colorblindmode') and 4 or 3
 		for x = 2, colorblind do
-			local line = _G["ElvUI_ScanTooltipTextLeft"..x]
+			local line = info.lines[x]
 			if line then
-				local lineText = line:GetText()
-				local itemLevel = lineText and strmatch(lineText, MATCH_ITEM_LEVEL)
+				local text = line.leftText
+				local itemLevel = strmatch(text, MATCH_ITEM_LEVEL)
 				if itemLevel then
 					slotInfo.iLvl = tonumber(itemLevel)
 				end
@@ -165,7 +184,7 @@ end
 do
 	local iLevelDB, tryAgain = {}, {}
 	function E:GetUnitItemLevel(unit)
-		if UnitIsUnit(unit, "player") then
+		if UnitIsUnit(unit, 'player') then
 			return E:GetPlayerItemLevel()
 		end
 
@@ -175,7 +194,7 @@ do
 		for i = 1, 17 do
 			if i ~= 4 then
 				local slotInfo = E:GetGearSlotInfo(unit, i)
-				if slotInfo == "tooSoon" then
+				if slotInfo == 'tooSoon' then
 					tinsert(tryAgain, i)
 				else
 					iLevelDB[i] = slotInfo.iLvl
@@ -184,7 +203,7 @@ do
 		end
 
 		if next(tryAgain) then
-			return "tooSoon", unit, tryAgain, iLevelDB
+			return 'tooSoon', unit, tryAgain, iLevelDB
 		end
 
 		return E:CalculateAverageItemLevel(iLevelDB, unit)
