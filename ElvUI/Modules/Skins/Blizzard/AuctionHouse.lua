@@ -384,7 +384,7 @@ S:AddCallbackForAddon("Blizzard_AuctionUI", "Skin_Blizzard_AuctionUI", function(
 
 			local _, _, _, quality = GetAuctionSellItemInfo()
 
-			if quality then
+			if quality and quality > 1 then
 				self:SetBackdropBorderColor(GetItemQualityColor(quality))
 			else
 				self:SetBackdropBorderColor(unpack(E.media.bordercolor))

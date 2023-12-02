@@ -85,10 +85,10 @@ S:AddCallbackForAddon("Blizzard_InspectUI", "Skin_Blizzard_InspectUI", function(
 				if itemID then
 					local _, _, quality = GetItemInfo(itemID)
 
-					if not quality then
+					if not quality and quality > 1 then
 						E:Delay(0.1, awaitCache, button)
 						return
-					elseif quality then
+					elseif quality and quality > 1 then
 						button.backdrop:SetBackdropBorderColor(GetItemQualityColor(quality))
 						return
 					end

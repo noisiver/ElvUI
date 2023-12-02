@@ -252,7 +252,7 @@ function M:LOOT_OPENED(_, autoloot)
 
 			max_width = max(max_width, slot.name:GetStringWidth())
 
-			if quality then
+			if quality and quality > 1 then
 				max_quality = max(max_quality, quality)
 			end
 

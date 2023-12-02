@@ -99,7 +99,7 @@ S:AddCallback("Skin_Trade", function()
 
 			tradeItemName:SetTextColor(GetItemQualityColor(quality))
 
-			if quality then
+			if quality and quality > 1 then
 				tradeItemButton:SetBackdropBorderColor(GetItemQualityColor(quality))
 			else
 				tradeItemButton:SetBackdropBorderColor(unpack(E.media.bordercolor))
@@ -119,7 +119,7 @@ S:AddCallback("Skin_Trade", function()
 
 			tradeItemName:SetTextColor(GetItemQualityColor(quality))
 
-			if quality then
+			if quality and quality > 1 then
 				tradeItemButton:SetBackdropBorderColor(GetItemQualityColor(quality))
 			else
 				tradeItemButton:SetBackdropBorderColor(unpack(E.media.bordercolor))

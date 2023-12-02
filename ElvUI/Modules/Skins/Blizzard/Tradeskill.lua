@@ -191,7 +191,7 @@ S:AddCallbackForAddon("Blizzard_TradeSkillUI", "Skin_Blizzard_TradeSkillUI", fun
 		if skillLink then
 			local quality = select(3, GetItemInfo(skillLink))
 
-			if quality then
+			if quality and quality > 1 then
 				r, g, b = GetItemQualityColor(quality)
 
 				TradeSkillSkillIcon:SetBackdropBorderColor(r, g, b)
@@ -211,7 +211,7 @@ S:AddCallbackForAddon("Blizzard_TradeSkillUI", "Skin_Blizzard_TradeSkillUI", fun
 				local icon = _G["TradeSkillReagent"..i.."IconTexture"]
 				local quality = select(3, GetItemInfo(reagentLink))
 
-				if quality then
+				if quality and quality > 1 then
 					local name = _G["TradeSkillReagent"..i.."Name"]
 					r, g, b = GetItemQualityColor(quality)
 

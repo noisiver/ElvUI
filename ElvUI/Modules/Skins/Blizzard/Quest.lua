@@ -265,7 +265,7 @@ S:AddCallback("Skin_Quest", function()
 	local function questQualityColors(frame, text, link)
 		local quality = link and select(3, GetItemInfo(link))
 
-		if quality then
+		if quality and quality > 1 then
 			local r, g, b = GetItemQualityColor(quality)
 
 			frame:SetBackdropBorderColor(r, g, b)

@@ -168,7 +168,7 @@ S:AddCallback("Skin_Merchant", function()
 				if button.link then
 					_, _, quality = GetItemInfo(button.link)
 
-					if quality then
+					if quality and quality > 1 then
 						local r, g, b = GetItemQualityColor(quality)
 						button:SetBackdropBorderColor(r, g, b)
 						name:SetTextColor(r, g, b)
@@ -186,7 +186,7 @@ S:AddCallback("Skin_Merchant", function()
 			if itemName then
 				_, _, quality = GetItemInfo(itemName)
 
-				if quality then
+				if quality and quality > 1 then
 					local r, g, b = GetItemQualityColor(quality)
 					MerchantBuyBackItemItemButton:SetBackdropBorderColor(r, g, b)
 					MerchantBuyBackItemName:SetTextColor(r, g, b)
@@ -218,7 +218,7 @@ S:AddCallback("Skin_Merchant", function()
 					name = _G["MerchantItem"..i.."Name"]
 					_, _, quality = GetItemInfo(itemName)
 
-					if quality then
+					if quality and quality > 1 then
 						local r, g, b = GetItemQualityColor(quality)
 						button:SetBackdropBorderColor(r, g, b)
 						name:SetTextColor(r, g, b)

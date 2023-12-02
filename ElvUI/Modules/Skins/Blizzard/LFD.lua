@@ -132,7 +132,7 @@ S:AddCallback("Skin_LFD", function()
 			local link = getLFGDungeonRewardLinkFix(dungeonID, i)
 			if link then
 				local _, _, quality = GetItemInfo(link)
-				if quality then
+				if quality and quality > 1 then
 					local r, g, b = GetItemQualityColor(quality)
 					frame.backdrop:SetBackdropBorderColor(r, g, b)
 					name:SetTextColor(r, g, b)

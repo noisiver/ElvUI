@@ -141,7 +141,7 @@ S:AddCallback("Skin_Bags", function()
 				elseif questId or isQuestItem then
 					item:SetBackdropBorderColor(unpack(B.QuestColors.questItem))
 					item.ignoreBorderColors = true
-				elseif quality then
+				elseif quality and quality > 1 then
 					item:SetBackdropBorderColor(GetItemQualityColor(quality))
 					item.ignoreBorderColors = true
 				else
@@ -231,7 +231,7 @@ S:AddCallback("Skin_Bags", function()
 			if link then
 				local quality = select(3, GetItemInfo(link))
 
-				if quality then
+				if quality and quality > 1 then
 					button:SetBackdropBorderColor(GetItemQualityColor(quality))
 					button.ignoreBorderColors = true
 				else
@@ -266,7 +266,7 @@ S:AddCallback("Skin_Bags", function()
 				else
 					local quality = select(3, GetItemInfo(link))
 
-					if quality then
+					if quality and quality > 1 then
 						button:SetBackdropBorderColor(GetItemQualityColor(quality))
 						button.ignoreBorderColors = true
 					else

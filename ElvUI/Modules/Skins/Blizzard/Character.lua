@@ -191,7 +191,7 @@ S:AddCallback("Skin_Character", function()
 		if exist then
 			local quality = GetInventoryItemQuality("player", slotID)
 
-			if quality then
+			if quality and quality > 1 then
 				self:SetBackdropBorderColor(GetItemQualityColor(quality))
 			else
 				self:SetBackdropBorderColor(unpack(E.media.bordercolor))

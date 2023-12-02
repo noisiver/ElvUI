@@ -84,7 +84,7 @@ S:AddCallback("Skin_Mail", function()
 					if itemLink then
 						local quality = select(3, GetItemInfo(itemLink))
 
-						if quality then
+						if quality and quality > 1 then
 							button.backdrop:SetBackdropBorderColor(GetItemQualityColor(quality))
 						else
 							button.backdrop:SetBackdropBorderColor(unpack(E.media.bordercolor))
@@ -143,7 +143,7 @@ S:AddCallback("Skin_Mail", function()
 				local icon = button:GetNormalTexture()
 				local quality = select(3, GetItemInfo(name))
 
-				if quality then
+				if quality and quality > 1 then
 					button:SetBackdropBorderColor(GetItemQualityColor(quality))
 				else
 					button:SetBackdropBorderColor(unpack(E.media.bordercolor))
@@ -235,7 +235,7 @@ S:AddCallback("Skin_Mail", function()
 			if itemLink then
 				local quality = select(3, GetItemInfo(itemLink))
 
-				if quality then
+				if quality and quality > 1 then
 					button:SetBackdropBorderColor(GetItemQualityColor(quality))
 				else
 					button:SetBackdropBorderColor(unpack(E.media.bordercolor))

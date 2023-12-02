@@ -127,7 +127,7 @@ S:AddCallback("Skin_Loot", function()
 						return
 					elseif questId or isQuestItem then
 						button.backdrop:SetBackdropBorderColor(1.0, 0.3, 0.3)
-					elseif quality then
+					elseif quality and quality > 1 then
 						button.backdrop:SetBackdropBorderColor(GetItemQualityColor(quality))
 					else
 						button.backdrop:SetBackdropBorderColor(unpack(E.media.bordercolor))
