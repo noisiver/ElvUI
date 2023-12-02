@@ -39,7 +39,7 @@ function BL:GuildBank_ItemLevel(button)
             r, g, b = GetItemQualityColor(rarity)
         end
 
-        if rarity and rarity > 1 and db.itemQuality then
+        if rarity and rarity > 1 and db.itemquality and quality > 1 then
             button:SetBackdropBorderColor(GetItemQualityColor(rarity))
         else
             button:SetBackdropBorderColor(unpack(E.media.bordercolor))
