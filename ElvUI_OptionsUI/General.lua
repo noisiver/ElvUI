@@ -113,10 +113,6 @@ Fonts.nameplates.args.spacer1 = ACH:Spacer(10, 'full')
 Fonts.nameplates.args.nameplateFont = ACH:SharedMediaFont(L["Normal Font"], L["Replaces the font on Blizzard Nameplates."], 11)
 Fonts.nameplates.args.nameplateFontSize = ACH:Range(L["Normal Size"], nil, 12, C.Values.FontSize)
 Fonts.nameplates.args.nameplateFontOutline = ACH:FontFlags(L["Normal Outline"], nil, 13)
-Fonts.nameplates.args.spacer2 = ACH:Spacer(20, 'full')
-Fonts.nameplates.args.nameplateLargeFont = ACH:SharedMediaFont(L["Larger Font"], L["Replaces the font on Blizzard Nameplates."], 21)
-Fonts.nameplates.args.nameplateLargeFontSize = ACH:Range(L["Larger Size"], nil, 22, C.Values.FontSize)
-Fonts.nameplates.args.nameplateLargeFontOutline = ACH:FontFlags(L["Larger Outline"], nil, 23)
 
 do
 	local map = {

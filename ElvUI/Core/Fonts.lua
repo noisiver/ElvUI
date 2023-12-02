@@ -101,14 +101,15 @@ function E:UpdateBlizzardFonts()
 	local NORMAL		= E.media.normFont
 	local NUMBER		= E.media.normFont
 
-	-- set an invisible font for xp, honor kill, etc
-	local COMBAT		= (E.eyefinity or E.ultrawide) and E.Media.Fonts.Invisible or LSM:Fetch("font", db.dmgfont)
-
 	if db.replaceNameFont then _G.UNIT_NAME_FONT = NAMEFONT end
 	if db.replaceCombatFont then _G.DAMAGE_TEXT_FONT = COMBAT end
-	if db.replaceNameplateFont then _G.NAMEPLATE_FONT = NAMEFONT end
 	if db.replaceCombatText then -- Blizzard_CombatText
-		E:SetFont(_G.CombatTextFont, COMBAT, 120, nil, nil, nil, nil, nil, 1, -1)
+		E:SetFont(_G.CombatTextFont, COMBAT, 120, 'SHADOW')
+	end
+
+	if db.replaceNameplateFont then
+		local PLATEFONT = LSM:Fetch('font', db.nameplateFont)
+		_G.NAMEPLATE_FONT = PLATEFONT
 	end
 
 	-- advanced fonts
@@ -164,6 +165,7 @@ function E:UpdateBlizzardFonts()
 		E:SetFont(_G.ReputationDetailFont,					NORMAL, (blizz and 10) or unscale or small, 'SHADOW')		-- Rep Desc when clicking a rep
 		E:SetFont(_G.SpellFont_Small,						NORMAL, (blizz and 10) or unscale or small)
 		E:SetFont(_G.SubSpellFont,							NORMAL, (blizz and 10) or unscale or small)					-- Spellbook Sub Names
+		E:SetFont(_G.SystemFont_InverseShadow_Small, 		NORMAL, (blizz and 10) or unscale or small, 'SHADOW')
 		E:SetFont(_G.SystemFont_Shadow_Small,				NORMAL, (blizz and 10) or unscale or small, 'SHADOW')
 		E:SetFont(_G.SystemFont_Small,						NORMAL, (blizz and 10) or unscale or small)
 		E:SetFont(_G.Tooltip_Small,							NORMAL, (blizz and 10) or unscale or small)
@@ -202,6 +204,7 @@ function E:UpdateBlizzardFonts()
 		E:SetFont(_G.SystemFont_Shadow_Huge3,				NORMAL, (blizz and 25) or unscale or mega, 'SHADOW')		-- FlightMap
 		E:SetFont(_G.ZoneTextString,						NORMAL, (blizz and 25) or unscale or mega, outline)
 		E:SetFont(_G.SubZoneTextFont,						NORMAL, (blizz and 26) or unscale or mega, outline)			-- WorldMap, SubZone
+		E:SetFont(_G.SystemFont_OutlineThick_Huge4,			NORMAL, (blizz and 26) or unscale or mega, thick)
 		E:SetFont(_G.SystemFont_OutlineThick_WTF,			NORMAL, (blizz and 32) or unscale or enormous, outline)		-- WorldMap
 	end
 end
