@@ -44,7 +44,7 @@ S:AddCallbackForAddon("Blizzard_DebugTools", "Skin_Blizzard_DebugTools", functio
 
 	-- Tooltips
 	if E.private.skins.blizzard.tooltip then
-		TT:SetStyle(_G.FrameStackTooltip)
+		TT:SecureHookScript(_G.FrameStackTooltip, "OnShow", "SetStyle")
 		TT:SecureHookScript(_G.EventTraceTooltip, "OnShow", "SetStyle")
 	end
 
