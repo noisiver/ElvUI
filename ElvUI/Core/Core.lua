@@ -1313,7 +1313,6 @@ function E:UpdateActionBars(skipCallback)
 	ActionBars:UpdateButtonSettings()
 	ActionBars:UpdateMicroButtons()
 	ActionBars:UpdatePetCooldownSettings()
-	ActionBars:ToggleDesaturation()
 
 	if E.myclass == "SHAMAN" then
 		ActionBars:UpdateTotemBindings()

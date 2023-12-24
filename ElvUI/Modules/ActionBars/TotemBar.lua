@@ -50,11 +50,25 @@ function AB:MultiCastActionButton_Update(button)
 	else
 		button:ClearAllPoints()
 		button:SetAllPoints(button.slotButton)
+
+		if button and not button.useMasque then
+			AB:TrimIcon(button)
+		end
 	end
+end
+
+function AB:MultiCastSummonSpellButton_Update(summonButton)
+	local buttonSpacing = AB.db.totemBar.spacing
+
+	-- reposition the first slot to the summon button
+	local slot1 = _G.MultiCastSlotButton1
+	slot1:ClearAllPoints()
+	slot1:Point('LEFT', summonButton, 'RIGHT', buttonSpacing, 0)
 end
 
 function AB:StyleTotemSlotButton(button, slot)
 	if button.useMasque then return end
+
 	local color = SLOT_BORDER_COLORS[slot]
 	if color then
 		button:SetBackdropBorderColor(color.r, color.g, color.b)
@@ -75,7 +89,7 @@ function AB:SkinMultiCastButton(button, noBackdrop, useMasque)
 	button.db = AB.db.totemBar
 
 	if normal then normal:SetTexture(nil); normal:Hide(); normal:SetAlpha(0) end
-	if button.overlay then button.overlay:SetTexture(nil); button.overlay:Hide() end
+	if button.overlay then button.overlay:SetTexture(nil); button.overlay:Hide(); button.overlay:SetAlpha(0) end
 	if highlight then highlight:SetTexture(nil) end
 
 	if not button.noBackdrop and not button.useMasque then
@@ -86,13 +100,13 @@ function AB:SkinMultiCastButton(button, noBackdrop, useMasque)
 		button:StyleButton()
 		icon:SetDrawLayer('ARTWORK')
 		icon:SetInside(button)
+
+		AB:TrimIcon(button)
 	else
 		button:StyleButton(true, true, true)
 	end
 
 	if button.cooldown then
-		AB:ColorSwipeTexture(button.cooldown)
-
 		E:RegisterCooldown(button.cooldown, 'actionbar')
 	end
 
@@ -169,14 +183,6 @@ function AB:MultiCastFlyoutFrame_ToggleFlyout(frame, which, parent)
 	frame:Height(totalHeight + closeButton:GetHeight())
 end
 
-function AB:FadeTotemBlings(totemBar, alpha)
-	if AB.db.hideCooldownBling then return end
-
-	for button in next, totemBar.buttons do
-		AB:FadeBlingTexture(button.cooldown, alpha)
-	end
-end
-
 function AB:TotemButton_OnEnter()
 	-- totem keybind support from actionbar module
 	if E.private.actionbar.enable then
@@ -194,14 +200,12 @@ function AB:TotemBar_OnEnter()
 	if bar.mouseover then
 		local alpha = AB.db.totemBar.alpha
 		E:UIFrameFadeIn(bar, 0.2, bar:GetAlpha(), alpha)
-		AB:FadeTotemBlings(bar, alpha)
 	end
 end
 
 function AB:TotemBar_OnLeave()
 	if bar.mouseover then
 		E:UIFrameFadeOut(bar, 0.2, bar:GetAlpha(), 0)
-		AB:FadeTotemBlings(bar, 0)
 	end
 end
 
@@ -257,11 +261,6 @@ function AB:PositionAndSizeTotemBar()
 		actionButton:SetSize(button:GetSize()) -- these need to match for icon trim setting
 		AB:TrimIcon(actionButton, useMasque)
 
-		if actionButton.cooldown then
-			-- actionButton.cooldown:SetDrawBling(not AB.db.hideCooldownBling)
-			AB:FadeBlingTexture(actionButton.cooldown, fadeAlpha)
-		end
-
 		if i == 1 then
 			button:Point('LEFT', summonButton, 'RIGHT', buttonSpacing, 0)
 		else
@@ -272,16 +271,6 @@ function AB:PositionAndSizeTotemBar()
 	local recallButton = _G.MultiCastRecallSpellButton
 	recallButton:Size(buttonWidth, buttonHeight)
 	AB:MultiCastRecallSpellButton_Update()
-
-	if summonButton.cooldown then
-		-- summonButton.cooldown:SetDrawBling(not AB.db.hideCooldownBling)
-		AB:FadeBlingTexture(summonButton.cooldown, fadeAlpha)
-	end
-
-	if recallButton.cooldown then
-		-- recallButton.cooldown:SetDrawBling(not AB.db.hideCooldownBling)
-		AB:FadeBlingTexture(recallButton.cooldown, fadeAlpha)
-	end
 
 	AB:TrimIcon(summonButton, useMasque)
 	AB:TrimIcon(recallButton, useMasque)
@@ -304,8 +293,9 @@ function AB:UpdateTotemBindings()
 
 	for i = 1, 12 do
 		local button = _G['MultiCastActionButton'..i]
-		button.HotKey:FontTemplate(font, size, outline)
-		button.HotKey:SetTextColor(1, 1, 1)
+		local hotkey = _G['MultiCastActionButton'..i..'HotKey']
+		hotkey:FontTemplate(font, size, outline)
+		hotkey:SetTextColor(1, 1, 1)
 		AB:FixKeybindText(button)
 	end
 end
@@ -342,6 +332,7 @@ function AB:MultiCastFlyoutFrameStyle(button, rotate)
 
 	if rotate then
 		button.normalTexture:SetRotation(3.14)
+		button.normalTexture:SetSize(22, 22)
 	end
 
 	bar.buttons[button] = true
@@ -363,7 +354,7 @@ function AB:CreateTotemBar()
 	AB:MultiCastFlyoutFrameStyle(_G.MultiCastFlyoutFrameCloseButton, true)
 	AB:MultiCastFlyoutFrameStyle(_G.MultiCastFlyoutFrameOpenButton)
 
-	for i = 1, 4 do
+	for i = 1, MAX_TOTEMS do
 		local button = _G['MultiCastSlotButton'..i]
 		button.icon = button.background
 		AB:SkinMultiCastButton(button, nil, MasqueGroup and E.private.actionbar.masque.actionbars)
@@ -373,7 +364,7 @@ function AB:CreateTotemBar()
 	for i = 1, 12 do
 		local name = 'MultiCastActionButton'..i
 		local button = _G[name]
-		button.HotKey = _G[name.."HotKey"]
+		local hotkey = _G[name.."HotKey"]
 		button.cooldown = _G[name.."Cooldown"]
 
 		if isShaman then
@@ -383,7 +374,7 @@ function AB:CreateTotemBar()
 
 		AB:SkinMultiCastButton(button, true, MasqueGroup and E.private.actionbar.masque.actionbars)
 
-		button.HotKey.SetVertexColor = E.noop
+		hotkey.SetVertexColor = E.noop
 		button.commandName = button.buttonType .. button.buttonIndex -- hotkey support
 	end
 
@@ -414,6 +405,7 @@ function AB:CreateTotemBar()
 
 	AB:RawHook('MultiCastRecallSpellButton_Update', 'MultiCastRecallSpellButton_Update', true)
 
+	AB:SecureHook('MultiCastSummonSpellButton_Update')
 	AB:SecureHook('MultiCastFlyoutFrameOpenButton_Show')
 	AB:SecureHook('MultiCastActionButton_Update')
 	AB:SecureHook('MultiCastFlyoutFrame_ToggleFlyout')

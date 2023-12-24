@@ -37,8 +37,15 @@ function AB:UpdatePet(event, unit)
 		local icon = _G[buttonName.."Icon"]
 		local autoCast = _G[buttonName.."AutoCastable"]
 		local shine = _G[buttonName.."Shine"]
+		local hotKey = _G[buttonName.."HotKey"]
+
+		-- this one is different
+		if autoCast then
+			autoCast:SetAlpha(0)
+		end
 
 		button.icon = icon
+		button.HotKey = hotKey
 		button.AutoCastable = autoCast
 		button.AutoCastShine = shine
 
@@ -88,15 +95,22 @@ function AB:UpdatePet(event, unit)
 			AutoCastShine_AutoCastStop(shine)
 		end
 
-		if not PetHasActionBar() and texture and name ~= "PET_ACTION_FOLLOW" then
+		if not PetHasActionBar() and texture and name ~= 'PET_ACTION_FOLLOW' then
 			if PetActionButton_StopFlash then
 				PetActionButton_StopFlash(button)
 			else
 				button:StopFlash()
 			end
 
-			SetDesaturation(icon, 1)
+			button.icon:SetVertexColor(0.4, 0.4, 0.4)
+			SetDesaturation(button.icon, true)
 			button:SetChecked(false)
+		elseif GetPetActionSlotUsable(i) then
+			button.icon:SetVertexColor(1, 1, 1)
+			SetDesaturation(button.icon, false)
+		else
+			button.icon:SetVertexColor(0.4, 0.4, 0.4)
+			SetDesaturation(button.icon, true)
 		end
 	end
 end
@@ -126,7 +140,7 @@ function AB:PositionAndSizeBarPet()
 		bar:SetAlpha(db.alpha)
 		E:EnableMover(bar.mover.name)
 	else
-		bar:SetScale(0.0001)
+		bar:SetScale(0.00001)
 		bar:SetAlpha(0)
 		E:DisableMover(bar.mover.name)
 	end
@@ -134,7 +148,6 @@ function AB:PositionAndSizeBarPet()
 	bar:SetParent(db.inheritGlobalFade and AB.fadeParent or E.UIParent)
 	bar:EnableMouse(not db.clickThrough)
 	bar:SetAlpha(bar.mouseover and 0 or db.alpha)
-	AB:FadeBarBlings(bar, bar.mouseover and 0 or db.alpha)
 
 	bar.backdrop:SetShown(db.backdrop)
 	bar.backdrop:ClearAllPoints()
@@ -142,7 +155,7 @@ function AB:PositionAndSizeBarPet()
 	AB:MoverMagic(bar)
 
 	local anchorRowButton, lastShownButton
-	local horizontal, anchorUp, anchorLeft = AB:GetGrowth(point)
+	local _, horizontal, anchorUp, anchorLeft = AB:GetGrowth(point)
 	local useMasque = MasqueGroup and E.private.actionbar.masque.petBar
 
 	for i, button in ipairs(bar.buttons) do
@@ -179,18 +192,14 @@ function AB:PositionAndSizeBarPet()
 	RegisterStateDriver(bar, "show", visibility)
 
 	if useMasque then
-		MasqueGroup:ReSkin()
-
-		for _, button in ipairs(bar.buttons) do
-			AB:TrimIcon(button, true)
-		end
+		AB:UpdateMasque(bar)
 	end
 end
 
 function AB:UpdatePetCooldownSettings()
 	for _, button in ipairs(bar.buttons) do
 		if button.cooldown then
-			button.cooldown:SetDrawBling(not AB.db.hideCooldownBling)
+			E:RegisterCooldown(button.cooldown)
 		end
 	end
 end
