@@ -9,6 +9,8 @@ local GetTime = GetTime
 local CreateFrame = CreateFrame
 local hooksecurefunc = hooksecurefunc
 
+local IsAddOnLoaded = IsAddOnLoaded
+
 local ICON_SIZE = 36 --the normal size for an icon (don't change this)
 local FONT_SIZE = 20 --the base font size to use at a scale of 1
 local MIN_SCALE = 0.5 --the minimum scale we want to show cooldown counts at, anything below this will be hidden
@@ -462,5 +464,9 @@ function E:UpdateCooldownSettings(module)
 		E:UpdateCooldownSettings("actionbar")
 		E:UpdateCooldownSettings("unitframe")
 		E:UpdateCooldownSettings("auras")
+
+		if IsAddOnLoaded('WeakAuras') then
+			E:UpdateCooldownSettings('WeakAuras')
+		end
 	end
 end
