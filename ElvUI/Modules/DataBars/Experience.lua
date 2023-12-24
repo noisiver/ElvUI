@@ -2,16 +2,20 @@ local E, L, V, P, G = unpack(ElvUI)
 local DB = E:GetModule('DataBars')
 local LSM = E.Libs.LSM
 
+local _G = _G
 local min, type, format = min, type, format
 local pairs, error = pairs, error
 
-local GetNumQuestLogEntries = GetNumQuestLogEntries
-local GetQuestLogRewardXP = GetQuestLogRewardXP
-local GetQuestLogTitle = GetQuestLogTitle
+local CreateFrame = CreateFrame
 local GetXPExhaustion = GetXPExhaustion
+local GetQuestLogRewardXP = GetQuestLogRewardXP
 local SelectQuestLogEntry = SelectQuestLogEntry
-local UnitXP = UnitXP
-local UnitXPMax = UnitXPMax
+local GetNumQuestLogEntries = GetNumQuestLogEntries
+local GetQuestLogSelection = GetQuestLogSelection
+local GetQuestLogTitle = GetQuestLogTitle
+local UnitXP, UnitXPMax = UnitXP, UnitXPMax
+local GameTooltip = GameTooltip
+local ToggleDropDownMenu = ToggleDropDownMenu
 
 local CurrentXP, XPToLevel, PercentRested, PercentXP, RemainXP, RemainTotal, RemainBars
 local RestedXP, QuestLogXP = 0, 0
@@ -27,8 +31,14 @@ function DB:ExperienceBar_CheckQuests(_, completedOnly)
 		if isHeader then
 			currentZoneCheck = bar.db.questCurrentZoneOnly and currentZone == name or not bar.db.questCurrentZoneOnly
 		elseif currentZoneCheck and (not completedOnly or isComplete == 1) then
+			local previousQuest = GetQuestLogSelection() -- save previous quest
+
 			SelectQuestLogEntry(i)
 			QuestLogXP = QuestLogXP + GetQuestLogRewardXP(questID)
+
+			if previousQuest then -- restore previous quest
+				SelectQuestLogEntry(previousQuest)
+			end
 		end
 	end
 end
@@ -182,9 +192,10 @@ function DB:ExperienceBar_OnEnter()
 end
 
 function DB:ExperienceBar_OnClick(button)
-	if not XPRM then return end
+	if not _G.XPRM then return end -- Warmane Experience Dropdown
+
 	if button == 'RightButton' then
-		ToggleDropDownMenu(1, nil, XPRM, 'cursor') -- Warmane
+		ToggleDropDownMenu(1, nil, _G.XPRM, 'cursor')
 	end
 end
 function DB:ExperienceBar_XPGain()
