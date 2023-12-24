@@ -510,7 +510,6 @@ function B:CanItemGoInBag(bag, slot, targetBag)
 
 	local item = bagIDs[B:Encode_BagSlot(bag, slot)]
 	local _, bagType = GetContainerNumFreeSlots(targetBag)
-	print(bagType)
 	if bagType == 0 then
 		return true -- target bag is normal
 	elseif bagType then
