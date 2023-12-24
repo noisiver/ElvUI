@@ -4,10 +4,9 @@ local LC = E.Libs.Compat
 local LCS = E.Libs.LCS
 
 local _G = _G
-local select, wipe, date = select, wipe, date
-local time, floor, format, math, select, type, ipairs, pairs = time, floor, format, math, select, type, ipairs, pairs
-local strmatch, strfind, strlen, strsub, tonumber, tostring = strmatch, strfind, strlen, strsub, tonumber, tostring
-local tinsert, tremove = table.insert, table.remove
+local type, ipairs, pairs, unpack = type, ipairs, pairs, unpack
+local wipe, max, next, tinsert, date, time = wipe, max, next, tinsert, date, time
+local strfind, strlen, tonumber, tostring = strfind, strlen, tonumber, tostring
 
 local CreateFrame = CreateFrame
 local GetBattlefieldArenaFaction = GetBattlefieldArenaFaction
@@ -31,6 +30,7 @@ local UnitHasVehicleUI = UnitHasVehicleUI
 local UnitInParty = UnitInParty
 local UnitInRaid = UnitInRaid
 local UnitIsUnit = UnitIsUnit
+local GetGameTime = GetGameTime
 
 local GetSpecialization = LCS.GetSpecialization
 local GetSpecializationInfo = LCS.GetSpecializationInfo
@@ -46,10 +46,10 @@ local FACTION_HORDE = FACTION_HORDE
 local FACTION_ALLIANCE = FACTION_ALLIANCE
 local PLAYER_FACTION_GROUP = PLAYER_FACTION_GROUP
 
-local GameMenuButtonRatings = GameMenuButtonRatings
 local GameMenuButtonLogout = GameMenuButtonLogout
 local GameMenuFrame = GameMenuFrame
 local UIErrorsFrame = UIErrorsFrame
+-- GLOBALS: ElvDB, ElvUI
 
 E.SpecInfoBySpecClass = {} -- ['Protection Warrior'] = specInfo (table)
 E.SpecInfoBySpecID = {} -- [250] = specInfo (table)
@@ -123,6 +123,26 @@ E.SpecName = { -- english locale
 	[72]	= 'Fury',
 	[73]	= 'Protection',
 }
+
+function E:GetDateTime(localTime, unix)
+	if not localTime then -- try to properly handle realm time
+		local dateTable = date('*t', time())
+
+		local hours, minutes = GetGameTime() -- realm time since it doesnt match ServerTimeLocal
+		dateTable.hour = hours
+		dateTable.min = minutes
+
+		if unix then
+			return time(dateTable)
+		else
+			return dateTable
+		end
+	elseif unix then
+		return time()
+	else
+		return date('*t', time())
+	end
+end
 
 function E:ClassColor(class, usePriestColor)
 	if not class then return end

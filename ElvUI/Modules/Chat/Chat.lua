@@ -3,7 +3,6 @@ local CH = E:GetModule("Chat")
 local LO = E:GetModule("Layout")
 local S = E:GetModule("Skins")
 local LSM = E.Libs.LSM
-local LC = E.Libs.Compat
 
 --Lua functions
 local _G = _G
@@ -55,8 +54,6 @@ local UnitIsUnit = UnitIsUnit
 local UnitName = UnitName
 local hash_ChatTypeInfoList = hash_ChatTypeInfoList
 local hooksecurefunc = hooksecurefunc
-
-local GetCurrentCalendarTime = LC.GetCurrentCalendarTime
 
 local AFK = AFK
 local CHAT_BN_CONVERSATION_GET_LINK = CHAT_BN_CONVERSATION_GET_LINK
@@ -603,26 +600,13 @@ function CH:StyleChat(frame)
 	frame.styled = true
 end
 
-function CH:GetChatTime()
-	local unix = time()
-	local realm = not CH.db.timeStampLocalTime and GetCurrentCalendarTime()
-	if realm then -- blizzard is weird
-		realm.day = realm.monthDay
-		realm.min = realm.minute
-		realm.sec = date("%S", unix) -- no seconds from CalendarTime
-		realm = time(realm)
-	end
-
-	return realm or unix
-end
-
 function CH:AddMessageEdits(frame, msg, isHistory, historyTime)
 	if not strmatch(msg, "^|Helvtime|h") and not strmatch(msg, "^|Hcpl:") then
 		local historyTimestamp --we need to extend the arguments on AddMessage so we can properly handle times without overriding
 		if isHistory == "ElvUI_ChatHistory" then historyTimestamp = historyTime end
 
 		if CH.db.timeStampFormat and CH.db.timeStampFormat ~= "NONE" then
-			local timeStamp = BetterDate(CH.db.timeStampFormat, historyTimestamp or CH:GetChatTime())
+			local timeStamp = BetterDate(CH.db.timeStampFormat, historyTimestamp or E:GetDateTime(CH.db.timeStampLocalTime, true))
 			timeStamp = gsub(timeStamp, " ", "")
 			timeStamp = gsub(timeStamp, "AM", " AM")
 			timeStamp = gsub(timeStamp, "PM", " PM")
@@ -1434,11 +1418,12 @@ function CH:ChatFrame_MessageEventHandler(frame, event, arg1, arg2, arg3, arg4, 
 		local _, _, englishClass, _, _, _, name, realm = pcall(GetPlayerInfoByGUID, arg12)
 		local coloredName = historySavedName or CH:GetColoredName(event, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12)
 
-		local nameWithRealm = strmatch(realm ~= "" and realm or E.myrealm, "%s*(%S+)$")
-		if name and name ~= "" then
-			nameWithRealm = name.."-"..nameWithRealm
-			CH.ClassNames[strlower(name)] = englishClass
-			CH.ClassNames[strlower(nameWithRealm)] = englishClass
+		-- ElvUI: data from populated guid info
+		local nameWithRealm, realm
+		local data = CH:GetPlayerInfoByGUID(arg12)
+		if data then
+			realm = data.realm
+			nameWithRealm = data.nameWithRealm
 		end
 
 		local channelLength = strlen(arg4)
@@ -2130,7 +2115,7 @@ function CH:SaveChatHistory(event, ...)
 
 	if #tempHistory > 0 and not CH:MessageIsProtected(tempHistory[1]) then
 		tempHistory[50] = event
-		tempHistory[51] = time()
+		tempHistory[51] = E:GetDateTime(CH.db.timeStampLocalTime, true)
 
 		local coloredName, battleTag
 		if tempHistory[13] and tempHistory[13] > 0 then coloredName, battleTag = CH:GetBNFriendColor(tempHistory[2], tempHistory[13], true) end

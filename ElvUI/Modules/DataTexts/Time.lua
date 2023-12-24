@@ -5,28 +5,35 @@ local LC = E.Libs.Compat
 local _G = _G
 local next, unpack = next, unpack
 local format, strjoin = format, strjoin
-local sort, tinsert = sort, tinsert
-local date, utf8sub = date, string.utf8sub
+local wipe, sort, tinsert = wipe, sort, tinsert
+local utf8sub = string.utf8sub
 
 local ToggleFrame = ToggleFrame
 local GetNumSavedInstances = GetNumSavedInstances
 local GetSavedInstanceInfo = GetSavedInstanceInfo
 local RequestRaidInfo = RequestRaidInfo
 local SecondsToTime = SecondsToTime
-local InCombatLockdown = InCombatLockdown
-local GetCurrentCalendarTime = LC.GetCurrentCalendarTime
 
+local QUEUE_TIME_UNAVAILABLE = QUEUE_TIME_UNAVAILABLE
 local TIMEMANAGER_TOOLTIP_LOCALTIME = TIMEMANAGER_TOOLTIP_LOCALTIME
 local TIMEMANAGER_TOOLTIP_REALMTIME = TIMEMANAGER_TOOLTIP_REALMTIME
+local VOICE_CHAT_BATTLEGROUND = VOICE_CHAT_BATTLEGROUND
+local WINTERGRASP_IN_PROGRESS = WINTERGRASP_IN_PROGRESS
 
-local APM = { TIMEMANAGER_PM, TIMEMANAGER_AM }
-local ukDisplayFormat, europeDisplayFormat = '', ''
-local europeDisplayFormat_nocolor = strjoin('', '%02d', ':|r%02d')
-local ukDisplayFormat_nocolor = strjoin('', '', '%d', ':|r%02d', ' %s|r')
+local APM = { _G.TIMEMANAGER_PM, _G.TIMEMANAGER_AM }
+local lockoutColorExtended = { r = 0.3, g = 1, b = 0.3 }
+local lockoutColorNormal = { r = .8, g = .8, b = .8 }
 local lockoutInfoFormat = '%s%s %s |cffaaaaaa(%s, %s/%s)'
 local lockoutInfoFormatNoEnc = '%s%s %s |cffaaaaaa(%s)'
-local lockoutColorExtended, lockoutColorNormal = { r=0.3,g=1,b=0.3 }, { r=.8,g=.8,b=.8 }
+local formatBattleGroundInfo = '%s: '
 local enteredFrame = false
+local updateTime = 5
+local displayFormats = {
+	na_nocolor = '',
+	eu_nocolor = '',
+	na_color = '',
+	eu_color = ''
+}
 
 local OnUpdate, db
 
@@ -39,46 +46,43 @@ local function ApplySettings(self, hex)
 		db = E.global.datatexts.settings[self.name]
 	end
 
-	europeDisplayFormat = strjoin('', '%02d', hex, ':|r%02d')
-	ukDisplayFormat = strjoin('', '', '%d', hex, ':|r%02d', hex, ' %s|r')
+	updateTime = db.seconds and 1 or 5
+
+	local sec = db.seconds and ':|r%02d' or '|r%s'
+	displayFormats.eu_nocolor = strjoin('', '%02d', ':|r%02d', sec)
+	displayFormats.na_nocolor = strjoin('', '', '%d', ':|r%02d', sec, ' %s|r')
+	displayFormats.eu_color = strjoin('', '%02d', hex, ':|r%02d', hex, sec)
+	displayFormats.na_color = strjoin('', '', '%d', hex, ':|r%02d', hex, sec, hex, ' %s|r')
+
 
 	OnUpdate(self, 20000)
 end
 
-local function ConvertTime(h, m)
-	local AmPm
-	if db.time24 == true then
-		return h, m, -1
+local function ConvertTime(h, m, s)
+	local secs = db.seconds and s or ''
+	if db.time24 then
+		return h, m, secs, -1
+	elseif h >= 12 then
+		if h > 12 then h = h - 12 end
+		return h, m, secs, 1
 	else
-		if h >= 12 then
-			if h > 12 then h = h - 12 end
-			AmPm = 1
-		else
-			if h == 0 then h = 12 end
-			AmPm = 2
-		end
+		if h == 0 then h = 12 end
+		return h, m, secs, 2
 	end
-
-	return h, m, AmPm
 end
 
-local function CalculateTimeValues(tooltip)
-	if (tooltip and db.localTime) or (not tooltip and not db.localTime) then
-		local dateTable = GetCurrentCalendarTime()
-		return ConvertTime(dateTable.hour, dateTable.minute)
-	else
-		local dateTable = date('*t')
-		return ConvertTime(dateTable.hour, dateTable.min)
-	end
+local function GetTimeValues(tooltip)
+	local dateTable = E:GetDateTime((tooltip and not db.localTime) or (not tooltip and db.localTime))
+	return ConvertTime(dateTable.hour, dateTable.min, dateTable.sec)
 end
 
 local function OnClick(_, btn)
-	if InCombatLockdown() then UIErrorsFrame:AddMessage(E.InfoColor..ERR_NOT_IN_COMBAT) return end
+	if E:AlertCombat() then return end
 
 	if btn == 'RightButton' then
-		ToggleFrame(TimeManagerFrame)
+		ToggleFrame(_G.TimeManagerFrame)
 	else
-		GameTimeFrame:Click()
+		_G.GameTimeFrame:Click()
 	end
 end
 
@@ -86,35 +90,31 @@ local function OnLeave()
 	enteredFrame = false
 end
 
+local lfgIcon = [[Interface\LFGFrame\LFGIcon-]]
 local instanceIconByName = {}
-local collectIDs, collectedIDs = false -- for testing; mouse over the dt to show the tinspect table (@Merathilis :x)
-local function GetInstanceImages(index, raid)
-	local instanceID, name, _, _, buttonImage = GetInstanceInfo(index, raid)
-	print(instanceID, name, buttonImage)
-	while instanceID do
-		if collectIDs then
-			if not collectedIDs then
-				collectedIDs = {}
-			end
+local function GetInstanceImages(...)
+	local numTextures = select('#', ...) / 4
 
-			collectedIDs[instanceID] = name
+	local argn, name, texture = 1
+	for i = 1, numTextures do
+		name, texture = select(argn, ...)
+		if texture ~= '' then
+			instanceIconByName[name] = lfgIcon..texture
 		end
-
-		instanceIconByName[InstanceNameByID[instanceID] or name] = buttonImage
-		index = index + 1
-		instanceID, name, _, _, buttonImage = GetInstanceInfo(index, raid)
+		argn = argn + 4
 	end
 end
 
 local krcntw = E.locale == 'koKR' or E.locale == 'zhCN' or E.locale == 'zhTW'
 local difficultyTag = { -- RNormal, Heroic
-	(krcntw and PLAYER_DIFFICULTY1) or utf8sub(PLAYER_DIFFICULTY1, 1, 1),	-- N
-	(krcntw and PLAYER_DIFFICULTY2) or utf8sub(PLAYER_DIFFICULTY2, 1, 1),	-- H
+	(krcntw and _G.PLAYER_DIFFICULTY1) or utf8sub(_G.PLAYER_DIFFICULTY1, 1, 1),	-- N
+	(krcntw and _G.PLAYER_DIFFICULTY2) or utf8sub(_G.PLAYER_DIFFICULTY2, 1, 1),	-- H
 }
 
 local function sortFunc(a,b) return a[1] < b[1] end
 
 local collectedInstanceImages = false
+local lockedInstances = {raids = {}, dungeons = {}}
 local function OnEnter()
 	DT.tooltip:ClearLines()
 
@@ -123,20 +123,48 @@ local function OnEnter()
 		RequestRaidInfo()
 	end
 
-	local lockedInstances = {raids = {}, dungeons = {}}
+	if not collectedInstanceImages then
+		GetInstanceImages(_G.CalendarEventGetTextures(1)) -- Populate for dungeon icons
+		GetInstanceImages(_G.CalendarEventGetTextures(2)) -- Populate for raid icons
+
+		collectedInstanceImages = true
+	end
+
+	local addedHeader = false
+	local startTime = GetWintergraspWaitTime()
+	local _, instanceType = IsInInstance()
+
+	if startTime == nil then
+		startTime = WINTERGRASP_IN_PROGRESS
+	elseif instanceType ~= "none" then
+		startTime = QUEUE_TIME_UNAVAILABLE
+	elseif startTime ~= 0 then
+		startTime = ToTime(startTime)
+	end
+
+	if _G.WintergraspTimer.canQueue and startTime ~= 0 then
+		if not addedHeader then
+			DT.tooltip:AddLine(VOICE_CHAT_BATTLEGROUND)
+			addedHeader = true
+		end
+
+		DT.tooltip:AddDoubleLine(format(formatBattleGroundInfo, L["Wintergrasp"]), startTime, 1, 1, 1, lockoutColorNormal.r, lockoutColorNormal.g, lockoutColorNormal.b)
+	end
+
+	wipe(lockedInstances.raids)
+	wipe(lockedInstances.dungeons)
 
 	for i = 1, GetNumSavedInstances() do
-		local name, _, _, difficulty, locked, extended, _, isRaid = GetSavedInstanceInfo(i)
-		if (locked or extended) and name then
-			local isLFR, isHeroicOrMythicDungeon = (difficulty == 7 or difficulty == 17), (difficulty == 2 or difficulty == 23 or difficulty == 174)
-			local sortName = name .. (displayMythic and 4 or (isHeroic or displayHeroic) and 3 or isLFR and 1 or 2)
-			local difficultyLetter = (displayMythic and difficultyTag[4] or (isHeroic or displayHeroic) and difficultyTag[3] or isLFR and difficultyTag[1] or difficultyTag[2])
-			local buttonImg = instanceIconByName[name] and format('|T%s:16:16:0:0:96:96:0:64:0:64|t ', instanceIconByName[name]) or ''
+		local info = { GetSavedInstanceInfo(i) } -- we want to send entire info
+		local name, _, _, difficulty, locked, extended, _, isRaid = unpack(info)
+		if name and (locked or extended) then
+			local isDungeon = difficulty == 2
+			if isRaid or isDungeon then
+				local sortName = name..difficulty
+				local difficultyLetter = difficultyTag[difficulty]
+				local buttonImg = instanceIconByName[name] and format('|T%s:16:16:0:0:96:96:0:64:0:64|t ', instanceIconByName[name]) or ''
 
-			if isRaid then
-				tinsert(lockedInstances.raids, {sortName, difficultyLetter, buttonImg, {GetSavedInstanceInfo(i)}})
-			elseif isHeroicOrMythicDungeon then
-				tinsert(lockedInstances.dungeons, {sortName, difficultyLetter, buttonImg, {GetSavedInstanceInfo(i)}})
+				tinsert(lockedInstances[isRaid and 'raids' or 'dungeons'], { sortName, difficultyLetter, buttonImg, info })
 			end
 		end
 	end
@@ -149,17 +177,12 @@ local function OnEnter()
 
 		sort(lockedInstances.raids, sortFunc)
 
-		for i = 1, #lockedInstances.raids do
-			local difficultyLetter = lockedInstances.raids[i][2]
-			local buttonImg = lockedInstances.raids[i][3]
-			local name, _, reset, _, _, extended, _, _, maxPlayers, _, numEncounters, encounterProgress = unpack(lockedInstances.raids[i][4])
+		for _, info in next, lockedInstances.raids do
+			local difficultyLetter, buttonImg = info[2], info[3]
+			local name, _, reset, _, _, extended, _, _, maxPlayers = unpack(info[4])
 
 			local lockoutColor = extended and lockoutColorExtended or lockoutColorNormal
-			if numEncounters and numEncounters > 0 and (encounterProgress and encounterProgress > 0) then
-				DT.tooltip:AddDoubleLine(format(lockoutInfoFormat, buttonImg, maxPlayers, difficultyLetter, name, encounterProgress, numEncounters), ToTime(reset), 1, 1, 1, lockoutColor.r, lockoutColor.g, lockoutColor.b)
-			else
-				DT.tooltip:AddDoubleLine(format(lockoutInfoFormatNoEnc, buttonImg, maxPlayers, difficultyLetter, name), ToTime(reset), 1, 1, 1, lockoutColor.r, lockoutColor.g, lockoutColor.b)
-			end
+			DT.tooltip:AddDoubleLine(format(lockoutInfoFormatNoEnc, buttonImg, maxPlayers, difficultyLetter, name), ToTime(reset), 1, 1, 1, lockoutColor.r, lockoutColor.g, lockoutColor.b)
 		end
 	end
 
@@ -171,10 +194,9 @@ local function OnEnter()
 
 		sort(lockedInstances.dungeons, sortFunc)
 
-		for i = 1,#lockedInstances.dungeons do
-			local difficultyLetter = lockedInstances.dungeons[i][2]
-			local buttonImg = lockedInstances.dungeons[i][3]
-			local name, _, reset, _, _, extended, _, _, maxPlayers, _, numEncounters, encounterProgress = unpack(lockedInstances.dungeons[i][4])
+		for _, info in next, lockedInstances.dungeons do
+			local difficultyLetter, buttonImg = info[2], info[3]
+			local name, _, reset, _, _, extended, _, _, maxPlayers, _, numEncounters, encounterProgress = unpack(info[4])
 
 			local lockoutColor = extended and lockoutColorExtended or lockoutColorNormal
 			if numEncounters and numEncounters > 0 and (encounterProgress and encounterProgress > 0) then
@@ -185,17 +207,17 @@ local function OnEnter()
 		end
 	end
 
-	local Hr, Min, AmPm = CalculateTimeValues(true)
+	local Hr, Min, Sec, AmPm = GetTimeValues(true)
 	if DT.tooltip:NumLines() > 0 then
 		DT.tooltip:AddLine(' ')
 	end
 
-	if AmPm == -1 then
-		DT.tooltip:AddDoubleLine(db.localTime and TIMEMANAGER_TOOLTIP_REALMTIME or TIMEMANAGER_TOOLTIP_LOCALTIME, format(europeDisplayFormat_nocolor, Hr, Min), 1, 1, 1, lockoutColorNormal.r, lockoutColorNormal.g, lockoutColorNormal.b)
-	else
-		DT.tooltip:AddDoubleLine(db.localTime and TIMEMANAGER_TOOLTIP_REALMTIME or TIMEMANAGER_TOOLTIP_LOCALTIME, format(ukDisplayFormat_nocolor, Hr, Min, APM[AmPm]), 1, 1, 1, lockoutColorNormal.r, lockoutColorNormal.g, lockoutColorNormal.b)
+	local dailyReset = GetQuestResetTime()
+	if dailyReset then
+		DT.tooltip:AddDoubleLine(L["Daily Reset"], ToTime(dailyReset), 1, 1, 1, lockoutColorNormal.r, lockoutColorNormal.g, lockoutColorNormal.b)
 	end
 
+	DT.tooltip:AddDoubleLine(db.localTime and TIMEMANAGER_TOOLTIP_REALMTIME or TIMEMANAGER_TOOLTIP_LOCALTIME, format(displayFormats[AmPm == -1 and 'eu_nocolor' or 'na_nocolor'], Hr, Min, Sec, APM[AmPm]), 1, 1, 1, lockoutColorNormal.r, lockoutColorNormal.g, lockoutColorNormal.b)
 	DT.tooltip:Show()
 end
 
@@ -208,12 +230,12 @@ local function OnEvent(self, event)
 end
 
 function OnUpdate(self, t)
-	self.timeElapsed = (self.timeElapsed or 5) - t
+	self.timeElapsed = (self.timeElapsed or updateTime) - t
 	if self.timeElapsed > 0 then return end
-	self.timeElapsed = 5
+	self.timeElapsed = updateTime
 
-	if db.flashInvite and GameTimeFrame.flashInvite then
-		E:Flash(self, 0.53, true)
+	if db.flashInvite and _G.GameTimeFrame.flashInvite then
+		E:Flash(self, 0.5, true)
 	else
 		E:StopFlash(self)
 	end
@@ -222,13 +244,8 @@ function OnUpdate(self, t)
 		OnEnter(self)
 	end
 
-	local Hr, Min, AmPm = CalculateTimeValues()
-
-	if AmPm == -1 then
-		self.text:SetFormattedText(europeDisplayFormat, Hr, Min)
-	else
-		self.text:SetFormattedText(ukDisplayFormat, Hr, Min, APM[AmPm])
-	end
-end
+	local Hr, Min, Sec, AmPm = GetTimeValues()
+	self.text:SetFormattedText(displayFormats[AmPm == -1 and 'eu_color' or 'na_color'], Hr, Min, Sec, APM[AmPm])
+end	DT.tooltip:Show()
 
 DT:RegisterDatatext('Time', nil, { 'UPDATE_INSTANCE_INFO', 'LOADING_SCREEN_ENABLED' }, OnEvent, OnUpdate, OnClick, OnEnter, OnLeave, nil, nil, ApplySettings)

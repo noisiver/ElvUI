@@ -170,6 +170,8 @@ local function CreateDTOptions(name, data)
 				optionTable.args[key] = ACH:Input(L["Label"], nil, 2, nil, nil, function(info) return escapeString(settings[info[#info]], true) end, function(info, value) settings[info[#info]] = escapeString(value) DT:ForceUpdate_DataText(name) end)
 			elseif key == 'NoLabel' then
 				optionTable.args[key] = ACH:Toggle(L["No Label"], nil, 3)
+			elseif key == 'NoIcon' then
+				optionTable.args[key] = ACH:Toggle(L["No Icon"], nil, 3)
 			elseif key == 'ShowOthers' then
 				optionTable.args[key] = ACH:Toggle(L["Other AddOns"], nil, 4)
 			elseif key == 'decimalLength' then
@@ -187,7 +189,10 @@ local function CreateDTOptions(name, data)
 			end
 		end
 
-		if name == 'Combat' then
+		if name == 'Bags' then
+			optionTable.args.includeReagents = ACH:Toggle(E.NewSign..L["Include Reagents"], nil, 5)
+			optionTable.args.textFormat.values = { FREE = L["Only Free Slots"], USED = L["Only Used Slots"], FREE_TOTAL = L["Free/Total"], USED_TOTAL = L["Used/Total"] }
+		elseif name == 'Combat' then
 			optionTable.args.TimeFull = ACH:Toggle(L["Full Time"], nil, 5)
 		elseif name == 'CombatIndicator' then
 			optionTable.args.OutOfCombat = ACH:Input(L["Out of Combat Label"], nil, 1, nil, nil, function(info) return escapeString(settings[info[#info]], true) end, function(info, value) settings[info[#info]] = escapeString(value) DT:ForceUpdate_DataText(name) end)
@@ -215,6 +220,13 @@ local function CreateDTOptions(name, data)
 					optionTable.args.tooltipLines.args[tostring(info[3])].args[tostring(i)] = ACH:Toggle(info[1], nil, i, nil, nil, nil, function() return settings.idEnable[info[2]] end, function(_, value) settings.idEnable[info[2]] = value end)
 				end
 			end
+		elseif name == 'Durability' then
+			optionTable.args.percThreshold = ACH:Range(L["Flash Threshold"], L["The durability percent that the datatext will start flashing.  Set to -1 to disable"], 5, { min = -1, max = 99, step = 1 }, nil, function(info) return settings[info[#info]] end, function(info, value) settings[info[#info]] = value; DT:ForceUpdate_DataText(name) end)
+		elseif name == 'Friends' then
+			optionTable.args.description = ACH:Description(L["Hide specific sections in the datatext tooltip."], 1)
+			optionTable.args.hideGroup1 = ACH:MultiSelect(L["Hide by Status"], nil, 5, { hideAFK = L["AFK"], hideDND = L["DND"] }, nil, nil, function(_, key) return settings[key] end, function(_, key, value) settings[key] = value; DT:ForceUpdate_DataText(name) end)
+			optionTable.args.hideGroup2 = ACH:MultiSelect(L["Hide by Application"], nil, 6, DT.clientFullName, nil, nil, function(_, key) return settings['hide'..key] end, function(_, key, value) settings['hide'..key] = value; DT:ForceUpdate_DataText(name) end)
+			optionTable.args.hideGroup2.sortByValue = true
 		elseif name == 'Item Level' then
 			optionTable.args.rarityColor = ACH:Toggle(L["Rarity Color"], nil, 1)
 			optionTable.args.onlyEquipped = ACH:Toggle(L["Only Equipped"], nil, 2)
@@ -225,24 +237,16 @@ local function CreateDTOptions(name, data)
 			optionTable.args.spacer1 = ACH:Spacer(5)
 			optionTable.args.color = ACH:Select(L["Text Color"], nil, 10, { REACTION = L["Reaction"], CLASS = L["CLASS"], CUSTOM = L["CUSTOM"] })
 			optionTable.args.customColor = ACH:Color('', nil, 11, nil, nil, function(info) local c, d = settings[info[#info]], G.datatexts.settings[name][info[#info]] return c.r, c.g, c.b, nil, d.r, d.g, d.b end, function(info, r, g, b) local c = settings[info[#info]] c.r, c.g, c.b = r, g, b DT:ForceUpdate_DataText(name) end, function() return settings.color ~= 'CUSTOM' end, function() return settings.color ~= 'CUSTOM' end)
-		elseif name == 'Time' then
-			optionTable.args.time24 = ACH:Toggle(L["24-Hour Time"], L["Toggle 24-hour mode for the time datatext."], 5)
-			optionTable.args.localTime = ACH:Toggle(L["Local Time"], L["If not set to true then the server time will be displayed instead."], 6)
-			optionTable.args.flashInvite = ACH:Toggle(L["Flash Invites"], L["This will allow you to toggle flashing of the time datatext when there are calendar invites."], 7, nil, nil, nil, nil, nil, nil)
-		elseif name == 'Durability' then
-			optionTable.args.percThreshold = ACH:Range(L["Flash Threshold"], L["The durability percent that the datatext will start flashing.  Set to -1 to disable"], 5, { min = -1, max = 99, step = 1 }, nil, function(info) return settings[info[#info]] end, function(info, value) settings[info[#info]] = value; DT:ForceUpdate_DataText(name) end)
-		elseif name == 'Friends' then
-			optionTable.args.description = ACH:Description(L["Hide specific sections in the datatext tooltip."], 1)
-			optionTable.args.hideGroup1 = ACH:MultiSelect(L["Hide by Status"], nil, 5, { hideAFK = L["AFK"], hideDND = L["DND"] }, nil, nil, function(_, key) return settings[key] end, function(_, key, value) settings[key] = value; DT:ForceUpdate_DataText(name) end)
-			optionTable.args.hideGroup2 = ACH:MultiSelect(L["Hide by Application"], nil, 6, DT.clientFullName, nil, nil, function(_, key) return settings['hide'..key] end, function(_, key, value) settings['hide'..key] = value; DT:ForceUpdate_DataText(name) end)
-			optionTable.args.hideGroup2.sortByValue = true
 		elseif name == 'Reputation' or name == 'Experience' then
 			optionTable.args.textFormat.values = { PERCENT = L["Percent"], CUR = L["Current"], REM = L["Remaining"], CURMAX = L["Current - Max"], CURPERC = L["Current - Percent"], CURREM = L["Current - Remaining"], CURPERCREM = L["Current - Percent (Remaining)"] }
-		elseif name == 'Bags' then
-			optionTable.args.textFormat.values = { FREE = L["Only Free Slots"], USED = L["Only Used Slots"], FREE_TOTAL = L["Free/Total"], USED_TOTAL = L["Used/Total"] }
 		elseif name == 'Talent/Loot Specialization' then
 			optionTable.args.displayStyle = ACH:Select(L["Display Style"], nil, 1, { SPEC = L["Specializations Only"], LOADOUT = L["Loadout Only"], BOTH = L["Spec/Loadout"] })
 			optionTable.args.iconOnly = ACH:Toggle(L["Icons Only"], L["Only show icons instead of specialization names"], 2)
+		elseif name == 'Time' then
+			optionTable.args.time24 = ACH:Toggle(L["24-Hour Time"], L["Toggle 24-hour mode for the time datatext."], 5)
+			optionTable.args.seconds = ACH:Toggle(L["Seconds"], L["Show seconds on the time display."], 6)
+			optionTable.args.localTime = ACH:Toggle(L["Local Time"], L["If not set to true then the server time will be displayed instead."], 7)
+			optionTable.args.flashInvite = ACH:Toggle(L["Flash Invites"], L["This will allow you to toggle flashing of the time datatext when there are calendar invites."], 8)
 		end
 	end
 end
@@ -283,16 +287,16 @@ E:CopyTable(DataTexts.args.panels.args.newPanel.args, DTPanelOptions)
 DataTexts.args.panels.args.newPanel.args.templateGroup.get = function(_, key) return E.global.datatexts.newPanelInfo[key] end
 DataTexts.args.panels.args.newPanel.args.templateGroup.set = function(_, key, value) E.global.datatexts.newPanelInfo[key] = value end
 
-DataTexts.args.panels.args.LeftChatDataPanel = ACH:Group(ColorizeName(L["Datatext Panel (Left)"], 'cccccc'), L["Display data panels below the chat, used for datatexts."], 1, nil, function(info) return E.db.datatexts.panels.LeftChatDataPanel[info[#info]] end, function(info, value) E.db.datatexts.panels.LeftChatDataPanel[info[#info]] = value DT:UpdatePanelInfo('LeftChatDataPanel') Layout:SetDataPanelStyle() end)
-DataTexts.args.panels.args.LeftChatDataPanel.args.enable = ACH:Toggle(L["Enable"], nil, 0, nil, nil, nil, nil, function(info, value) E.db.datatexts.panels[info[#info - 1]][info[#info]] = value if E.db.LeftChatPanelFaded then E.db.LeftChatPanelFaded = true; _G.HideLeftChat() end if E.private.chat.enable then Chat:UpdateEditboxAnchors() end Layout:ToggleChatPanels() Layout:SetDataPanelStyle() DT:UpdatePanelInfo(info[#info - 1]) end)
+DataTexts.args.panels.args.LeftChatDataPanel = ACH:Group(ColorizeName(L["Datatext Panel (Left)"], 'cccccc'), L["Display data panels below the chat, used for datatexts."], 1, nil, function(info) return E.db.datatexts.panels.LeftChatDataPanel[info[#info]] end, function(info, value) E.db.datatexts.panels.LeftChatDataPanel[info[#info]] = value DT:UpdatePanelInfo('LeftChatDataPanel') LO:SetDataPanelStyle() end)
+DataTexts.args.panels.args.LeftChatDataPanel.args.enable = ACH:Toggle(L["Enable"], nil, 0, nil, nil, nil, nil, function(info, value) E.db.datatexts.panels[info[#info - 1]][info[#info]] = value if E.db.LeftChatPanelFaded then E.db.LeftChatPanelFaded = true; _G.HideLeftChat() end if E.private.chat.enable then CH:UpdateEditboxAnchors() end LO:ToggleChatPanels() LO:SetDataPanelStyle() DT:UpdatePanelInfo(info[#info - 1]) end)
 DataTexts.args.panels.args.LeftChatDataPanel.args.templateGroup = CopyTable(defaultTemplateGroup)
 
-DataTexts.args.panels.args.RightChatDataPanel = ACH:Group(ColorizeName(L["Datatext Panel (Right)"], 'cccccc'), L["Display data panels below the chat, used for datatexts."], 1, nil, function(info) return E.db.datatexts.panels.RightChatDataPanel[info[#info]] end, function(info, value) E.db.datatexts.panels.RightChatDataPanel[info[#info]] = value DT:UpdatePanelInfo('RightChatDataPanel') Layout:SetDataPanelStyle() end)
-DataTexts.args.panels.args.RightChatDataPanel.args.enable = ACH:Toggle(L["Enable"], nil, 0, nil, nil, nil, nil, function(info, value) E.db.datatexts.panels[info[#info - 1]][info[#info]] = value if E.db.RightChatPanelFaded then E.db.RightChatPanelFaded = true; _G.HideRightChat() end if E.private.chat.enable then Chat:UpdateEditboxAnchors() end Layout:ToggleChatPanels() Layout:SetDataPanelStyle() DT:UpdatePanelInfo(info[#info - 1]) end)
+DataTexts.args.panels.args.RightChatDataPanel = ACH:Group(ColorizeName(L["Datatext Panel (Right)"], 'cccccc'), L["Display data panels below the chat, used for datatexts."], 1, nil, function(info) return E.db.datatexts.panels.RightChatDataPanel[info[#info]] end, function(info, value) E.db.datatexts.panels.RightChatDataPanel[info[#info]] = value DT:UpdatePanelInfo('RightChatDataPanel') LO:SetDataPanelStyle() end)
+DataTexts.args.panels.args.RightChatDataPanel.args.enable = ACH:Toggle(L["Enable"], nil, 0, nil, nil, nil, nil, function(info, value) E.db.datatexts.panels[info[#info - 1]][info[#info]] = value if E.db.RightChatPanelFaded then E.db.RightChatPanelFaded = true; _G.HideRightChat() end if E.private.chat.enable then CH:UpdateEditboxAnchors() end LO:ToggleChatPanels() LO:SetDataPanelStyle() DT:UpdatePanelInfo(info[#info - 1]) end)
 DataTexts.args.panels.args.RightChatDataPanel.args.templateGroup = CopyTable(defaultTemplateGroup)
 
 DataTexts.args.panels.args.MinimapPanel = ACH:Group(ColorizeName(L["Minimap Panels"], 'cccccc'), L["Display minimap panels below the minimap, used for datatexts."], 3, nil, function(info) return E.db.datatexts.panels.MinimapPanel[info[#info]] end, function(info, value) E.db.datatexts.panels.MinimapPanel[info[#info]] = value DT:UpdatePanelInfo('MinimapPanel') end, function() return not E.private.general.minimap.enable end)
-DataTexts.args.panels.args.MinimapPanel.args.enable = ACH:Toggle(L["Enable"], nil, 0, nil, nil, nil, nil, function(info, value) E.db.datatexts.panels[info[#info - 1]][info[#info]] = value DT:UpdatePanelInfo(info[#info - 1]) if E.private.general.minimap.enable then Minimap:UpdateSettings() end end)
+DataTexts.args.panels.args.MinimapPanel.args.enable = ACH:Toggle(L["Enable"], nil, 0, nil, nil, nil, nil, function(info, value) E.db.datatexts.panels[info[#info - 1]][info[#info]] = value DT:UpdatePanelInfo(info[#info - 1]) if E.private.general.minimap.enable then MM:UpdateSettings() end end)
 DataTexts.args.panels.args.MinimapPanel.args.numPoints = ACH:Range(L["Number of DataTexts"], nil, 2, { min = 1, max = 2, step = 1 }, nil, nil, function(info, value) E.db.datatexts.panels.MinimapPanel[info[#info]] = value DT:UpdatePanelInfo('MinimapPanel') DT:SetupPanelOptions('MinimapPanel') end)
 DataTexts.args.panels.args.MinimapPanel.args.templateGroup = CopyTable(defaultTemplateGroup)
 
