@@ -12,16 +12,18 @@ local GetBuildInfo = GetBuildInfo
 local GetLocale = GetLocale
 local GetTime = GetTime
 local CreateFrame = CreateFrame
-local DisableAddOn = DisableAddOn
-local IsAddOnLoaded = IsAddOnLoaded
 local ReloadUI = ReloadUI
-local GetCVar = GetCVar
-local SetCVar = SetCVar
 
 local UIDropDownMenu_SetAnchor = UIDropDownMenu_SetAnchor
 
-local AceAddon, AceAddonMinor = LibStub("AceAddon-3.0")
-local CallbackHandler = LibStub("CallbackHandler-1.0")
+local DisableAddOn = DisableAddOn
+local IsAddOnLoaded = IsAddOnLoaded
+
+local GetCVar = GetCVar
+local SetCVar = SetCVar
+
+local AceAddon, AceAddonMinor = _G.LibStub("AceAddon-3.0")
+local CallbackHandler = _G.LibStub("CallbackHandler-1.0")
 
 local AddOnName, Engine = ...
 local E = AceAddon:NewAddon(AddOnName, "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceHook-3.0")
@@ -36,9 +38,9 @@ Engine[2] = {}
 Engine[3] = E.privateVars.profile
 Engine[4] = E.DF.profile
 Engine[5] = E.DF.global
-ElvUI = Engine
+_G.ElvUI = Engine
 
-E.oUF = ElvUF
+E.oUF = _G.ElvUF
 assert(E.oUF, "ElvUI was unable to locate oUF.")
 
 E.ActionBars = E:NewModule("ActionBars", "AceHook-3.0", "AceEvent-3.0")
@@ -87,7 +89,7 @@ do
 		if type(major) == "table" and type(minor) == "number" then
 			E.Libs[name], E.LibsMinor[name] = major, minor
 		else -- in this case: `major` is the lib name and `minor` is the silent switch
-			E.Libs[name], E.LibsMinor[name] = LibStub(major, minor)
+			E.Libs[name], E.LibsMinor[name] = _G.LibStub(major, minor)
 		end
 	end
 
