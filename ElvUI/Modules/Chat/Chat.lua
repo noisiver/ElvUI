@@ -1365,26 +1365,15 @@ function CH:GetColoredName(event, _, arg2, _, _, _, _, _, arg8, _, _, _, arg12)
 end
 
 -- copied from ChatFrame.lua
-local function GetPFlag(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17)
+local function GetPFlag(arg)
 	-- Renaming for clarity:
-	local specialFlag = arg6
-	local zoneChannelID = arg7
+	local specialFlag = arg
 	--local localChannelID = arg8
 
 	if specialFlag ~= '' then
 		if specialFlag == 'GM' or specialFlag == 'DEV' then
 			-- Add Blizzard Icon if this was sent by a GM/DEV
 			return [[|TInterface\ChatFrame\UI-ChatIcon-Blizz:12:20:0:0:32:16:4:28:0:16|t ]]
-		elseif E.Retail then
-			if specialFlag == 'GUIDE' then
-				if _G.ChatFrame_GetMentorChannelStatus(CHATCHANNELRULESET_MENTOR, GetChannelRulesetForChannelID(zoneChannelID)) == CHATCHANNELRULESET_MENTOR then
-					return NPEV2_CHAT_USER_TAG_GUIDE
-				end
-			elseif specialFlag == 'NEWCOMER' then
-				if _G.ChatFrame_GetMentorChannelStatus(PLAYERMENTORSHIPSTATUS_NEWCOMER, GetChannelRulesetForChannelID(zoneChannelID)) == PLAYERMENTORSHIPSTATUS_NEWCOMER then
-					return _G.NPEV2_CHAT_USER_TAG_NEWCOMER
-				end
-			end
 		else
 			return _G['CHAT_FLAG_'..specialFlag]
 		end
@@ -1574,7 +1563,7 @@ function CH:ChatFrame_MessageEventHandler(frame, event, arg1, arg2, arg3, arg4, 
 			-- Add AFK/DND flags
 			-- Player Flags
 			local playerName, lineID, bnetIDAccount = (nameWithRealm ~= arg2 and nameWithRealm) or arg2, arg11, arg13
-			local pflag = GetPFlag(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)
+			local pflag = GetPFlag(arg6)
 			local chatIcon, pluginChatIcon = specialChatIcons[arg12] or specialChatIcons[playerName], CH:GetPluginIcon(arg12, playerName)
 			if type(chatIcon) == "function" then chatIcon = chatIcon() end
 			if arg6 ~= "" then
