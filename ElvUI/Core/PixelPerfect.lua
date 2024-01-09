@@ -1,7 +1,7 @@
 local E, L, V, P, G = unpack(ElvUI)
 local LC = E.Libs.Compat
 
-local min, match, max, format = min, string.match, max, format
+local min, max, format = min, max, format
 
 local UIParent = UIParent
 local GetScreenWidth = GetScreenWidth
