@@ -94,11 +94,11 @@ local function onLeave(button)
 	end
 end
 
-function AB:HandleMicroCoords(button, name)
-	local l, r, t, b = 0.17, 0.87, 0.5, 0.908
-	local icons = AB.db.microbar.useIcons
 
-	if name == 'PVPMicroButton' or name == 'CharacterMicroButton' then
+function AB:GetMicroCoords(name, icons, character)
+	local l, r, t, b = 0.17, 0.87, 0.5, 0.908
+
+	if name == 'PVPMicroButton' or (character and name == 'CharacterMicroButton') then
 		l, r, t, b = 0, 1, 0, 1
 	elseif icons then
 		local offset = AB.MICRO_OFFSETS[name]
@@ -107,6 +107,12 @@ function AB:HandleMicroCoords(button, name)
 			t, b = icons and 0.41 or 0.038, icons and 0.72 or 0.35
 		end
 	end
+
+	return l, r, t, b
+end
+
+function AB:HandleMicroCoords(button, name)
+	local l, r, t, b = AB:GetMicroCoords(name, AB.db.microbar.useIcons)
 
 	local normal = button.GetNormalTexture and button:GetNormalTexture()
 	if normal then
@@ -151,7 +157,7 @@ function AB:HandleMicroTextures(button, name)
 	else
 		local icons = AB.db.microbar.useIcons
 		local character = name == 'CharacterMicroButton' and E.Media.Textures.Black8x8
-		local faction = name == 'PVPMicroButton' and E.Media.Textures[E.myfaction == 'Horde' and 'PVPHorde' or 'PVPAlliance']
+		local faction = name == 'PVPMicroButton' and ((E.myfaction == 'Horde' and E.Media.Textures.PVPHorde) or E.Media.Textures.PVPAlliance)
 		local texture = faction or (not character and AB.MICRO_OFFSETS[name] and E.Media.Textures.MicroBar)
 		local stock = not icons and AB.MICRO_CLASSIC[name] -- classic default icons from the game
 		local pushed = button.GetPushedTexture and button:GetPushedTexture()
