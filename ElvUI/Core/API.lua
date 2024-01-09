@@ -51,6 +51,8 @@ local GameMenuFrame = GameMenuFrame
 local UIErrorsFrame = UIErrorsFrame
 -- GLOBALS: ElvDB, ElvUI
 
+local DebuffTypeColor = DebuffTypeColor
+
 E.SpecInfoBySpecClass = {} -- ['Protection Warrior'] = specInfo (table)
 E.SpecInfoBySpecID = {} -- [250] = specInfo (table)
 
@@ -290,6 +292,29 @@ function E:IsDispellableByMe(debuffType)
 	if not E.DispelClasses[E.myclass] then return end
 
 	if E.DispelClasses[E.myclass][debuffType] then return true end
+end
+
+function E:UpdateDispelColors()
+	local colors = E.db.general.debuffColors
+	for debuffType, db in next, colors do
+		local color = DebuffTypeColor[debuffType]
+		if color then
+			E:UpdateClassColor(db)
+			color.r, color.g, color.b = db.r, db.g, db.b
+		end
+	end
+end
+
+function E:UpdateDispelColor(debuffType, r, g, b)
+	local color = DebuffTypeColor[debuffType]
+	if color then
+		color.r, color.g, color.b = r, g, b
+	end
+
+	local db = E.db.general.debuffColors[debuffType]
+	if db then
+		db.r, db.g, db.b = r, g, b
+	end
 end
 
 do

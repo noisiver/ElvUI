@@ -31,6 +31,7 @@ local overrideFuncs = {}
 
 local function createConfigEnv()
 	if configEnv then return end
+
 	configEnv = setmetatable({
 		UnitPower = function (unit, displayType)
 			if find(unit, "target") or find(unit, "focus") then
@@ -70,11 +71,22 @@ local function createConfigEnv()
 			end
 			return format("|cff%02x%02x%02x", r*255, g*255, b*255)
 		end,
+		Env = ElvUF.Tags.Env,
+		_VARS = ElvUF.Tags.Vars,
+		_COLORS = ElvUF.colors,
 		ColorGradient = ElvUF.ColorGradient,
-		_COLORS = ElvUF.colors
 	}, {
-		__index = _G,
-		__newindex = function(_, key, value) _G[key] = value end,
+		__index = function(obj, key)
+			local envValue = ElvUF.Tags.Env[key]
+			if envValue ~= nil then
+				return envValue
+			end
+
+			return obj[key]
+		end,
+		__newindex = function(_, key, value)
+			_G[key] = value
+		end,
 	})
 
 	overrideFuncs["namecolor"] = ElvUF.Tags.Methods["namecolor"]

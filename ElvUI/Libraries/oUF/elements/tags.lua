@@ -126,6 +126,13 @@ local _ENV = {
 local _PROXY = setmetatable(_ENV, {__index = _G})
 
 local tagStrings = {
+	['affix'] = [[function(u)
+		local c = UnitClassification(u)
+		if(c == 'minus') then
+			return 'Affix'
+		end
+	end]],
+
 	['creature'] = [[function(u)
 		return UnitCreatureFamily(u) or UnitCreatureType(u)
 	end]],
@@ -387,15 +394,15 @@ local tagStrings = {
 		local pType, pToken, altR, altG, altB = UnitPowerType(u)
 		local t = _COLORS.power[pToken]
 
-		if not t then		
-			return Hex(altR, altG, altB)	
+		if not t then
+			return Hex(altR, altG, altB)
 		end
 
 		return Hex(t)
 	end]],
 }
 
-local tags = setmetatable(
+local tagFuncs = setmetatable(
 	{
 		curhp = UnitHealth,
 		curpp = UnitPower,
@@ -407,40 +414,57 @@ local tags = setmetatable(
 	},
 	{
 		__index = function(self, key)
-			local tagFunc = tagStrings[key]
-			if(tagFunc) then
-				local func, err = loadstring('return ' .. tagFunc)
+			local tagString = tagStrings[key]
+			if(tagString) then
+				self[key] = tagString
+				tagStrings[key] = nil
+			end
+
+			return rawget(self, key)
+		end,
+		__newindex = function(self, key, val)
+			if(type(val) == 'string') then
+				local func, err = loadstring('return ' .. val)
 				if(func) then
-					func = func()
-
-					-- Want to trigger __newindex, so no rawset.
-					self[key] = func
-					tagStrings[key] = nil
-
-					return func
+					val = func()
 				else
 					error(err, 3)
 				end
 			end
-		end,
-		__newindex = function(self, key, val)
-			if(type(val) == 'string') then
-				tagStrings[key] = val
-			elseif(type(val) == 'function') then
-				-- So we don't clash with any custom envs.
-				if(getfenv(val) == _G) then
-					setfenv(val, _PROXY)
-				end
 
-				rawset(self, key, val)
+			assert(type(val) == 'function', 'Tag function must be a function or a string that evaluates to a function.')
+
+			-- We don't want to clash with any custom envs
+			if(getfenv(val) == _G) then
+				-- pcall is needed for cases when Blizz functions are passed as strings, for
+				-- intance, 'UnitPowerMax', an attempt to set a custom env will result in an error
+				pcall(setfenv, val, _PROXY)
 			end
+
+			rawset(self, key, val)
 		end,
 	}
 )
 
-_ENV._TAGS = tags
+_ENV._TAGS = tagFuncs
+
+local vars = setmetatable({}, {
+	__newindex = function(self, key, val)
+		if(type(val) == 'string') then
+			local func = loadstring('return ' .. val)
+			if(func) then
+				val = func() or val
+			end
+		end
+
+		rawset(self, key, val)
+	end,
+})
+
+_ENV._VARS = vars
 
 local tagEvents = {
+	['affix']               = 'UNIT_CLASSIFICATION_CHANGED',
 	['curhp']				= 'UNIT_HEALTH',
 	['maxhp']				= 'UNIT_MAXHEALTH',
 	['curpp']				= 'UNIT_ENERGY UNIT_FOCUS UNIT_MANA UNIT_RAGE UNIT_RUNIC_POWER',
@@ -663,11 +687,11 @@ local function Tag(self, fs, tagstr)
 		local args = {}
 
 		for bracket in tagstr:gmatch(_PATTERN) do
-			local tagFunc = funcPool[bracket] or tags[bracket:sub(2, -2)]
+			local tagFunc = funcPool[bracket] or tagFuncs[bracket:sub(2, -2)]
 			if(not tagFunc) then
 				local tagName, tagStart, tagEnd = getTagName(bracket)
 
-				local tag = tags[tagName]
+				local tag = tagFuncs[tagName]
 				if(tag) then
 					tagStart = tagStart - 2
 					tagEnd = tagEnd + 2
@@ -838,10 +862,12 @@ local function Untag(self, fs)
 end
 
 oUF.Tags = {
-	Methods = tags,
+	Env = _ENV,
+	Methods = tagFuncs,
 	Events = tagEvents,
 	SharedEvents = unitlessEvents,
-	OnUpdateThrottle = onUpdateDelay,
+	OnUpdateThrottle = onUpdateDelay, -- ElvUI
+	Vars = vars,
 }
 
 oUF:RegisterMetaFunction('Tag', Tag)
