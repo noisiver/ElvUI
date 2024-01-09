@@ -11,8 +11,7 @@ local EasyMenu = EasyMenu
 local GetCVar = GetCVar
 local GetCVarBool = GetCVarBool
 local IsShiftKeyDown = IsShiftKeyDown
-local ShowOptionsPanel = ShowOptionsPanel
-local SOUND = SOUND
+local ToggleFrame = ToggleFrame
 
 local Sound_GameSystem_GetOutputDriverNameByIndex = Sound_GameSystem_GetOutputDriverNameByIndex
 local Sound_GameSystem_GetNumOutputDrivers = Sound_GameSystem_GetNumOutputDrivers
@@ -27,7 +26,6 @@ local Sound_CVars = {
 	Sound_MasterVolume = true,
 	Sound_SFXVolume = true,
 	Sound_AmbienceVolume = true,
-	Sound_DialogVolume = true,
 	Sound_MusicVolume = true
 }
 
@@ -35,7 +33,6 @@ local AudioStreams = {
 	{ Name = _G.MASTER_VOLUME, Volume = 'Sound_MasterVolume', Enabled = 'Sound_EnableAllSound' },
 	{ Name = _G.SOUND_VOLUME, Volume = 'Sound_SFXVolume', Enabled = 'Sound_EnableSFX' },
 	{ Name = _G.AMBIENCE_VOLUME, Volume = 'Sound_AmbienceVolume', Enabled = 'Sound_EnableAmbience' },
-	{ Name = _G.DIALOG_VOLUME, Volume = 'Sound_DialogVolume', Enabled = 'Sound_EnableDialog' },
 	{ Name = _G.MUSIC_VOLUME, Volume = 'Sound_MusicVolume', Enabled = 'Sound_EnableMusic' }
 }
 
@@ -132,7 +129,7 @@ local function OnEvent(self, event, arg1)
 	panelText = self.text
 
 	local force = event == 'ELVUI_FORCE_UPDATE'
-	if force or (event == 'CVAR_UPDATE' and arg1 == 'ELVUI_VOLUME') then
+	if force or (event == 'CVAR_UPDATE' and (Sound_CVars[arg1] or arg1 == 'ELVUI_VOLUME')) then
 		if force then
 			self:EnableMouseWheel(true)
 			self:SetScript('OnMouseWheel', onMouseWheel)
@@ -145,7 +142,7 @@ end
 local function OnClick(self, button)
 	if button == 'LeftButton' then
 		if IsShiftKeyDown() then
-			_G.ToggleFrame(_G.AudioOptionsFrame)
+			ToggleFrame(_G.AudioOptionsFrame)
 			return
 		end
 

@@ -1,19 +1,17 @@
 local E, L, V, P, G = unpack(ElvUI)
-local DT = E:GetModule("DataTexts")
+local DT = E:GetModule('DataTexts')
 
 local _G = _G
-local select, wipe = select, wipe
-local format, pairs = format, pairs
-local GetInventoryItemDurability = GetInventoryItemDurability
+local format, pairs, wipe = format, pairs, wipe
+
 local ToggleCharacter = ToggleCharacter
-local InCombatLockdown = InCombatLockdown
+local GetInventoryItemDurability = GetInventoryItemDurability
 local GetInventoryItemTexture = GetInventoryItemTexture
 local GetInventoryItemLink = GetInventoryItemLink
-local GetMoneyString = GetMoneyString
 
 local DURABILITY = DURABILITY
 local REPAIR_COST = REPAIR_COST
-local tooltipString = "%d%%"
+local tooltipString = '%d%%'
 local totalDurability = 0
 local invDurability = {}
 local totalRepairCost
@@ -49,15 +47,8 @@ local function OnEvent(self)
 				totalDurability = perc
 			end
 
-			if E.ScanTooltip.GetTooltipData then
-				E.ScanTooltip:SetInventoryItem("player", index)
-				E.ScanTooltip:Show()
-
-				local data = E.ScanTooltip:GetTooltipData()
-				repairCost = data and data.repairCost
-			else
-				repairCost = select(3, E.ScanTooltip:SetInventoryItem("player", index))
-			end
+			local data = E.ScanTooltip:GetInventoryInfo('player', index)
+			repairCost = data and data.repairCost
 
 			totalRepairCost = totalRepairCost + (repairCost or 0)
 		end
@@ -67,9 +58,9 @@ local function OnEvent(self)
 	local hex = E:RGBToHex(r, g, b)
 
 	if db.NoLabel then
-		self.text:SetFormattedText("%s%d%%|r", hex, totalDurability)
+		self.text:SetFormattedText('%s%d%%|r', hex, totalDurability)
 	else
-		self.text:SetFormattedText("%s%s%d%%|r", db.Label ~= "" and db.Label or (DURABILITY..": "), hex, totalDurability)
+		self.text:SetFormattedText('%s%s%d%%|r', db.Label ~= '' and db.Label or (DURABILITY..': '), hex, totalDurability)
 	end
 
 	if totalDurability <= db.percThreshold then
@@ -81,7 +72,7 @@ end
 
 local function Click()
 	if not E:AlertCombat() then
-		ToggleCharacter("PaperDollFrame")
+		ToggleCharacter('PaperDollFrame')
 	end
 end
 
@@ -89,12 +80,12 @@ local function OnEnter()
 	DT.tooltip:ClearLines()
 
 	for slot, durability in pairs(invDurability) do
-		DT.tooltip:AddDoubleLine(format("|T%s:24:24:0:0:64:64:4:60:4:60|t %s", GetInventoryItemTexture("player", slot), GetInventoryItemLink("player", slot)), format(tooltipString, durability), 1, 1, 1, E:ColorGradient(durability * 0.01, 1, .1, .1, 1, 1, .1, .1, 1, .1))
+		DT.tooltip:AddDoubleLine(format('|T%s:20:20:0:0:64:64:4:60:4:60|t %s', GetInventoryItemTexture('player', slot), GetInventoryItemLink('player', slot)), format(tooltipString, durability), 1, 1, 1, E:ColorGradient(durability * 0.01, 1, .1, .1, 1, 1, .1, .1, 1, .1))
 	end
 
 	if totalRepairCost > 0 then
-		DT.tooltip:AddLine(" ")
-		DT.tooltip:AddDoubleLine(REPAIR_COST, GetMoneyString(totalRepairCost), .6, .8, 1, 1, 1, 1)
+		DT.tooltip:AddLine(' ')
+		DT.tooltip:AddDoubleLine(REPAIR_COST, E:FormatMoney(totalRepairCost, db.goldFormat or 'BLIZZARD', not db.goldCoins), .6, .8, 1, 1, 1, 1)
 	end
 
 	DT.tooltip:Show()
@@ -106,4 +97,4 @@ local function ApplySettings(self)
 	end
 end
 
-DT:RegisterDatatext("Durability", nil, {"UPDATE_INVENTORY_DURABILITY", "MERCHANT_SHOW"}, OnEvent, nil, Click, OnEnter, nil, DURABILITY, nil, ApplySettings)
+DT:RegisterDatatext('Durability', nil, {'UPDATE_INVENTORY_DURABILITY', 'MERCHANT_SHOW'}, OnEvent, nil, Click, OnEnter, nil, DURABILITY, nil, ApplySettings)
