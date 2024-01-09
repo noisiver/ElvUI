@@ -2030,7 +2030,7 @@ local function GetUnitSettings(unit, name)
 									},
 									fontSize = {
 										order = 2,
-										name = L["FONT_SIZE"],
+										name = L["Font Size"],
 										type = "range",
 										min = 4, max = 32, step = 1
 									},
@@ -2221,7 +2221,7 @@ local function GetUnitSettings(unit, name)
 							},
 							fontSize = {
 								order = 2,
-								name = L["FONT_SIZE"],
+								name = L["Font Size"],
 								type = "range",
 								min = 4, max = 60, step = 1
 							},
@@ -2363,7 +2363,7 @@ local function GetUnitSettings(unit, name)
 							},
 							countFontSize = {
 								order = 2,
-								name = L["FONT_SIZE"],
+								name = L["Font Size"],
 								type = "range",
 								min = 4, max = 20, step = 1 -- max 20 cause otherwise it looks weird
 							},
@@ -2427,7 +2427,7 @@ local function GetUnitSettings(unit, name)
 							durationFontSize = {
 								order = 2,
 								type = "range",
-								name = L["FONT_SIZE"],
+								name = L["Font Size"],
 								min = 4, max = 20, step = 1 -- max 20 cause otherwise it looks weird
 							},
 							durationFontOutline = {
@@ -2741,7 +2741,7 @@ local function GetUnitSettings(unit, name)
 							countFontSize = {
 								order = 2,
 								type = "range",
-								name = L["FONT_SIZE"],
+								name = L["Font Size"],
 								min = 4, max = 20, step = 1 -- max 20 cause otherwise it looks weird
 							},
 							countFontOutline = {
@@ -2804,7 +2804,7 @@ local function GetUnitSettings(unit, name)
 							durationFontSize = {
 								order = 2,
 								type = "range",
-								name = L["FONT_SIZE"],
+								name = L["Font Size"],
 								min = 4, max = 20, step = 1 -- max 20 cause otherwise it looks weird
 							},
 							durationFontOutline = {
@@ -3074,7 +3074,7 @@ local function GetUnitSettings(unit, name)
 							},
 							fontSize = {
 								order = 2,
-								name = L["FONT_SIZE"],
+								name = L["Font Size"],
 								type = "range",
 								min = 4, max = 32, step = 1
 							},
@@ -3179,7 +3179,7 @@ local function GetUnitSettings(unit, name)
 							},
 							fontSize = {
 								order = 2,
-								name = L["FONT_SIZE"],
+								name = L["Font Size"],
 								type = "range",
 								min = 4, max = 32, step = 1
 							},

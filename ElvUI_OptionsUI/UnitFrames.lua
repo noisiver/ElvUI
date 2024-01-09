@@ -515,7 +515,7 @@ local function GetOptionsTable_Auras(auraType, updateFunc, groupName, numUnits)
 					countFontSize = {
 						order = 2,
 						type = "range",
-						name = L["FONT_SIZE"],
+						name = L["Font Size"],
 						min = 4, max = 20, step = 1, -- max 20 cause otherwise it looks weird
 					},
 					countFontOutline = {
@@ -1309,7 +1309,7 @@ local function GetOptionsTable_Castbar(hasTicks, updateFunc, groupName, numUnits
 			forceshow = {
 				order = 3,
 				type = "execute",
-				name = L["SHOW"].." / "..L["HIDE"],
+				name = L["Show"]..' / '..L["Hide"],
 				func = function()
 					local frameName = E:StringTitle(groupName)
 					frameName = "ElvUF_"..frameName
@@ -1733,7 +1733,7 @@ local function GetOptionsTable_RaidDebuff(updateFunc, groupName)
 			fontSize = {
 				order = 7,
 				type = "range",
-				name = L["FONT_SIZE"],
+				name = L["Font Size"],
 				min = 7, max = 22, step = 1
 			},
 			fontOutline = {
@@ -1976,7 +1976,7 @@ local function CreateCustomTextGroup(unit, objectName)
 			delete = {
 				order = 2,
 				type = "execute",
-				name = L["DELETE"],
+				name = L["Delete"],
 				func = function()
 					E.Options.args.unitframe.args[unit].args.customText.args[objectName] = nil
 					E.db.unitframe.units[unit].customTexts[objectName] = nil
@@ -2028,7 +2028,7 @@ local function CreateCustomTextGroup(unit, objectName)
 			size = {
 				order = 5,
 				type = "range",
-				name = L["FONT_SIZE"],
+				name = L["Font Size"],
 				min = 6, max = 32, step = 1
 			},
 			fontOutline = {
@@ -2440,7 +2440,7 @@ E.Options.args.unitframe = {
 								fontSize = {
 									order = 5,
 									type = "range",
-									name = L["FONT_SIZE"],
+									name = L["Font Size"],
 									desc = L["Set the font size for unitframes."],
 									min = 4, max = 32, step = 1,
 									set = function(info, value) E.db.unitframe[info[#info]] = value UF:Update_FontStrings() end
@@ -5055,7 +5055,7 @@ E.Options.args.unitframe.args.pet = {
 				fontSize = {
 					order = 4,
 					type = "range",
-					name = L["FONT_SIZE"],
+					name = L["Font Size"],
 					min = 7, max = 22, step = 1
 				}
 			}
@@ -5839,7 +5839,7 @@ E.Options.args.unitframe.args.party = {
 				fontSize = {
 					order = 4,
 					type = "range",
-					name = L["FONT_SIZE"],
+					name = L["Font Size"],
 					min = 7, max = 22, step = 1
 				},
 				profileSpecific = {
@@ -6440,7 +6440,7 @@ E.Options.args.unitframe.args.raid = {
 				fontSize = {
 					order = 4,
 					type = "range",
-					name = L["FONT_SIZE"],
+					name = L["Font Size"],
 					min = 7, max = 22, step = 1
 				},
 				profileSpecific = {
@@ -6859,7 +6859,7 @@ E.Options.args.unitframe.args.raid40 = {
 				fontSize = {
 					order = 4,
 					type = "range",
-					name = L["FONT_SIZE"],
+					name = L["Font Size"],
 					min = 7, max = 22, step = 1
 				},
 				profileSpecific = {
@@ -7189,7 +7189,7 @@ E.Options.args.unitframe.args.raidpet = {
 				fontSize = {
 					order = 4,
 					type = "range",
-					name = L["FONT_SIZE"],
+					name = L["Font Size"],
 					min = 7, max = 22, step = 1
 				},
 				configureButton = {
@@ -7361,7 +7361,7 @@ E.Options.args.unitframe.args.tank = {
 				fontSize = {
 					order = 4,
 					type = "range",
-					name = L["FONT_SIZE"],
+					name = L["Font Size"],
 					min = 7, max = 22, step = 1
 				},
 				profileSpecific = {
@@ -7549,7 +7549,7 @@ E.Options.args.unitframe.args.assist = {
 				fontSize = {
 					order = 4,
 					type = "range",
-					name = L["FONT_SIZE"],
+					name = L["Font Size"],
 					min = 7, max = 22, step = 1
 				},
 				profileSpecific = {
