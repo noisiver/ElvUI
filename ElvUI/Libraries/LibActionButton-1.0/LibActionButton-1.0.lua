@@ -1,44 +1,17 @@
---[[
-Copyright (c) 2010-2016, Hendrik "nevcairiel" Leppkes <h.leppkes@gmail.com>
+-- License: LICENSE.txt
 
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
-    * Neither the name of the developer nor the names of its contributors
-      may be used to endorse or promote products derived from this software without
-      specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-]]
 local MAJOR_VERSION = "LibActionButton-1.0-ElvUI"
-local MINOR_VERSION = 67
+local MINOR_VERSION = 47 -- the real minor version is 108
 
+local LibStub = LibStub
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 
-local _G = _G
+-- Lua functions
 local type, error, tostring, tonumber, assert, select = type, error, tostring, tonumber, assert, select
-local setmetatable, wipe, unpack, pairs, next = setmetatable, wipe, unpack, pairs, next
-local match, format = string.match, format
+local setmetatable, wipe, unpack, pairs, ipairs, next, pcall = setmetatable, wipe, unpack, pairs, ipairs, next, pcall
+local str_match, format, tinsert, tremove, strsub = string.match, format, tinsert, tremove, strsub
 
 local KeyBound = LibStub("LibKeyBound-1.0", true)
 local CBH = LibStub("CallbackHandler-1.0")
@@ -50,6 +23,9 @@ lib.buttonRegistry = lib.buttonRegistry or {}
 lib.activeButtons = lib.activeButtons or {}
 lib.actionButtons = lib.actionButtons or {}
 lib.nonActionButtons = lib.nonActionButtons or {}
+
+local AuraButtons = lib.AuraButtons or { auras = {}, buttons = {} }
+lib.AuraButtons = AuraButtons
 
 lib.callbacks = lib.callbacks or CBH:New(lib)
 
@@ -90,6 +66,10 @@ local Update, UpdateButtonState, UpdateUsable, UpdateCount, UpdateCooldown, Upda
 local StartFlash, StopFlash, UpdateFlash, UpdateHotkeys, UpdateRangeTimer
 local ShowGrid, HideGrid, UpdateGrid, SetupSecureSnippets, WrapOnClick
 local UpdateRange -- Sezz: new method
+
+local UpdateAuraCooldowns -- Simpy
+local AURA_COOLDOWNS_ENABLED = true
+local AURA_COOLDOWNS_DURATION = 0
 
 local InitializeEventHandler, OnEvent, ForAllButtons, OnUpdate
 
@@ -381,8 +361,7 @@ function Generic:ClearStates()
 	wipe(self.state_actions)
 end
 
-function Generic:SetState(state, kind, action)
-	if not state then state = self:GetAttribute("state") end
+function Generic:SetStateFromHandlerInsecure(state, kind, action)
 	state = tostring(state)
 	-- we allow a nil kind for setting a empty state
 	if not kind then kind = "empty" end
@@ -400,7 +379,7 @@ function Generic:SetState(state, kind, action)
 		if tonumber(action) then
 			action = format("item:%s", action)
 		else
-			local itemString = match(action, "^|c%x+|H(item[%d:]+)|h%[")
+			local itemString = str_match(action, "^|c%x+|H(item[%d:]+)|h%[")
 			if itemString then
 				action = itemString
 			end
@@ -409,6 +388,13 @@ function Generic:SetState(state, kind, action)
 
 	self.state_types[state] = kind
 	self.state_actions[state] = action
+end
+
+function Generic:SetState(state, kind, action)
+	if not state then state = self:GetAttribute("state") end
+	state = tostring(state)
+
+	self:SetStateFromHandlerInsecure(state, kind, action)
 	self:UpdateState(state)
 end
 
@@ -475,6 +461,10 @@ function Generic:AddToMasque(group)
 	end
 	group:AddButton(self)
 	self.MasqueSkinned = true
+end
+
+function Generic:UpdateAlpha()
+	UpdateCooldown(self)
 end
 
 -----------------------------------------------------------
@@ -685,7 +675,18 @@ function InitializeEventHandler()
 end
 
 function OnEvent(frame, event, arg1, ...)
-	if (event == "UNIT_INVENTORY_CHANGED" and arg1 == "player") or event == "LEARNED_SPELL_IN_TAB" then
+	if event == "SPELLS_CHANGED" then
+		for button in next, ActiveButtons do
+			local texture = button:GetTexture()
+			if texture then
+				button.icon:SetTexture(texture)
+			end
+		end
+
+		if AURA_COOLDOWNS_ENABLED then
+			UpdateAuraCooldowns()
+		end
+	elseif (event == "UNIT_INVENTORY_CHANGED" and arg1 == "player") or event == "LEARNED_SPELL_IN_TAB" then
 		local tooltipOwner = GameTooltip:GetOwner()
 		if ButtonRegistry[tooltipOwner] then
 			tooltipOwner:SetTooltip()
@@ -698,8 +699,16 @@ function OnEvent(frame, event, arg1, ...)
 		end
 	elseif event == "PLAYER_ENTERING_WORLD" or event == "UPDATE_SHAPESHIFT_FORM" then
 		ForAllButtons(Update)
-	elseif event == "ACTIONBAR_PAGE_CHANGED" or event == "UPDATE_BONUS_ACTIONBAR" then
-		-- TODO: Are these even needed?
+	elseif event == "ACTIONBAR_SLOT_CHANGED" then
+		for button in next, ButtonRegistry do
+			if button._state_type == "action" and (arg1 == 0 or arg1 == tonumber(button._state_action)) then
+				Update(button, event)
+			end
+		end
+
+		if AURA_COOLDOWNS_ENABLED then
+			UpdateAuraCooldowns()
+		end
 	elseif event == "ACTIONBAR_SHOWGRID" then
 		ShowGrid()
 	elseif event == "ACTIONBAR_HIDEGRID" then
@@ -707,7 +716,15 @@ function OnEvent(frame, event, arg1, ...)
 	elseif event == "UPDATE_BINDINGS" then
 		ForAllButtons(UpdateHotkeys)
 	elseif event == "PLAYER_TARGET_CHANGED" then
+		if AURA_COOLDOWNS_ENABLED then
+			UpdateAuraCooldowns()
+		end
+
 		UpdateRangeTimer()
+	elseif event == "UNIT_AURA" then
+		if AURA_COOLDOWNS_ENABLED then
+			UpdateAuraCooldowns()
+		end
 	elseif (event == "ACTIONBAR_UPDATE_STATE") or
 		((event == "UNIT_ENTERED_VEHICLE" or event == "UNIT_EXITED_VEHICLE") and (arg1 == "player")) or
 		((event == "COMPANION_UPDATE") and (arg1 == "MOUNT")) then
@@ -864,6 +881,53 @@ function UpdateRange(self, force) -- Sezz: moved from OnUpdate
 end
 
 -----------------------------------------------------------
+--- Active Aura Cooldowns for Target ~ By Simpy
+
+local currentAuras = {}
+function UpdateAuraCooldowns(disable)
+	local filter = disable and "" or UnitIsFriend("player", "target") and "PLAYER|HELPFUL" or "PLAYER|HARMFUL"
+
+	local previousAuras = CopyTable(currentAuras, true)
+	wipe(currentAuras)
+
+	local index = 1
+	local name, _, _, _, duration, expiration = UnitAura("target", index, filter)
+	while name do
+		local buttons = AuraButtons.auras[name]
+		if buttons then
+			local start = (duration and duration > 0 and duration <= AURA_COOLDOWNS_DURATION) and (expiration - duration)
+			for _, button in next, buttons do
+				if start then
+					button.AuraCooldown:SetCooldown(start, duration, 1)
+
+					currentAuras[button] = true
+					previousAuras[button] = nil
+				end
+			end
+		end
+
+		index = index + 1
+		name, _, _, _, duration, expiration = UnitAura("target", index, filter)
+	end
+
+	for button in next, previousAuras do
+		button.AuraCooldown:Clear()
+	end
+end
+
+function lib:SetAuraCooldownDuration(value)
+	AURA_COOLDOWNS_DURATION = value
+
+	UpdateAuraCooldowns()
+end
+
+function lib:SetAuraCooldowns(enabled)
+	AURA_COOLDOWNS_ENABLED = enabled
+
+	UpdateAuraCooldowns(not enabled)
+end
+
+-----------------------------------------------------------
 --- KeyBound integration
 
 function Generic:GetBindingAction()
@@ -983,6 +1047,24 @@ function Update(self, fromUpdateConfig)
 		self.actionName:SetText(self:GetActionText())
 	else
 		self.actionName:SetText("")
+	end
+
+	-- Target Aura ~Simpy
+	local previousAbility = AuraButtons.buttons[self]
+	if previousAbility then
+		AuraButtons.buttons[self] = nil
+
+		local auras = AuraButtons.auras[previousAbility]
+		for i, button in next, auras do
+			if button == self then
+				tremove(auras, i)
+				break
+			end
+		end
+
+		if not next(auras) then
+			AuraButtons.auras[previousAbility] = nil
+		end
 	end
 
 	-- Update icon and hotkey
