@@ -65,7 +65,7 @@ function BL:GuildBank_CountText(button)
 	local db = E.db.general.guildBank
 	if not db then return end
 
-    button.Count = _G[button:GetName().."Count"]
+    button.Count = _G[button:GetName()..'Count']
 	button.Count:ClearAllPoints()
 	button.Count:Point(db.countPosition, db.countxOffset, db.countyOffset)
 	button.Count:FontTemplate(LSM:Fetch('font', db.countFont), db.countFontSize, db.countFontOutline)
@@ -76,18 +76,18 @@ function BL:GuildBank_Update()
 	local frame = _G.GuildBankFrame
 	if not frame or not frame:IsShown() then return end
 
-    if frame.mode ~= "bank" then
-        frame.inset:Point("BOTTOMRIGHT", -29, 62)
+    if frame.mode ~= 'bank' then
+        frame.inset:Point('BOTTOMRIGHT', -29, 62)
         return
     else
-        frame.inset:Point("BOTTOMRIGHT", -8, 62)
+        frame.inset:Point('BOTTOMRIGHT', -8, 62)
 
-        _G.GuildBankColumn1:Point("TOPLEFT", 20, -70)
+        _G.GuildBankColumn1:Point('TOPLEFT', 20, -70)
     end
 
 	for i = 1, NUM_GUILDBANK_COLUMNS do
 		for x = 1, NUM_SLOTS_PER_GUILDBANK_GROUP do
-			local button = _G["GuildBankColumn"..i.."Button"..x]
+			local button = _G['GuildBankColumn'..i..'Button'..x]
 
 			BL:GuildBank_ItemLevel(button)
 			BL:GuildBank_CountText(button)
