@@ -3,11 +3,10 @@ local BL = E:GetModule('Blizzard')
 local B = E:GetModule('Bags')
 local LSM = E.Libs.LSM
 
-local _G = _G
-local select, unpack = select, unpack
+local unpack = unpack
 
+local _G = _G
 local GetCurrentGuildBankTab = GetCurrentGuildBankTab
-local GetDetailedItemLevelInfo = GetDetailedItemLevelInfo
 local GetGuildBankItemLink = GetGuildBankItemLink
 local GetItemInfo = GetItemInfo
 local GetItemQualityColor = GetItemQualityColor
@@ -15,8 +14,6 @@ local hooksecurefunc = hooksecurefunc
 
 local NUM_SLOTS_PER_GUILDBANK_GROUP = 14
 local NUM_GUILDBANK_COLUMNS = 7
-
-local buttonMap = {}
 
 function BL:GuildBank_ItemLevel(button)
 	local db = E.db.general.guildBank
@@ -35,12 +32,12 @@ function BL:GuildBank_ItemLevel(button)
 	local itemlink = tab and GetGuildBankItemLink(tab, button:GetID())
 	if itemlink then
 		local _, _, rarity, itemLevel, _, _, _, _, itemEquipLoc, _, _, classID, subclassID = GetItemInfo(itemlink)
-        if rarity then
+        if rarity and rarity > 1 then
             r, g, b = GetItemQualityColor(rarity)
         end
 
-        if rarity and rarity > 1 and db.itemquality and quality > 1 then
-            button:SetBackdropBorderColor(GetItemQualityColor(rarity))
+        if rarity and rarity > 1 and db.itemQuality then
+            button:SetBackdropBorderColor(r, g, b)
         else
             button:SetBackdropBorderColor(unpack(E.media.bordercolor))
         end
@@ -50,7 +47,7 @@ function BL:GuildBank_ItemLevel(button)
 			local color = db.itemLevelCustomColorEnable and db.itemLevelCustomColor
 			if color then
 				r, g, b = color.r, color.g, color.b
-            elseif rarity then -- we already do this above otherwise
+            elseif rarity and rarity > 1 then -- we already do this above otherwise
 				r, g, b = GetItemQualityColor(rarity)
 			end
 
@@ -76,7 +73,7 @@ function BL:GuildBank_CountText(button)
 end
 
 function BL:GuildBank_Update()
-	local frame = GuildBankFrame
+	local frame = _G.GuildBankFrame
 	if not frame or not frame:IsShown() then return end
 
     if frame.mode ~= "bank" then
@@ -85,12 +82,10 @@ function BL:GuildBank_Update()
     else
         frame.inset:Point("BOTTOMRIGHT", -8, 62)
 
-        GuildBankColumn1:Point("TOPLEFT", 20, -70)
+        _G.GuildBankColumn1:Point("TOPLEFT", 20, -70)
     end
 
 	for i = 1, NUM_GUILDBANK_COLUMNS do
-		local column = _G["GuildBankColumn"..i]
-
 		for x = 1, NUM_SLOTS_PER_GUILDBANK_GROUP do
 			local button = _G["GuildBankColumn"..i.."Button"..x]
 
