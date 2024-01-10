@@ -28,6 +28,7 @@ L["All keybindings cleared for |cff00ff00%s|r."] = true
 L["Alliance: "] = true
 L["Already Running.. Bailing Out!"] = true
 L["Ammo/Shard Counter"] = true
+L["Amount to Pickup"] = true
 L["AP:"] = true
 L["Are you sure you want to apply this font to all ElvUI elements?"] = true
 L["Are you sure you want to disband the group?"] = true

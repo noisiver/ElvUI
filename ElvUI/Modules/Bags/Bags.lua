@@ -1495,7 +1495,7 @@ function B:ConstructContainerFrame(name, isBank)
 		f.pickupGold = CreateFrame('Button', nil, f)
 		f.pickupGold:SetAllPoints(f.goldText)
 		f.pickupGold:SetScript('OnClick', function()
-			StaticPopup_Show('PICKUP_MONEY')
+			E:StaticPopup_Show('PICKUP_MONEY')
 		end)
 
 		-- Stack/Transfer Button

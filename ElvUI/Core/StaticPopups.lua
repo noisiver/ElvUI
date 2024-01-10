@@ -17,20 +17,25 @@ local format, error, ipairs, ceil = format, error, ipairs, ceil
 
 local CreateFrame = CreateFrame
 local DeleteCursorItem = DeleteCursorItem
+local GetBindingFromClick = GetBindingFromClick
 local MoneyFrame_Update = MoneyFrame_Update
-local UnitIsDeadOrGhost, InCinematic = UnitIsDeadOrGhost, InCinematic
+local MoneyInputFrame_GetCopper = MoneyInputFrame_GetCopper
+local MoneyInputFrame_ResetMoney = MoneyInputFrame_ResetMoney
 local PurchaseSlot, GetBankSlotCost = PurchaseSlot, GetBankSlotCost
 local ReloadUI, PlaySound, StopMusic = ReloadUI, PlaySound, StopMusic
 local StaticPopup_Resize = StaticPopup_Resize
-local GetBindingFromClick = GetBindingFromClick
+local UIErrorsFrame = UIErrorsFrame
+local UnitIsDeadOrGhost, InCinematic = UnitIsDeadOrGhost, InCinematic
 
 local AutoCompleteEditBox_OnEnterPressed = AutoCompleteEditBox_OnEnterPressed
 local AutoCompleteEditBox_OnTextChanged = AutoCompleteEditBox_OnTextChanged
 local ChatEdit_FocusActiveWindow = ChatEdit_FocusActiveWindow
 
 local DisableAddOn = DisableAddOn
+local GetMoney = GetMoney
 local IsAddOnLoaded = IsAddOnLoaded
 local PickupContainerItem = PickupContainerItem
+local PickupPlayerMoney = PickupPlayerMoney
 
 local STATICPOPUP_TEXTURE_ALERT = STATICPOPUP_TEXTURE_ALERT
 local STATICPOPUP_TEXTURE_ALERTGEAR = STATICPOPUP_TEXTURE_ALERTGEAR
@@ -308,6 +313,32 @@ E.PopupDialogs.BUY_BANK_SLOT = {
 	end,
 	hasMoneyFrame = 1,
 	hideOnEscape = 1,
+}
+
+E.PopupDialogs.PICKUP_MONEY = {
+	text = L["Amount to Pickup"],
+	button1 = ACCEPT,
+	button2 = CANCEL,
+	OnAccept = function(self)
+		local moneyInput = MoneyInputFrame_GetCopper(_G[self:GetName()..'MoneyInputFrame'])
+		if moneyInput > GetMoney() then
+			UIErrorsFrame:AddMessage(ERR_NOT_ENOUGH_MONEY, 1.0, 0.1, 0.1, 1.0)
+		else
+			PickupPlayerMoney(moneyInput)
+		end
+	end,
+	OnHide = function(self)
+		MoneyInputFrame_ResetMoney(_G[self:GetName()..'MoneyInputFrame'])
+		PlaySound(851)
+	end,
+	EditBoxOnEnterPressed = function(self)
+		local parent = self:GetParent():GetParent()
+		PickupPlayerMoney(_G[parent:GetName()..'MoneyInputFrame'])
+		parent:Hide();
+	end,
+	hasMoneyInputFrame = 1,
+	timeout = 0,
+	hideOnEscape = 1
 }
 
 E.PopupDialogs.CANNOT_BUY_BANK_SLOT = {
