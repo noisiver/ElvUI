@@ -14,7 +14,6 @@ local toggles = {
 	bgscore = L["BG Score"],
 	binding = L["KEY_BINDINGS"],
 	blizzardOptions = L["INTERFACE_OPTIONS"],
-	channels = L["CHANNELS"],
 	character = L["Character Frame"],
 	debug = L["Debug Tools"],
 	dressingroom = L["DRESSUP_FRAME"],
