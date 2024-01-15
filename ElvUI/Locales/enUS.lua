@@ -319,7 +319,6 @@ L["Stance Bar"] = true
 L["Steps"] = true
 L["Sticky Frames"] = true
 L["System"] = true
-L["Talent/Loot Specialization"] = true
 L["Target Aura Bars"] = true
 L["Target Castbar"] = true
 L["Target Frame"] = true
