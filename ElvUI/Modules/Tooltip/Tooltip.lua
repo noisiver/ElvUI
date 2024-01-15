@@ -840,7 +840,7 @@ end
 function TT:Initialize()
 	TT.db = E.db.tooltip
 
-	_G.FrameStackTooltip:SetParent(E.UIParent)
+	_G.FrameStackTooltip:SetScale(E.uiscale)
 
 	_G.BNToastFrame:Point('TOPRIGHT', _G.MinimapCluster, 'BOTTOMRIGHT', 0, -10)
 	E:CreateMover(_G.BNToastFrame, 'BNETMover', L['BNet Frame'], nil, nil, PostBNToastMove)
