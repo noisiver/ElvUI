@@ -1304,7 +1304,6 @@ P.chat = {
 	useCustomTimeColor = true,
 	customTimeColor = {r = 0.7, g = 0.7, b = 0.7},
 	numScrollMessages = 3,
-	autoClosePetBattleLog = true,
 	socialQueueMessages = false,
 	tabFont = "PT Sans Narrow",
 	tabFontSize = 12,

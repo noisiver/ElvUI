@@ -66,7 +66,6 @@ G.datatexts = {
 		Location = { showZone = true, showSubZone = true, showContinent = false, color = 'REACTION', customColor = {r = 1, g = 1, b = 1} },
 		Mastery = { Label = '', NoLabel = false, decimalLength = 1 },
 		MovementSpeed = { Label = '', NoLabel = false, decimalLength = 1 },
-		QuickJoin = { Label = '', NoLabel = false },
 		Reputation = { textFormat = 'CUR' },
 		SpellPower = { school = 0 },
 		Speed = { Label = '', NoLabel = false, decimalLength = 1 },
