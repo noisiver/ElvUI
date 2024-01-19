@@ -53,17 +53,17 @@ local function ToggleChatColorNamesByClassGroup(checked, group)
 end
 
 function E:SetupChat(noDisplayMsg)
+	local chats = _G.CHAT_FRAMES
 	FCF_ResetChatWindows()
 
-	local rightChatFrame = FCF_OpenNewWindow(LOOT)
-	FCF_UnDockFrame(rightChatFrame)
+	local rightChat = FCF_OpenNewWindow(LOOT)
+	FCF_UnDockFrame(rightChat)
 
-	for _, name in next, _G.CHAT_FRAMES do
+	for id, name in next, chats do
 		local frame = _G[name]
-		local id = frame:GetID()
 
 		if E.private.chat.enable then
-			CH:FCFTab_UpdateColors(CH:GetTab(_G[name]))
+			CH:FCFTab_UpdateColors(CH:GetTab(frame))
 		end
 
 		if id == 1 then
@@ -90,14 +90,14 @@ function E:SetupChat(noDisplayMsg)
 
 	-- keys taken from `ChatTypeGroup` which weren't added above to ChatFrame1
 	chatGroup = { "COMBAT_XP_GAIN", "COMBAT_HONOR_GAIN", "COMBAT_FACTION_CHANGE", "COMBAT_GUILD_XP_GAIN", "SKILL", "LOOT", "CURRENCY", "MONEY" }
-	ChatFrame_RemoveAllMessageGroups(rightChatFrame)
+	ChatFrame_RemoveAllMessageGroups(rightChat)
 	for _, v in next, chatGroup do
-		ChatFrame_AddMessageGroup(rightChatFrame, v)
+		ChatFrame_AddMessageGroup(rightChat, v)
 	end
 
 	ChatFrame_AddChannel(_G.ChatFrame1, GENERAL)
 	ChatFrame_RemoveChannel(_G.ChatFrame1, TRADE)
-	ChatFrame_AddChannel(rightChatFrame, TRADE)
+	ChatFrame_AddChannel(rightChat, TRADE)
 
 	-- set the chat groups names in class color to enabled for all chat groups which players names appear
 	chatGroup = {"SAY", "EMOTE", "YELL", "WHISPER", "PARTY", "PARTY_LEADER", "RAID", "RAID_LEADER", "RAID_WARNING", "BATTLEGROUND", "BATTLEGROUND_LEADER", "GUILD", "OFFICER", "ACHIEVEMENT", "GUILD_ACHIEVEMENT"}
@@ -288,7 +288,7 @@ function E:SetupLayout(layout, noDataReset, noDisplayMsg)
 		E.db.chat.tabFontSize = 12
 		E.db.chat.copyChatLines = true
 		--DataTexts
-		E.db.datatexts.panels.LeftChatDataPanel[3] = "QuickJoin"
+		E.db.datatexts.panels.LeftChatDataPanel[3] = "Mail"
 		--DataBars
 		E.db.databars.threat.height = 24
 		E.db.databars.threat.width = 472
