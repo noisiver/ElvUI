@@ -71,7 +71,7 @@ function E:AddTag(tagName, eventsOrSeconds, func, block)
 	if type(eventsOrSeconds) == 'number' then
 		Tags.OnUpdateThrottle[tagName] = eventsOrSeconds
 	else
-		Tags.Events[tagName] = gsub(eventsOrSeconds, 'UNIT_HEALTH([^%s_]?)', 'UNIT_HEALTH_FREQUENT%1')
+		Tags.Events[tagName] = gsub(eventsOrSeconds, 'UNIT_HEALTH_FREQUENT', 'UNIT_HEALTH')
 	end
 
 	Tags.Methods[tagName] = func
@@ -780,17 +780,17 @@ end
 do
 	local GroupUnits = {}
 	local frame = CreateFrame('Frame')
-	frame:RegisterEvent('GROUP_ROSTER_UPDATE')
+	frame:RegisterEvent('PARTY_MEMBERS_CHANGED RAID_ROSTER_UPDATE')
 	frame:SetScript('OnEvent', function()
 		wipe(GroupUnits)
 
 		local groupType, groupSize
 		if IsInRaid() then
 			groupType = 'raid'
-			groupSize = GetNumGroupMembers()
+			groupSize = GetNumRaidMembers()
 		elseif IsInGroup() then
 			groupType = 'party'
-			groupSize = GetNumGroupMembers()
+			groupSize = GetNumPartyMembers()
 		else
 			groupType = 'solo'
 			groupSize = 1
