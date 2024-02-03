@@ -42,7 +42,6 @@ local UnitName = UnitName
 local hooksecurefunc = hooksecurefunc
 
 local CHAT_BN_CONVERSATION_GET_LINK = CHAT_BN_CONVERSATION_GET_LINK
-local DEFAULT_CHAT_FRAME = DEFAULT_CHAT_FRAME
 local MAX_WOW_CHAT_CHANNELS = MAX_WOW_CHAT_CHANNELS
 local UNKNOWN = UNKNOWN
 
@@ -1680,7 +1679,7 @@ function CH:ChatFrame_MessageEventHandler(frame, event, arg1, arg2, arg3, arg4, 
 		end
 
 		if not historySavedName and not frame:IsShown() then
-			if (frame == DEFAULT_CHAT_FRAME and info.flashTabOnGeneral) or (frame ~= DEFAULT_CHAT_FRAME and info.flashTab) then
+			if (frame == _G.DEFAULT_CHAT_FRAME and info.flashTabOnGeneral) or (frame ~= _G.DEFAULT_CHAT_FRAME and info.flashTab) then
 				if not _G.CHAT_OPTIONS.HIDE_FRAME_ALERTS or chatType == "WHISPER" or chatType == "BN_WHISPER" then
 					_G.FCF_StartAlertFlash(frame) --This would taint if we were not using LibChatAnims
 				end
