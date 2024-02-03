@@ -17,6 +17,13 @@ local Sound_GameSystem_GetOutputDriverNameByIndex = Sound_GameSystem_GetOutputDr
 local Sound_GameSystem_GetNumOutputDrivers = Sound_GameSystem_GetNumOutputDrivers
 local Sound_GameSystem_RestartSoundSystem = Sound_GameSystem_RestartSoundSystem
 
+local Sound_CVars = {
+	Sound_MasterVolume = true,
+	Sound_SFXVolume = true,
+	Sound_AmbienceVolume = true,
+	Sound_MusicVolume = true
+}
+
 local AudioStreams = {
 	{ Name = _G.MASTER_VOLUME, Volume = 'Sound_MasterVolume', Enabled = 'Sound_EnableAllSound' },
 	{ Name = _G.SOUND_VOLUME, Volume = 'Sound_SFXVolume', Enabled = 'Sound_EnableSFX' },
@@ -117,7 +124,7 @@ local function OnEvent(self, event, arg1)
 	panelText = self.text
 
 	local force = event == 'ELVUI_FORCE_UPDATE'
-	if force or (event == 'CVAR_UPDATE' and arg1 == 'ELVUI_VOLUME') then
+	if force or (event == 'CVAR_UPDATE' and (Sound_CVars[arg1] or arg1 == 'ELVUI_VOLUME')) then
 		if force then
 			self:EnableMouseWheel(true)
 			self:SetScript('OnMouseWheel', onMouseWheel)
