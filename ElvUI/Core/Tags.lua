@@ -434,15 +434,15 @@ E:AddTag('smartlevel', 'UNIT_LEVEL PLAYER_LEVEL_UP', function(unit)
 	end
 end)
 
-E:AddTag('realm', 'UNIT_NAME_UPDATE', function(unit)
-	local _, realm = UnitName(unit)
+E:AddTag('realm', 'UNIT_NAME_UPDATE', function()
+	local realm = GetRealmName()
 	if realm and realm ~= '' then
 		return realm
 	end
 end)
 
-E:AddTag('realm:dash', 'UNIT_NAME_UPDATE', function(unit)
-	local _, realm = UnitName(unit)
+E:AddTag('realm:dash', 'UNIT_NAME_UPDATE', function()
+	local realm = GetRealmName()
 	if realm and (realm ~= '' and realm ~= E.myrealm) then
 		return format('-%s', realm)
 	elseif realm ~= '' then
@@ -450,15 +450,15 @@ E:AddTag('realm:dash', 'UNIT_NAME_UPDATE', function(unit)
 	end
 end)
 
-E:AddTag('realm:translit', 'UNIT_NAME_UPDATE', function(unit)
-	local _, realm = Translit:Transliterate(UnitName(unit), translitMark)
+E:AddTag('realm:translit', 'UNIT_NAME_UPDATE', function()
+	local realm = Translit:Transliterate(GetRealmName(), translitMark)
 	if realm and realm ~= '' then
 		return realm
 	end
 end)
 
-E:AddTag('realm:dash:translit', 'UNIT_NAME_UPDATE', function(unit)
-	local _, realm = Translit:Transliterate(UnitName(unit), translitMark)
+E:AddTag('realm:dash:translit', 'UNIT_NAME_UPDATE', function()
+	local realm = Translit:Transliterate(GetRealmName(), translitMark)
 
 	if realm and (realm ~= '' and realm ~= E.myrealm) then
 		return format('-%s', realm)
