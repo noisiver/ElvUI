@@ -501,7 +501,7 @@ local tagEvents = {
 	['shortclassification']	= 'UNIT_CLASSIFICATION_CHANGED',
 	['smartlevel']			= 'UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED',
 	['soulshards']          = 'UNIT_INVENTORY_CHANGED',
-	['status']				= 'UNIT_HEALTH PLAYER_UPDATE_RESTING UNIT_CONNECTION',
+	['status']				= 'UNIT_HEALTH PLAYER_UPDATE_RESTING',
 	['threat']				= 'UNIT_THREAT_SITUATION_UPDATE',
 	['threatcolor']			= 'UNIT_THREAT_SITUATION_UPDATE',
 }
