@@ -7663,10 +7663,10 @@ if P.unitframe.colors.classResources[E.myclass] then
 	local ORDER = 20
 	if E.myclass == "DEATHKNIGHT" then
 		local names = {
-			[1] = L["COMBAT_TEXT_RUNE_BLOOD"],
-			[2] = L["COMBAT_TEXT_RUNE_UNHOLY"],
-			[3] = L["COMBAT_TEXT_RUNE_FROST"],
-			[4] = L["COMBAT_TEXT_RUNE_DEATH"]
+			[1] = L["RUNE_BLOOD"],
+			[2] = L["RUNE_UNHOLY"],
+			[3] = L["RUNE_FROST"],
+			[4] = L["RUNE_DEATH"]
 		}
 		for i = 1, 4 do
 			E.Options.args.unitframe.args.generalOptionsGroup.args.allColorsGroup.args.classResourceGroup.args["resource"..i] = {
