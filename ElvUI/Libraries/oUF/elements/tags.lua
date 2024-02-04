@@ -372,12 +372,11 @@ local tagStrings = {
 		end
 	end]],
 
-	-- ['soulshards'] = [[function()
-	-- 	local num = UnitPower('player', Enum.PowerType.SoulShards)
-	-- 	if(num > 0) then
-	-- 		return num
-	-- 	end
-	-- end]],
+	['soulshards'] = [[function()
+		local count = GetItemCount(6265)
+
+		return count or 0
+	end]],
 
 	['status'] = [[function(u)
 		if(UnitIsDead(u)) then
@@ -501,7 +500,7 @@ local tagEvents = {
 	['runes']               = 'RUNE_POWER_UPDATE',
 	['shortclassification']	= 'UNIT_CLASSIFICATION_CHANGED',
 	['smartlevel']			= 'UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED',
-	['soulshards']          = 'UNIT_POWER_UPDATE',
+	['soulshards']          = 'UNIT_INVENTORY_CHANGED',
 	['status']				= 'UNIT_HEALTH PLAYER_UPDATE_RESTING',
 	['threat']				= 'UNIT_THREAT_SITUATION_UPDATE',
 	['threatcolor']			= 'UNIT_THREAT_SITUATION_UPDATE',

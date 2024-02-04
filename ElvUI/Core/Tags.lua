@@ -112,6 +112,45 @@ Tags.Env.Abbrev = function(name)
 	return name
 end
 
+local ClassPowers = {
+	DEATHKNIGHT	= SPELL_POWER_RUNES,
+}
+
+Tags.Env.GetClassPower = function(unit)
+	local isme = UnitIsUnit(unit, 'player')
+
+	local spec, unitClass, Min, Max, r, g, b
+	if isme then
+		spec = E.myspec
+		unitClass = E.myclass
+	end
+
+	-- try special powers or combo points
+	local barType = not r and ClassPowers[unitClass]
+	if barType then
+		local dk = unitClass == 'DEATHKNIGHT'
+		Min = (dk and 0) or UnitPower(unit, barType)
+		Max = (dk and 6) or UnitPowerMax(unit, barType)
+
+		if dk and isme then
+			for i = 1, Max do
+				local _, _, runeReady = GetRuneCooldown(i)
+				if runeReady then
+					Min = Min + 1
+				end
+			end
+		end
+
+		if Min > 0 then
+			local power = ElvUF.colors.ClassBars[unitClass]
+			local color = (dk and (ElvUF.colors.class.DEATHKNIGHT or power[spec ~= 5 and spec or 1])) or power
+			r, g, b = color.r, color.g, color.b
+		end
+	end
+
+	return Min or 0, Max or 0, r or 1, g or 1, b or 1
+end
+
 ------------------------------------------------------------------------
 --	Looping
 ------------------------------------------------------------------------
