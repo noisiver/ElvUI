@@ -618,14 +618,17 @@ do
 		frame:SetFrameLevel(100) -- Lots of room to draw under it
 		frame:SetScript("OnKeyDown", function(self, key)
 			if key == "ESCAPE" then
-				self:SetPropagateKeyboardInput(false)
+				-- self:SetPropagateKeyboardInput(false)
+				self:EnableKeyboard(false)
 				if self.cancel:IsShown() then
 					self.cancel:Click()
 				else -- Showing a validation error
 					self:Hide()
 				end
 			else
-				self:SetPropagateKeyboardInput(true)
+				-- self:SetPropagateKeyboardInput(true)
+				self:EnableKeyboard(true)
+
 			end
 		end)
 
