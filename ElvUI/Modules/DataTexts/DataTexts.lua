@@ -847,7 +847,7 @@ function DT:Initialize()
 
 	-- DT:RegisterCustomCurrencyDT() -- Register all the user created currency datatexts from the 'CustomCurrency' DT.
 
-	hooksecurefunc('SetCurrencyBackpack', function() DT:ForceUpdate_DataText('Currencies') end)
+	-- hooksecurefunc('SetCurrencyBackpack', function() DT:ForceUpdate_DataText('Currencies') end)
 
 	DT:PopulateData()
 	DT:RegisterEvent('CURRENCY_DISPLAY_UPDATE')
@@ -867,20 +867,21 @@ function DT:Initialize()
 end
 
 --[[
-	DT:RegisterDatatext(name, category, events, eventFunc, updateFunc, clickFunc, onEnterFunc, onLeaveFunc, localizedName, objectEvent, colorUpdate)
+	DT:RegisterDatatext(name, category, events, onEvent, onUpdate, onClick, onEnter, onLeave, localizedName, objectEvent, applySettings)
 
 	name - name of the datatext (required) [string]
 	category - name of the category the datatext belongs to. [string]
 	events - must be a table with string values of event names to register [string or table]
-	eventFunc - function that gets fired when an event gets triggered [function]
-	updateFunc - onUpdate script target function [function]
-	click - function to fire when clicking the datatext [function]
-	onEnterFunc - function to fire OnEnter [function]
-	onLeaveFunc - function to fire OnLeave, if not provided one will be set for you that hides the tooltip. [function]
+	onEvent - function that gets fired when an event gets triggered [function]
+	onUpdate - onUpdate script target function [function]
+	onClick - function to fire when clicking the datatext [function]
+	onEnter - function to fire OnEnter [function]
+	onLeave - function to fire OnLeave, if not provided one will be set for you that hides the tooltip. [function]
 	localizedName - localized name of the datetext [string]
 	objectEvent - register events on an object, using E.RegisterEventForObject instead of panel.RegisterEvent [function]
-	colorUpdate - function that fires when called from the config when you change the dt options. [function]
+	applySettings - function that fires when you change the dt settings or update the value color. [function]
 ]]
+
 function DT:RegisterDatatext(name, category, events, onEvent, onUpdate, onClick, onEnter, onLeave, localizedName, objectEvent, applySettings)
 	if not name then return end
 	if type(category) ~= 'string' and category ~= nil then return E:Print(format('%s is an invalid DataText.', name)) end
