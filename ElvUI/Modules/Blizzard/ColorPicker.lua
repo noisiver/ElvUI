@@ -163,10 +163,6 @@ end
 function BL:EnhanceColorPicker()
 	if E:IsAddOnEnabled('ColorPickerPlus') then return end
 
-	if E.Retail then
-		ColorPickerFrame.Border:Hide()
-	end
-
 	local Header = ColorPickerFrame.Header or _G.ColorPickerFrameHeader
 	Header:StripTextures()
 	Header:ClearAllPoints()
