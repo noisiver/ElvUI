@@ -5,12 +5,13 @@ local NP = E:GetModule("NamePlates")
 local LibDeflate = E.Libs.Deflate
 local ACH = E.Libs.ACH
 local LCS = E.Libs.LCS
+local LC = E.Libs.Compat
 
 local _G = _G
 local wipe, pairs, strmatch, strsplit, tostring = wipe, pairs, strmatch, strsplit, tostring
 local next, sort, tonumber, format = next, sort, tonumber, format
 
-local GetClassInfo = GetClassInfo
+local GetClassInfo = LC.GetClassInfo
 local GetDifficultyInfo = GetDifficultyInfo
 local GetInstanceInfo = GetInstanceInfo
 local GetRealZoneText = GetRealZoneText
@@ -274,8 +275,6 @@ StyleFilters.triggers.args.combat.args.playerGroup.args.isResting = ACH:Toggle(L
 StyleFilters.triggers.args.combat.args.playerGroup.args.notResting = ACH:Toggle(L["Not Resting"], nil, 6)
 StyleFilters.triggers.args.combat.args.playerGroup.args.playerCanAttack = ACH:Toggle(L["Can Attack"], L["If enabled then the filter will only activate when the unit can be attacked by the active player."], 7)
 StyleFilters.triggers.args.combat.args.playerGroup.args.playerCanNotAttack = ACH:Toggle(L["Can Not Attack"], L["If enabled then the filter will only activate when the unit can not be attacked by the active player."], 8)
-StyleFilters.triggers.args.combat.args.playerGroup.args.inPetBattle = ACH:Toggle(L["In Pet Battle"], nil, 9, nil, nil, nil, nil, nil, nil)
-StyleFilters.triggers.args.combat.args.playerGroup.args.notPetBattle = ACH:Toggle(L["Not Pet Battle"], nil, 10, nil, nil, nil, nil, nil, nil)
 
 StyleFilters.triggers.args.combat.args.unitGroup = ACH:Group(L["Unit"], nil, 2)
 StyleFilters.triggers.args.combat.args.unitGroup.inline = true
