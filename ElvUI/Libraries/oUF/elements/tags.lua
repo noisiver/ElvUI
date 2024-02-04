@@ -519,10 +519,6 @@ local unitlessEvents = {
 	RUNE_POWER_UPDATE = true,
 }
 
-for tag, events in pairs(tagEvents) do -- ElvUI: UNIT_HEALTH is bugged on TBC, use same method to convert as E.AddTag
-	tagEvents[tag] = gsub(events, 'UNIT_HEALTH_FREQUENT', 'UNIT_HEALTH')
-end
-
 local stringsToUpdate = {}
 local eventFontStrings = {}
 local eventFrame = CreateFrame('Frame')

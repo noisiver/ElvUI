@@ -71,7 +71,7 @@ function E:AddTag(tagName, eventsOrSeconds, func, block)
 	if type(eventsOrSeconds) == 'number' then
 		Tags.OnUpdateThrottle[tagName] = eventsOrSeconds
 	else
-		Tags.Events[tagName] = gsub(eventsOrSeconds, 'UNIT_HEALTH_FREQUENT', 'UNIT_HEALTH')
+		Tags.Events[tagName] = 'UNIT_HEALTH'
 	end
 
 	Tags.Methods[tagName] = func
@@ -182,7 +182,7 @@ for textFormat in pairs(E.GetFormattedTextStyles) do
 			return E:GetFormattedText(textFormat, UnitPower(unit, SPELL_POWER_MANA), UnitPowerMax(unit, SPELL_POWER_MANA), nil, true)
 		end)
 
-		E:AddTag(format('classpower:%s:shortvalue', tagFormat), (E.myclass == 'MONK' and 'UNIT_AURA ' or E.myclass == 'DEATHKNIGHT' and 'RUNE_POWER_UPDATE ' or '') .. 'UNIT_POWER_FREQUENT UNIT_DISPLAYPOWER', function(unit)
+		E:AddTag(format('classpower:%s:shortvalue', tagFormat), (E.myclass == 'MONK' and 'UNIT_AURA ' or E.myclass == 'DEATHKNIGHT' and 'RUNE_POWER_UPDATE ' or '') .. 'UNIT_DISPLAYPOWER', function(unit)
 			local powerType = UnitPowerType(unit)
 			local min, max = UnitPower(unit, powerType), UnitPowerMax(unit, powerType)
 			if min ~= 0 then
