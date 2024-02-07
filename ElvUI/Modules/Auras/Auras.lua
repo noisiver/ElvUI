@@ -129,44 +129,43 @@ local OnClick = function(self)
 end
 
 function A:CreateIcon(button)
-	local font = LSM:Fetch("font", A.db.font)
-	local auraType = button:GetParent().filter
+	button.header = button:GetParent()
+	button.filter = button.header.filter
+	button.auraType = button.header.filter == 'HELPFUL' and 'buffs' or 'debuffs' -- used to update cooldown text
 
-	local db = A.db.debuffs
-	button.auraType = "debuffs" -- used to update cooldown text
-	if auraType == "HELPFUL" then
-		db = A.db.buffs
-		button.auraType = "buffs"
-	end
+	button.name = button:GetName()
 
-	button:RegisterForClicks("RightButtonUp")
-
-	button.texture = button:CreateTexture(nil, "BORDER")
+	button.texture = button:CreateTexture(nil, 'ARTWORK')
 	button.texture:SetInside()
 	button.texture:SetTexCoord(unpack(E.TexCoords))
 
-	button.count = button:CreateFontString(nil, "ARTWORK")
-	button.count:Point("BOTTOMRIGHT", -1 + A.db.countXOffset, 1 + A.db.countYOffset)
-	button.count:FontTemplate(font, db.countFontSize, A.db.fontOutline)
+	button.count = button:CreateFontString(nil, 'OVERLAY')
+	button.count:FontTemplate()
 
-	button.text = button:CreateFontString(nil, "ARTWORK")
-	button.text:Point("TOP", button, "BOTTOM", 1 + A.db.timeXOffset, 0 + A.db.timeYOffset)
+	button.text = button:CreateFontString(nil, 'OVERLAY')
+	button.text:FontTemplate()
 
-	button.highlight = button:CreateTexture(nil, "HIGHLIGHT")
-	button.highlight:SetTexture(1, 1, 1, 0.45)
+	button.highlight = button:CreateTexture(nil, 'HIGHLIGHT')
+	button.highlight:SetTexture(1, 1, 1, .45)
 	button.highlight:SetInside()
 
-	button.statusBar = CreateFrame("StatusBar", "$parentStatusBar", button)
-	button.statusBar:Hide()
-	button.statusBar:SetStatusBarTexture(LSM:Fetch("statusbar", A.db.barTexture))
+	button.statusBar = CreateFrame('StatusBar', nil, button)
+	button.statusBar:SetFrameLevel(button:GetFrameLevel())
+	button.statusBar:SetFrameStrata(button:GetFrameStrata())
+	button.statusBar:SetMinMaxValues(0, 1)
+	button.statusBar:SetValue(0)
 	button.statusBar:CreateBackdrop()
-	E:SetSmoothing(button.statusBar)
 
-	E:SetUpAnimGroup(button)
+	button:RegisterForClicks('RightButtonUp')
+
+	button.UpdateTooltip = UpdateTooltip
+	button:SetScript("OnEnter", OnEnter)
+	button:SetScript("OnLeave", OnLeave)
+	button:SetScript("OnClick", OnClick)
 
 	-- support cooldown override
 	if not button.isRegisteredCooldown then
-		button.CooldownOverride = "auras"
+		button.CooldownOverride = 'auras'
 		button.isRegisteredCooldown = true
 		button.forceEnabled = true
 		button.showSeconds = true
@@ -175,32 +174,51 @@ function A:CreateIcon(button)
 		tinsert(E.RegisteredCooldowns.auras, button)
 	end
 
-	button.text:FontTemplate(font, db.durationFontSize, A.db.fontOutline)
-
 	A:Update_CooldownOptions(button)
+	A:UpdateIcon(button)
 
-	button.UpdateTooltip = UpdateTooltip
-	button:SetScript("OnEnter", OnEnter)
-	button:SetScript("OnLeave", OnLeave)
-	button:SetScript("OnClick", OnClick)
+	E:SetSmoothing(button.statusBar)
 
-	if (A.LBFGroup or A.MSQGroup) and E.private.auras.lbf.enable then
-		local ButtonData = {
-			Icon = button.texture,
-			Flash = nil,
-			Cooldown = nil,
-			AutoCast = nil,
-			AutoCastable = nil,
-			HotKey = nil,
-			Count = false,
-			Name = nil,
-			Highlight = button.highlight
-		};
-
-		(A.LBFGroup or A.MSQGroup):AddButton(button, ButtonData)
+	if button.filter == 'HELPFUL' and MasqueGroupBuffs and E.private.auras.masque.buffs then
+		MasqueGroupBuffs:AddButton(button, A:MasqueData(button.texture, button.highlight))
+		if button.__MSQ_BaseFrame then button.__MSQ_BaseFrame:SetFrameLevel(2) end --Lower the framelevel to fix issue with buttons created during combat
+		MasqueGroupBuffs:ReSkin()
+	elseif button.filter == 'HARMFUL' and MasqueGroupDebuffs and E.private.auras.masque.debuffs then
+		MasqueGroupDebuffs:AddButton(button, A:MasqueData(button.texture, button.highlight))
+		if button.__MSQ_BaseFrame then button.__MSQ_BaseFrame:SetFrameLevel(2) end --Lower the framelevel to fix issue with buttons created during combat
+		MasqueGroupDebuffs:ReSkin()
 	else
-		button:SetTemplate("Default")
+		button:SetTemplate()
 	end
+end
+
+function A:UpdateIcon(button, update)
+	local db = A.db[button.auraType]
+
+	if update then
+		button:Size(db.size)
+	end
+
+	button.count:ClearAllPoints()
+	button.count:Point('BOTTOMRIGHT', db.countXOffset, db.countYOffset)
+	button.count:FontTemplate(LSM:Fetch('font', db.countFont), db.countFontSize, db.countFontOutline)
+
+	button.text:ClearAllPoints()
+	button.text:Point('TOP', button, 'BOTTOM', db.timeXOffset, db.timeYOffset)
+	button.text:FontTemplate(LSM:Fetch('font', db.timeFont), db.timeFontSize, db.timeFontOutline)
+
+	local pos, iconSize = db.barPosition, db.size - (E.Border * 2)
+	local onTop, onBottom, onLeft = pos == 'TOP', pos == 'BOTTOM', pos == 'LEFT'
+	local barSpacing = db.barSpacing + (E.PixelMode and 1 or 3)
+	local barSize = db.barSize + (E.PixelMode and 0 or 2)
+	local isHorizontal = onTop or onBottom
+
+	button.statusBar:ClearAllPoints()
+	button.statusBar:Size(isHorizontal and iconSize or barSize, isHorizontal and barSize or iconSize)
+	button.statusBar:Point(E.InversePoints[pos], button, pos, isHorizontal and 0 or (onLeft and -barSpacing or barSpacing), not isHorizontal and 0 or (onTop and barSpacing or -barSpacing))
+	button.statusBar:SetStatusBarTexture(LSM:Fetch('statusbar', db.barTexture))
+	button.statusBar:SetOrientation(isHorizontal and 'HORIZONTAL' or 'VERTICAL')
+	button.statusBar:SetRotatesTexture(not isHorizontal)
 end
 
 function A:SetAuraTime(button, expiration, duration)
@@ -415,14 +433,15 @@ function A:ConfigureAuras(header, auraTable, weaponPosition)
 		button:SetSize(size, size)
 
 		if button.text then
-			local font = LSM:Fetch("font", A.db.font)
+			local db = A.db[button.auraType]
+
 			button.text:ClearAllPoints()
 			button.text:Point("TOP", button, "BOTTOM", 1 + A.db.timeXOffset, 0 + A.db.timeYOffset)
-			button.text:FontTemplate(font, db.durationFontSize, A.db.fontOutline)
+			button.text:FontTemplate(LSM:Fetch('font', db.timeFont), db.timeFontSize, db.timeFontOutline)
 
 			button.count:ClearAllPoints()
 			button.count:Point("BOTTOMRIGHT", -1 + A.db.countXOffset, 0 + A.db.countYOffset)
-			button.count:FontTemplate(font, db.countFontSize, A.db.fontOutline)
+			button.count:FontTemplate(LSM:Fetch('font', db.countFont), db.countFontSize, db.countFontOutline)
 		end
 
 		button.statusBar:Width((isOnTop or isOnBottom) and iconSize or (A.db.barWidth + (E.PixelMode and 0 or 2)))
