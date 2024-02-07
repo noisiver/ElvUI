@@ -4382,6 +4382,7 @@ P.actionbar = {
 	globalFadeAlpha = 0,
 	handleOverlay = true,
 	lockActionBars = true,
+	keyDown = true,
 	movementModifier = 'SHIFT',
 	noPowerColor = { r = 0.5, g = 0.5, b = 1 },
 	noRangeColor = { r = 0.8, g = 0.1, b = 0.1 },
