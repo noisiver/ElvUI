@@ -15,6 +15,7 @@
 	<Script file="Hit.lua"/>
 	<Script file="HonorableKills.lua"/>
 	<Script file="HPS.lua"/>
+	<Script file="ItemLevel.lua"/>
 	<Script file="Regen.lua"/>
 	<Script file="Time.lua"/>
 	<Script file="Gold.lua"/>
