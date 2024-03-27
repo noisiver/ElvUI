@@ -2,7 +2,7 @@ local E, L, V, P, G = unpack(select(2, ...)) --Import: Engine, Locales, PrivateD
 local DT = E:GetModule("DataTexts")
 
 local join = string.join
-local displayNumberString = ""
+local GEARSCORE = GEARSCORE
 
 local ItemTypes = {
     ["INVTYPE_RELIC"] = { ["SlotMOD"] = 0.3164, ["ItemSlot"] = 18, ["Enchantable"] = false},
@@ -255,16 +255,10 @@ local function GetGearScore()
 end
 
 local function OnEvent(self)
-    self.text:SetFormattedText(displayNumberString, L["GearScore"], GetGearScore())
+    local Red, Blue, Green = GetQuality(GetGearScore())
+    local TextColor = E:RGBToHex(Red, Blue, Green)
+
+    self.text:SetFormattedText("GearScore: %s%d|r", TextColor, GetGearScore())
 end
 
-local function ValueColorUpdate(hex)
-    displayNumberString = join("", "%s: ", hex, "%d|r")
-
-    if lastPanel ~= nil then
-        OnEvent(lastPanel, "ELVUI_COLOR_UPDATE")
-    end
-end
-E.valueColorUpdateFuncs[ValueColorUpdate] = true
-
-DT:RegisterDatatext("GearScore", {"PLAYER_ENTERING_WORLD", "PLAYER_EQUIPMENT_CHANGED"}, OnEvent, nil, OnClick, nil, nil, L["GearScore"])
+DT:RegisterDatatext("GearScore", {"PLAYER_ENTERING_WORLD", "PLAYER_EQUIPMENT_CHANGED"}, OnEvent, nil, OnClick, nil, nil, GEARSCORE)
