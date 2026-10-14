@@ -62,13 +62,23 @@ AB.barDefaults = {
 	bar15 = { page = 15, bindButtons = 'MULTIACTIONBAR7BUTTON', position = 'BOTTOMRIGHT,ElvUIParent,BOTTOMRIGHT,-4,400' }
 }
 
-function AB:UpdateBar1Paging()
-	local metamorphosis = AB.db.bar1.metamorphosisPaging and '[bonusbar:5] 11; ' or ''
+-- function AB:UpdateBar1Paging()
+-- 	local warlock = E.myclass == 'WARLOCK'
+-- 	local metamorphosis = warlock and AB.db.bar1.metamorphosisPaging and '[form:2] 11; ' or ''
+-- 	local bonusBar = warlock and '[bonusbar:5,noform:2] 11; ' or '[bonusbar:5] 11;'
+--
+-- 	if AB.db.bar6.enabled then
+-- 		AB.barDefaults.bar1.conditions = metamorphosis..bonusBar..' [bar:3] 3; [bar:4] 4; [bar:5] 5; [bar:6] 6;'
+-- 	else
+-- 		AB.barDefaults.bar1.conditions = metamorphosis..bonusBar..' [bar:2] 2; [bar:3] 3; [bar:4] 4; [bar:5] 5; [bar:6] 6;'
+-- 	end
+-- end
 
+function AB:UpdateBar1Paging()
 	if AB.db.bar6.enabled then
-		AB.barDefaults.bar1.conditions = metamorphosis..'[bar:3] 3; [bar:4] 4; [bar:5] 5; [bar:6] 6;'
+		AB.barDefaults.bar1.conditions = '[bonusbar:5] 11; [bar:3] 3; [bar:4] 4; [bar:5] 5; [bar:6] 6;'
 	else
-		AB.barDefaults.bar1.conditions = metamorphosis..'[bar:2] 2; [bar:3] 3; [bar:4] 4; [bar:5] 5; [bar:6] 6;'
+		AB.barDefaults.bar1.conditions = '[bonusbar:5] 11; [bar:2] 2; [bar:3] 3; [bar:4] 4; [bar:5] 5; [bar:6] 6;'
 	end
 end
 
